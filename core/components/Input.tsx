@@ -85,7 +85,7 @@ export function Input({
 }
 
 const styles = StyleSheet.create({
-  wrapper: { marginBottom: spacing.md },
+  wrapper: { marginHorizontal: spacing.md, marginBottom: spacing.md },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',

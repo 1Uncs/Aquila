@@ -34,7 +34,6 @@ export default function ResultSearchScreen() {
           value={search}
           onChangeText={setSearch}
           leftIcon="search"
-          style={{ marginHorizontal: 16 }}
         />
 
         {filtered.length === 0 ? (
