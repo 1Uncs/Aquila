@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, View, Keyboard } from 'react-native';
-import { useFocusEffect } from 'expo-router';
+import { StyleSheet, View } from 'react-native';
 import { ScreenView } from '@/core/components/ScreenView';
+import { useDismissKeyboardOnBlur } from '@/core/hooks';
 import { ThemedText, Card, EmptyState } from '@/core/components';
 import { Ionicons } from '@expo/vector-icons';
 import { mockApi } from '@/features/elections/service';
 import { PoliticalParty } from '@/features/auth/store';
-import { spacing, shadows, radius } from '@/constants/tokens';
+import { spacing, shadows } from '@/constants/tokens';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
 import Colors from '@/constants/colors';
 
@@ -19,9 +19,7 @@ export default function PartiesScreen() {
     mockApi.getParties().then(setParties);
   }, []);
 
-  useFocusEffect(() => {
-    return () => Keyboard.dismiss();
-  });
+  useDismissKeyboardOnBlur();
 
   return (
     <ScreenView scrollable keyboardShouldPersistTaps="handled">

@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, View, Keyboard } from 'react-native';
-import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { StyleSheet, View } from 'react-native';
+import { router, useLocalSearchParams } from 'expo-router';
 import { ScreenView } from '@/core/components/ScreenView';
+import { useDismissKeyboardOnBlur } from '@/core/hooks';
 import { ThemedText, Card, Button, EmptyState } from '@/core/components';
 import { Ionicons } from '@expo/vector-icons';
 import { mockApi } from '@/features/elections/service';
@@ -34,9 +35,7 @@ export default function ElectionDetailScreen() {
     })();
   }, [id]);
 
-  useFocusEffect(() => {
-    return () => Keyboard.dismiss();
-  });
+  useDismissKeyboardOnBlur();
 
   if (loading) {
     return (

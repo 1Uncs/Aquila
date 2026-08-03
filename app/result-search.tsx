@@ -1,25 +1,19 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, View, Keyboard } from 'react-native';
-import { useFocusEffect } from 'expo-router';
+import { View } from 'react-native';
 import { ScreenView } from '@/core/components/ScreenView';
+import { useDismissKeyboardOnBlur } from '@/core/hooks';
 import { ThemedText, Card, EmptyState, Input } from '@/core/components';
 import { mockApi } from '@/features/elections/service';
 import { useResultsStore } from '@/features/auth/store';
 import { ResultSubmission } from '@/features/auth/store';
-import { spacing, radius, shadows } from '@/constants/tokens';
-import { useColorScheme } from '@/core/hooks/useColorScheme';
-import Colors from '@/constants/colors';
+import { spacing, shadows } from '@/constants/tokens';
 
 export default function ResultSearchScreen() {
   const [results, setResults] = useState<ResultSubmission[]>([]);
   const [search, setSearch] = useState('');
   const { submissions } = useResultsStore();
-  const scheme = useColorScheme() ?? 'light';
-  const colors = Colors[scheme];
 
-  useFocusEffect(() => {
-    return () => Keyboard.dismiss();
-  });
+  useDismissKeyboardOnBlur();
 
   useEffect(() => {
     mockApi.getResults().then(setResults);

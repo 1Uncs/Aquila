@@ -1,13 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, View, Keyboard } from 'react-native';
-import { useFocusEffect } from 'expo-router';
+import { StyleSheet, View } from 'react-native';
 import { ScreenView } from '@/core/components/ScreenView';
+import { useDismissKeyboardOnBlur } from '@/core/hooks';
 import { ThemedText, Card, EmptyState, Button } from '@/core/components';
-import { Ionicons } from '@expo/vector-icons';
 import { mockApi } from '@/features/elections/service';
 import { useResultsStore } from '@/features/auth/store';
 import { router } from 'expo-router';
-import { spacing, shadows, radius } from '@/constants/tokens';
+import { spacing, shadows } from '@/constants/tokens';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
 import Colors from '@/constants/colors';
 
@@ -41,9 +40,7 @@ export default function CollationScreen() {
       pct: totalVotes > 0 ? ((votes / totalVotes) * 100).toFixed(1) : '0.0',
     }));
 
-  useFocusEffect(() => {
-    return () => Keyboard.dismiss();
-  });
+  useDismissKeyboardOnBlur();
 
   return (
     <ScreenView scrollable keyboardShouldPersistTaps="handled">

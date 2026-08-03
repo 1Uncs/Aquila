@@ -1,25 +1,19 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, View, Keyboard } from 'react-native';
-import { useFocusEffect } from 'expo-router';
+import { View } from 'react-native';
 import { ScreenView } from '@/core/components/ScreenView';
+import { useDismissKeyboardOnBlur } from '@/core/hooks';
 import { ThemedText, Card, EmptyState, Input } from '@/core/components';
 import { mockApi } from '@/features/elections/service';
 import { IncidentReport } from '@/features/auth/store';
 import { useIncidentsStore } from '@/features/auth/store';
 import { spacing, shadows } from '@/constants/tokens';
-import { useColorScheme } from '@/core/hooks/useColorScheme';
-import Colors from '@/constants/colors';
 
 export default function IncidentSearchScreen() {
   const [incidents, setIncidents] = useState<IncidentReport[]>([]);
   const [search, setSearch] = useState('');
   const { incidents: storeIncidents } = useIncidentsStore();
-  const scheme = useColorScheme() ?? 'light';
-  const colors = Colors[scheme];
 
-  useFocusEffect(() => {
-    return () => Keyboard.dismiss();
-  });
+  useDismissKeyboardOnBlur();
 
   useEffect(() => {
     mockApi.getIncidents().then(setIncidents);

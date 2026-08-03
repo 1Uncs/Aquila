@@ -1,15 +1,12 @@
-import React, { useEffect, useState } from 'react';
-import { StyleSheet, ScrollView, View, Keyboard } from 'react-native';
-import { useFocusEffect } from 'expo-router';
+import React, { useState } from 'react';
+import { ScrollView, View } from 'react-native';
 import { ScreenView } from '@/core/components/ScreenView';
-import { ThemedText, Card, EmptyState, Input, Button } from '@/core/components';
-import { mockApi } from '@/features/elections/service';
+import { useDismissKeyboardOnBlur } from '@/core/hooks';
+import { ThemedText, Input, Button } from '@/core/components';
 import { IncidentReport } from '@/features/auth/store';
 import { useIncidentsStore } from '@/features/auth/store';
 import { router, useLocalSearchParams } from 'expo-router';
-import { spacing, radius, shadows } from '@/constants/tokens';
-import { useColorScheme } from '@/core/hooks/useColorScheme';
-import Colors from '@/constants/colors';
+import { spacing } from '@/constants/tokens';
 import { IncidentCategory, IncidentSeverity } from '@/types';
 
 const CATEGORIES = [
@@ -27,12 +24,8 @@ export default function ReportIncidentScreen() {
   const [electoralArea, setElectoralArea] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const { addIncident } = useIncidentsStore();
-  const scheme = useColorScheme() ?? 'light';
-  const colors = Colors[scheme];
 
-  useFocusEffect(() => {
-    return () => Keyboard.dismiss();
-  });
+  useDismissKeyboardOnBlur();
 
   const handleSubmit = async () => {
     if (!description.trim() || !electoralArea.trim()) return;

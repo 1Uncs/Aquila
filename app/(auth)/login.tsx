@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
-import { StyleSheet, KeyboardAvoidingView, Platform, Keyboard } from 'react-native';
-import { useFocusEffect } from 'expo-router';
+import { KeyboardAvoidingView, Platform } from 'react-native';
 import { ScreenView } from '@/core/components/ScreenView';
+import { useDismissKeyboardOnBlur } from '@/core/hooks';
 import { ThemedText, Input, Button } from '@/core/components';
 import { spacing } from '@/constants/tokens';
-import { Ionicons } from '@expo/vector-icons';
 import { login } from '@/features/auth/service';
 
 export default function LoginScreen() {
@@ -13,9 +12,7 @@ export default function LoginScreen() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  useFocusEffect(() => {
-    return () => Keyboard.dismiss();
-  });
+  useDismissKeyboardOnBlur();
 
   const handleLogin = async () => {
     if (!email.trim() || !password.trim()) {
@@ -92,18 +89,3 @@ export default function LoginScreen() {
     </ScreenView>
   );
 }
-
-const styles = StyleSheet.create({
-  logoContainer: {
-    alignItems: 'center',
-    marginBottom: spacing.xxl,
-  },
-  logoIcon: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: spacing.md,
-  },
-});

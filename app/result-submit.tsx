@@ -1,15 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, View, Keyboard } from 'react-native';
-import { useFocusEffect } from 'expo-router';
+import { View } from 'react-native';
 import { ScreenView } from '@/core/components/ScreenView';
-import { ThemedText, Card, Button, Input, EmptyState } from '@/core/components';
-import { Ionicons } from '@expo/vector-icons';
+import { useDismissKeyboardOnBlur } from '@/core/hooks';
+import { ThemedText, Button, Input } from '@/core/components';
 import { mockApi } from '@/features/elections/service';
 import { useResultsStore } from '@/features/auth/store';
 import { router, useLocalSearchParams } from 'expo-router';
-import { spacing, radius, shadows, opacities } from '@/constants/tokens';
-import { useColorScheme } from '@/core/hooks/useColorScheme';
-import Colors from '@/constants/colors';
+import { spacing } from '@/constants/tokens';
 import { Candidate, PollingUnit } from '@/features/auth/store';
 
 export default function SubmitResultScreen() {
@@ -23,12 +20,8 @@ export default function SubmitResultScreen() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const { addSubmission } = useResultsStore();
-  const scheme = useColorScheme() ?? 'light';
-  const colors = Colors[scheme];
 
-  useFocusEffect(() => {
-    return () => Keyboard.dismiss();
-  });
+  useDismissKeyboardOnBlur();
 
   useEffect(() => {
     (async () => {
@@ -149,5 +142,3 @@ export default function SubmitResultScreen() {
     </ScreenView>
   );
 }
-
-const styles = StyleSheet.create({});

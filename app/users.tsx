@@ -1,12 +1,10 @@
 import React from 'react';
-import { StyleSheet, View, Keyboard } from 'react-native';
-import { useFocusEffect } from 'expo-router';
+import { StyleSheet, View } from 'react-native';
 import { ScreenView } from '@/core/components/ScreenView';
+import { useDismissKeyboardOnBlur } from '@/core/hooks';
 import { ThemedText, Card } from '@/core/components';
 import { Ionicons } from '@expo/vector-icons';
 import { spacing, shadows } from '@/constants/tokens';
-import { useColorScheme } from '@/core/hooks/useColorScheme';
-import Colors from '@/constants/colors';
 
 type RoleDef = {
   role: string;
@@ -24,12 +22,7 @@ const ROLES: RoleDef[] = [
 ];
 
 export default function UsersScreen() {
-  const scheme = useColorScheme() ?? 'light';
-  const colors = Colors[scheme];
-
-  useFocusEffect(() => {
-    return () => Keyboard.dismiss();
-  });
+  useDismissKeyboardOnBlur();
 
   return (
     <ScreenView scrollable keyboardShouldPersistTaps="handled">

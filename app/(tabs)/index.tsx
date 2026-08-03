@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, ScrollView, View, Keyboard } from 'react-native';
-import { useFocusEffect } from 'expo-router';
+import { StyleSheet, ScrollView, View } from 'react-native';
 import { ScreenView } from '@/core/components/ScreenView';
-import { ThemedText, Card, Button, EmptyState } from '@/core/components';
+import { useDismissKeyboardOnBlur } from '@/core/hooks';
+import { ThemedText, Card, EmptyState } from '@/core/components';
 import { Ionicons } from '@expo/vector-icons';
 import { mockApi } from '@/features/elections/service';
-import { useElectionsStore, useAuthStore } from '@/features/auth/store';
+import { useAuthStore } from '@/features/auth/store';
 import { ROUTES } from '@/constants/routes';
 import { spacing, radius, shadows } from '@/constants/tokens';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
@@ -20,8 +20,6 @@ type StatCardProps = {
 };
 
 function StatCard({ icon, label, value, color }: StatCardProps) {
-  const scheme = useColorScheme() ?? 'light';
-  const colors = Colors[scheme];
   return (
     <Card style={[styles.statCard, shadows.md]}>
       <Ionicons name={icon} size={28} color={color} />
@@ -60,9 +58,7 @@ export default function DashboardScreen() {
   const totalPUs = 2500;
   const reportingPct = Math.round((totalReportingPUs / totalPUs) * 100);
 
-  useFocusEffect(() => {
-    return () => Keyboard.dismiss();
-  });
+  useDismissKeyboardOnBlur();
 
   return (
     <ScreenView scrollable keyboardShouldPersistTaps="handled">

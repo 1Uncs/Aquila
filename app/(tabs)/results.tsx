@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, ScrollView, Pressable, PressableStateCallbackType, View, Keyboard } from 'react-native';
-import { useFocusEffect } from 'expo-router';
+import { StyleSheet, ScrollView, Pressable, View } from 'react-native';
 import { ScreenView } from '@/core/components/ScreenView';
+import { useDismissKeyboardOnBlur } from '@/core/hooks';
 import { ThemedText, Card, EmptyState } from '@/core/components';
 import { Ionicons } from '@expo/vector-icons';
 import { mockApi } from '@/features/elections/service';
@@ -34,9 +34,7 @@ export default function ResultsScreen() {
 
   const totalVotes = results.reduce((sum, r) => sum + r.totalVotesCast, 0);
 
-  useFocusEffect(() => {
-    return () => Keyboard.dismiss();
-  });
+  useDismissKeyboardOnBlur();
 
   return (
     <ScreenView scrollable keyboardShouldPersistTaps="handled">
@@ -103,7 +101,6 @@ export default function ResultsScreen() {
           <EmptyState icon="analytics-outline" title="No Results" subtitle="No results submitted yet" />
         ) : (
           results.map((result) => {
-            const winner = Object.entries(result.candidateVotes).sort((a, b) => b[1] - a[1])[0];
             return (
               <Card key={result.id}>
                 <ThemedText variant="body" style={{ fontWeight: '600' }}>

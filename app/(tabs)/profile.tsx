@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Pressable, PressableStateCallbackType, View, Keyboard } from 'react-native';
-import { useFocusEffect } from 'expo-router';
+import { StyleSheet, Pressable, PressableStateCallbackType, View } from 'react-native';
 import { ScreenView } from '@/core/components/ScreenView';
+import { useDismissKeyboardOnBlur } from '@/core/hooks';
 import { ThemedText, Card, Button } from '@/core/components';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuthStore } from '@/features/auth/store';
@@ -37,9 +37,7 @@ export default function ProfileTabScreen() {
     { label: 'Users', icon: 'person-add-outline', route: ROUTES.USERS },
   ];
 
-  useFocusEffect(() => {
-    return () => Keyboard.dismiss();
-  });
+  useDismissKeyboardOnBlur();
 
   return (
     <ScreenView scrollable keyboardShouldPersistTaps="handled">

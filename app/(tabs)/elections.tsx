@@ -1,26 +1,22 @@
 import React, { useEffect, useState } from 'react';
 import { router } from 'expo-router';
-import { StyleSheet, ScrollView, Pressable, PressableStateCallbackType, View, Keyboard } from 'react-native';
-import { useFocusEffect } from 'expo-router';
+import { StyleSheet, ScrollView, Pressable, PressableStateCallbackType, View } from 'react-native';
 import { ScreenView } from '@/core/components/ScreenView';
-import { ThemedText, Card, Button, EmptyState } from '@/core/components';
-import { Ionicons } from '@expo/vector-icons';
+import { useDismissKeyboardOnBlur } from '@/core/hooks';
+import { ThemedText, Card, EmptyState } from '@/core/components';
 import { mockApi } from '@/features/elections/service';
 import { Election, ElectionCycle } from '@/features/auth/store';
 import { useElectionsStore } from '@/features/auth/store';
 import { ROUTES } from '@/constants/routes';
-import { spacing, radius, shadows } from '@/constants/tokens';
+import { spacing, radius } from '@/constants/tokens';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
 import Colors from '@/constants/colors';
-
-type ElectionWithCycle = Election & { cycleName?: string };
 
 export default function ElectionsScreen() {
   const [cycles, setCycles] = useState<ElectionCycle[]>([]);
   const [elections, setElections] = useState<Election[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCycle, setSelectedCycle] = useState<string | null>(null);
-  const { setSelectedElectionId } = useElectionsStore();
   const scheme = useColorScheme() ?? 'light';
   const colors = Colors[scheme];
 
@@ -49,9 +45,7 @@ export default function ElectionsScreen() {
     ARCHIVED: colors.textSecondary,
   };
 
-  useFocusEffect(() => {
-    return () => Keyboard.dismiss();
-  });
+  useDismissKeyboardOnBlur();
 
   return (
     <ScreenView scrollable keyboardShouldPersistTaps="handled">
