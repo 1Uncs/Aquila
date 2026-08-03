@@ -1,6 +1,6 @@
 import { enableScreens } from 'react-native-screens';
 import React, { useEffect, useState } from 'react';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, Platform } from 'react-native';
 import { InteractionManager } from 'react-native';
 import { Stack, useRouter, useSegments, useRootNavigationState } from 'expo-router';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -59,19 +59,31 @@ function RootLayoutNav() {
     return () => task.cancel();
   }, [segments, isNavigationReady, router]);
 
+  const pushOptions = (title: string) => ({
+    headerShown: true,
+    title,
+    ...(Platform.OS === 'ios'
+      ? {
+          headerTransparent: true,
+          headerShadowVisible: false,
+          headerBackButtonDisplayMode: 'minimal' as const,
+        }
+      : {}),
+  });
+
   return (
     <Stack>
       <Stack.Screen name="(auth)" options={{ headerShown: false }} />
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      <Stack.Screen name="election-detail" options={{ headerShown: true, title: 'Election Details' }} />
-      <Stack.Screen name="result-submit" options={{ headerShown: true, title: 'Submit Result' }} />
-      <Stack.Screen name="result-collation" options={{ headerShown: true, title: 'Result Collation' }} />
-      <Stack.Screen name="result-search" options={{ headerShown: true, title: 'Search Results' }} />
-      <Stack.Screen name="incident-report" options={{ headerShown: true, title: 'Report Incident' }} />
-      <Stack.Screen name="incident-search" options={{ headerShown: true, title: 'Search Incidents' }} />
-      <Stack.Screen name="locations" options={{ headerShown: true, title: 'Locations' }} />
-      <Stack.Screen name="parties" options={{ headerShown: true, title: 'Political Parties' }} />
-      <Stack.Screen name="users" options={{ headerShown: true, title: 'User Management' }} />
+      <Stack.Screen name="election-detail" options={pushOptions('Election Details')} />
+      <Stack.Screen name="result-submit" options={pushOptions('Submit Result')} />
+      <Stack.Screen name="result-collation" options={pushOptions('Result Collation')} />
+      <Stack.Screen name="result-search" options={pushOptions('Search Results')} />
+      <Stack.Screen name="incident-report" options={pushOptions('Report Incident')} />
+      <Stack.Screen name="incident-search" options={pushOptions('Search Incidents')} />
+      <Stack.Screen name="locations" options={pushOptions('Locations')} />
+      <Stack.Screen name="parties" options={pushOptions('Political Parties')} />
+      <Stack.Screen name="users" options={pushOptions('User Management')} />
     </Stack>
   );
 }
