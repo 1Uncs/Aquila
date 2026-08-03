@@ -8,15 +8,18 @@ type DebouncedPressableProps = {
   debounceMs?: number;
   disabled?: boolean;
   style?: PressableProps['style'];
+  testID?: string;
   children: React.ReactNode;
-};
+} & Omit<PressableProps, 'onPress' | 'style' | 'children'>;
 
 export function DebouncedPressable({
   onPress,
   debounceMs = DEBOUNCE_MS,
   disabled = false,
   style,
+  testID,
   children,
+  ...rest
 }: DebouncedPressableProps) {
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pressedRef = useRef(false);
@@ -36,6 +39,8 @@ export function DebouncedPressable({
       onPress={handlePress}
       disabled={disabled}
       style={style}
+      testID={testID}
+      {...rest}
     >
       {children}
     </Pressable>

@@ -1,11 +1,12 @@
-import React, { ComponentProps } from 'react';
+import React from 'react';
 import {
-  Pressable as RNPressable,
   PressableStateCallbackType,
   StyleSheet,
   ViewStyle,
+  PressableProps,
 } from 'react-native';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
+import { DebouncedPressable } from './DebouncedPressable';
 import Colors from '@/constants/colors';
 import { ThemedText } from './ThemedText';
 import { radius, spacing, opacities } from '@/constants/tokens';
@@ -22,7 +23,7 @@ type ButtonProps = {
   testID?: string;
   size?: 'sm' | 'md' | 'lg';
   fullWidth?: boolean;
-} & Omit<ComponentProps<typeof RNPressable>, 'children'>;
+} & Omit<PressableProps, 'children'>;
 
 export function Button({
   label,
@@ -56,7 +57,7 @@ export function Button({
     variant === 'outline' || variant === 'ghost' ? colors.primary : '#FFFFFF';
 
   return (
-    <RNPressable
+    <DebouncedPressable
       onPress={onPress}
       disabled={disabled || loading}
       style={({ pressed }: PressableStateCallbackType) => [
@@ -82,7 +83,7 @@ export function Button({
       >
         {loading ? 'Loading...' : label}
       </ThemedText>
-    </RNPressable>
+    </DebouncedPressable>
   );
 }
 

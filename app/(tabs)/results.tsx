@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, ScrollView, Pressable, View } from 'react-native';
+import { StyleSheet, ScrollView, View } from 'react-native';
 import { ScreenView } from '@/core/components/ScreenView';
-import { ThemedText, Card, EmptyState } from '@/core/components';
+import { ThemedText, Card, EmptyState, DebouncedPressable } from '@/core/components';
 import { Ionicons } from '@expo/vector-icons';
 import { mockApi } from '@/features/elections/service';
 import { useResultsStore } from '@/features/auth/store';
@@ -71,20 +71,20 @@ export default function ResultsScreen() {
         </ScrollView>
 
         <View style={{ flexDirection: 'row', gap: spacing.sm, marginHorizontal: 16, marginBottom: spacing.lg }}>
-          <Pressable
+          <DebouncedPressable
             onPress={() => router.push(ROUTES.RESULT_SEARCH as any)}
             style={[styles.actionBtn, { backgroundColor: colors.primary }]}
           >
             <Ionicons name="search-outline" size={18} color="#fff" />
             <ThemedText variant="label" style={{ color: '#fff', marginLeft: 4 }}>Search</ThemedText>
-          </Pressable>
-          <Pressable
+          </DebouncedPressable>
+          <DebouncedPressable
             onPress={() => router.push(ROUTES.RESULT_COLLATION as any)}
             style={[styles.actionBtn, { backgroundColor: colors.secondary }]}
           >
             <Ionicons name="bar-chart-outline" size={18} color="#fff" />
             <ThemedText variant="label" style={{ color: '#fff', marginLeft: 4 }}>Collation</ThemedText>
-          </Pressable>
+          </DebouncedPressable>
         </View>
 
         <ThemedText variant="h3" style={{ marginHorizontal: 16, marginBottom: spacing.sm }}>

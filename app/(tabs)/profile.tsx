@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Pressable, PressableStateCallbackType, View } from 'react-native';
+import { StyleSheet, PressableStateCallbackType, View } from 'react-native';
 import { ScreenView } from '@/core/components/ScreenView';
-import { ThemedText, Card, Button } from '@/core/components';
+import { ThemedText, Card, Button, DebouncedPressable } from '@/core/components';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuthStore } from '@/features/auth/store';
 import { mockApi } from '@/features/elections/service';
@@ -58,7 +58,7 @@ export default function ProfileTabScreen() {
           Management
         </ThemedText>
         {menuItems.map((item) => (
-          <Pressable
+          <DebouncedPressable
             key={item.label}
             onPress={() => router.push(item.route as any)}
             style={({ pressed }: PressableStateCallbackType) => [
@@ -72,7 +72,7 @@ export default function ProfileTabScreen() {
               <ThemedText variant="body">{item.label}</ThemedText>
             </View>
             <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
-          </Pressable>
+          </DebouncedPressable>
         ))}
 
         <ThemedText variant="h3" style={{ marginHorizontal: 16, marginTop: spacing.lg, marginBottom: spacing.sm }}>

@@ -1,4 +1,5 @@
-import { Pressable, StyleSheet, ViewStyle, View, PressableStateCallbackType } from 'react-native';
+import { StyleSheet, ViewStyle, View, PressableStateCallbackType } from 'react-native';
+import { DebouncedPressable } from './DebouncedPressable';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
 import Colors from '@/constants/colors';
 import { radius, shadows, opacities } from '@/constants/tokens';
@@ -47,7 +48,7 @@ export function Card({
 
   if (pressable && onPress) {
     return (
-      <Pressable
+      <DebouncedPressable
         onPress={onPress}
         style={({ pressed }: PressableStateCallbackType) => [
           styles.card,
@@ -55,7 +56,7 @@ export function Card({
         ]}
       >
         {content}
-      </Pressable>
+      </DebouncedPressable>
     );
   }
 
