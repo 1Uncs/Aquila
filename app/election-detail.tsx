@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { ScreenView } from '@/core/components/ScreenView';
-import { useDismissKeyboardOnBlur } from '@/core/hooks';
 import { ThemedText, Card, Button, EmptyState } from '@/core/components';
 import { Ionicons } from '@expo/vector-icons';
 import { mockApi } from '@/features/elections/service';
@@ -34,8 +33,6 @@ export default function ElectionDetailScreen() {
       }
     })();
   }, [id]);
-
-  useDismissKeyboardOnBlur();
 
   if (loading) {
     return (
@@ -117,5 +114,5 @@ export default function ElectionDetailScreen() {
 const styles = StyleSheet.create({
   headerCard: { marginHorizontal: 16, marginVertical: 16, borderRadius: radius.lg },
   row: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
-  avatar: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
+  avatar: { width: 48, height: 48, borderRadius: 24, alignItems: 'center', justifyContent: 'center' },
 });

@@ -1,7 +1,6 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { ScreenView } from '@/core/components/ScreenView';
-import { useDismissKeyboardOnBlur } from '@/core/hooks';
 import { ThemedText, Card } from '@/core/components';
 import { Ionicons } from '@expo/vector-icons';
 import { spacing, shadows } from '@/constants/tokens';
@@ -22,8 +21,6 @@ const ROLES: RoleDef[] = [
 ];
 
 export default function UsersScreen() {
-  useDismissKeyboardOnBlur();
-
   return (
     <ScreenView scrollable keyboardShouldPersistTaps="handled">
       <View style={{ paddingBottom: spacing.xxl }}>
@@ -42,7 +39,7 @@ export default function UsersScreen() {
               </View>
               <View style={{ flex: 1 }}>
                 <ThemedText variant="body" style={{ fontWeight: '600' }}>{label}</ThemedText>
-                <ThemedText variant="caption" color="textSecondary" style={{ marginTop: 2 }}>
+                <ThemedText variant="caption" color="textSecondary" style={{ marginTop: 4 }}>
                   {role}
                 </ThemedText>
               </View>

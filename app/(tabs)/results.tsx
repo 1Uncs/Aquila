@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, ScrollView, Pressable, View } from 'react-native';
 import { ScreenView } from '@/core/components/ScreenView';
-import { useDismissKeyboardOnBlur } from '@/core/hooks';
 import { ThemedText, Card, EmptyState } from '@/core/components';
 import { Ionicons } from '@expo/vector-icons';
 import { mockApi } from '@/features/elections/service';
@@ -33,8 +32,6 @@ export default function ResultsScreen() {
   }, []);
 
   const totalVotes = results.reduce((sum, r) => sum + r.totalVotesCast, 0);
-
-  useDismissKeyboardOnBlur();
 
   return (
     <ScreenView scrollable keyboardShouldPersistTaps="handled">
@@ -127,7 +124,7 @@ export default function ResultsScreen() {
 }
 
 const styles = StyleSheet.create({
-  statCard: { width: 130, padding: spacing.md, borderRadius: radius.lg, backgroundColor: '#fff' },
+  statCard: { width: 128, padding: spacing.md, borderRadius: radius.lg, backgroundColor: '#fff' },
   actionBtn: {
     flex: 1,
     flexDirection: 'row',
@@ -136,6 +133,6 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.md,
     borderRadius: radius.md,
   },
-  progressTrack: { height: 6, borderRadius: 3, overflow: 'hidden' },
-  progressFill: { height: '100%', borderRadius: 3 },
+  progressTrack: { height: 8, borderRadius: 4, overflow: 'hidden' },
+  progressFill: { height: '100%', borderRadius: 4 },
 });

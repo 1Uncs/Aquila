@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import { ScreenView } from '@/core/components/ScreenView';
-import { useDismissKeyboardOnBlur } from '@/core/hooks';
 import { ThemedText, Button, Input } from '@/core/components';
 import { mockApi } from '@/features/elections/service';
 import { useResultsStore } from '@/features/auth/store';
@@ -20,8 +19,6 @@ export default function SubmitResultScreen() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const { addSubmission } = useResultsStore();
-
-  useDismissKeyboardOnBlur();
 
   useEffect(() => {
     (async () => {

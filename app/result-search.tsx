@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import { ScreenView } from '@/core/components/ScreenView';
-import { useDismissKeyboardOnBlur } from '@/core/hooks';
 import { ThemedText, Card, EmptyState, Input } from '@/core/components';
 import { mockApi } from '@/features/elections/service';
 import { useResultsStore } from '@/features/auth/store';
@@ -12,8 +11,6 @@ export default function ResultSearchScreen() {
   const [results, setResults] = useState<ResultSubmission[]>([]);
   const [search, setSearch] = useState('');
   const { submissions } = useResultsStore();
-
-  useDismissKeyboardOnBlur();
 
   useEffect(() => {
     mockApi.getResults().then(setResults);
@@ -48,7 +45,7 @@ export default function ResultSearchScreen() {
               <ThemedText variant="body" style={{ fontWeight: '600' }}>
                 {result.pollingUnitName}
               </ThemedText>
-              <ThemedText variant="caption" color="textSecondary" style={{ marginTop: 2 }}>
+              <ThemedText variant="caption" color="textSecondary" style={{ marginTop: 4 }}>
                 {result.totalVotesCast.toLocaleString()} votes · {result.status}
               </ThemedText>
               <ThemedText variant="caption" color="textMuted">

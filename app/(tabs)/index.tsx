@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, ScrollView, View } from 'react-native';
 import { ScreenView } from '@/core/components/ScreenView';
-import { useDismissKeyboardOnBlur } from '@/core/hooks';
 import { ThemedText, Card, EmptyState } from '@/core/components';
 import { Ionicons } from '@expo/vector-icons';
 import { mockApi } from '@/features/elections/service';
@@ -58,8 +57,6 @@ export default function DashboardScreen() {
   const totalPUs = 2500;
   const reportingPct = Math.round((totalReportingPUs / totalPUs) * 100);
 
-  useDismissKeyboardOnBlur();
-
   return (
     <ScreenView scrollable keyboardShouldPersistTaps="handled">
       <View style={{ paddingBottom: spacing.xxl }}>
@@ -108,7 +105,7 @@ export default function DashboardScreen() {
               <ThemedText variant="body" style={{ fontWeight: '600' }}>
                 {election.position} - {election.electoralArea}
               </ThemedText>
-              <ThemedText variant="caption" color="textSecondary" style={{ marginTop: 2 }}>
+              <ThemedText variant="caption" color="textSecondary" style={{ marginTop: 4 }}>
                 {election.electionDate} · {election.status}
               </ThemedText>
             </Card>
@@ -173,8 +170,8 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   severityDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
   },
 });

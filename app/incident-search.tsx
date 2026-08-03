@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import { ScreenView } from '@/core/components/ScreenView';
-import { useDismissKeyboardOnBlur } from '@/core/hooks';
 import { ThemedText, Card, EmptyState, Input } from '@/core/components';
 import { mockApi } from '@/features/elections/service';
 import { IncidentReport } from '@/features/auth/store';
@@ -12,8 +11,6 @@ export default function IncidentSearchScreen() {
   const [incidents, setIncidents] = useState<IncidentReport[]>([]);
   const [search, setSearch] = useState('');
   const { incidents: storeIncidents } = useIncidentsStore();
-
-  useDismissKeyboardOnBlur();
 
   useEffect(() => {
     mockApi.getIncidents().then(setIncidents);
@@ -48,7 +45,7 @@ export default function IncidentSearchScreen() {
               <ThemedText variant="body" style={{ fontWeight: '600' }}>
                 {incident.category.replace(/_/g, ' ')}
               </ThemedText>
-              <ThemedText variant="caption" color="textSecondary" style={{ marginTop: 2 }}>
+              <ThemedText variant="caption" color="textSecondary" style={{ marginTop: 4 }}>
                 {incident.electoralArea}
               </ThemedText>
               <ThemedText variant="caption" color="textMuted">

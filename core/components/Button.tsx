@@ -40,7 +40,7 @@ export function Button({
   const colors = Colors[scheme];
 
   const sizeStyles = {
-    sm: { paddingVertical: spacing.sm, paddingHorizontal: spacing.md, height: 36 },
+    sm: { paddingVertical: spacing.sm, paddingHorizontal: spacing.md, height: 40 },
     md: { paddingVertical: spacing.md, paddingHorizontal: spacing.lg, height: 48 },
     lg: { paddingVertical: spacing.lg, paddingHorizontal: spacing.xl, height: 56 },
   };

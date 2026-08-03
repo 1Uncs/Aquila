@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { KeyboardAvoidingView, Platform } from 'react-native';
 import { ScreenView } from '@/core/components/ScreenView';
-import { useDismissKeyboardOnBlur } from '@/core/hooks';
 import { ThemedText, Input, Button } from '@/core/components';
 import { spacing } from '@/constants/tokens';
 import { login } from '@/features/auth/service';
@@ -11,8 +10,6 @@ export default function LoginScreen() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-
-  useDismissKeyboardOnBlur();
 
   const handleLogin = async () => {
     if (!email.trim() || !password.trim()) {

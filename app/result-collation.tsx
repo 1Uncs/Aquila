@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { ScreenView } from '@/core/components/ScreenView';
-import { useDismissKeyboardOnBlur } from '@/core/hooks';
 import { ThemedText, Card, EmptyState, Button } from '@/core/components';
 import { mockApi } from '@/features/elections/service';
 import { useResultsStore } from '@/features/auth/store';
@@ -39,8 +38,6 @@ export default function CollationScreen() {
       votes,
       pct: totalVotes > 0 ? ((votes / totalVotes) * 100).toFixed(1) : '0.0',
     }));
-
-  useDismissKeyboardOnBlur();
 
   return (
     <ScreenView scrollable keyboardShouldPersistTaps="handled">
@@ -99,6 +96,6 @@ export default function CollationScreen() {
 const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
   rankBadge: { width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
-  progressTrack: { height: 6, borderRadius: 3, marginTop: spacing.sm, overflow: 'hidden' },
-  progressFill: { height: '100%', borderRadius: 3 },
+  progressTrack: { height: 8, borderRadius: 4, marginTop: spacing.sm, overflow: 'hidden' },
+  progressFill: { height: '100%', borderRadius: 4 },
 });

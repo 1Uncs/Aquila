@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, ScrollView, Pressable, PressableStateCallbackType, View } from 'react-native';
 import { ScreenView } from '@/core/components/ScreenView';
-import { useDismissKeyboardOnBlur } from '@/core/hooks';
 import { ThemedText, Card, EmptyState } from '@/core/components';
 import { Ionicons } from '@expo/vector-icons';
 import { mockApi } from '@/features/elections/service';
@@ -42,8 +41,6 @@ export default function IncidentsScreen() {
     HIGH: colors.error,
     CRITICAL: colors.critical,
   };
-
-  useDismissKeyboardOnBlur();
 
   return (
     <ScreenView scrollable keyboardShouldPersistTaps="handled">
@@ -108,13 +105,13 @@ export default function IncidentsScreen() {
                   <ThemedText variant="body" style={{ fontWeight: '600' }}>
                     {incident.category.replace(/_/g, ' ')}
                   </ThemedText>
-                  <ThemedText variant="caption" color="textSecondary" style={{ marginTop: 2 }}>
+                  <ThemedText variant="caption" color="textSecondary" style={{ marginTop: 4 }}>
                     {incident.electoralArea}
                   </ThemedText>
                   <ThemedText variant="caption" color="textMuted">
                     {incident.description.slice(0, 80)}{incident.description.length > 80 ? '...' : ''}
                   </ThemedText>
-                  <ThemedText variant="caption" color="textMuted" style={{ marginTop: 2 }}>
+                  <ThemedText variant="caption" color="textMuted" style={{ marginTop: 4 }}>
                     {new Date(incident.reportedAt).toLocaleString()} · {incident.status}
                   </ThemedText>
                 </View>
@@ -143,9 +140,8 @@ const styles = StyleSheet.create({
     borderRadius: radius.md,
   },
   severityDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    marginTop: 4,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
   },
 });

@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, Pressable, PressableStateCallbackType, View } from 'react-native';
 import { ScreenView } from '@/core/components/ScreenView';
-import { useDismissKeyboardOnBlur } from '@/core/hooks';
 import { ThemedText, Card, Button } from '@/core/components';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuthStore } from '@/features/auth/store';
@@ -36,8 +35,6 @@ export default function ProfileTabScreen() {
     { label: 'Political Parties', icon: 'people-outline', route: ROUTES.PARTIES },
     { label: 'Users', icon: 'person-add-outline', route: ROUTES.USERS },
   ];
-
-  useDismissKeyboardOnBlur();
 
   return (
     <ScreenView scrollable keyboardShouldPersistTaps="handled">

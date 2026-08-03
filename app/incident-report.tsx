@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { ScrollView, View } from 'react-native';
 import { ScreenView } from '@/core/components/ScreenView';
-import { useDismissKeyboardOnBlur } from '@/core/hooks';
 import { ThemedText, Input, Button } from '@/core/components';
 import { IncidentReport } from '@/features/auth/store';
 import { useIncidentsStore } from '@/features/auth/store';
@@ -24,8 +23,6 @@ export default function ReportIncidentScreen() {
   const [electoralArea, setElectoralArea] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const { addIncident } = useIncidentsStore();
-
-  useDismissKeyboardOnBlur();
 
   const handleSubmit = async () => {
     if (!description.trim() || !electoralArea.trim()) return;

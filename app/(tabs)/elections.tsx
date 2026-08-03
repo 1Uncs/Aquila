@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { router } from 'expo-router';
 import { StyleSheet, ScrollView, Pressable, PressableStateCallbackType, View } from 'react-native';
 import { ScreenView } from '@/core/components/ScreenView';
-import { useDismissKeyboardOnBlur } from '@/core/hooks';
 import { ThemedText, Card, EmptyState } from '@/core/components';
 import { mockApi } from '@/features/elections/service';
 import { Election, ElectionCycle } from '@/features/auth/store';
@@ -44,8 +43,6 @@ export default function ElectionsScreen() {
     COMPLETED: colors.primary,
     ARCHIVED: colors.textSecondary,
   };
-
-  useDismissKeyboardOnBlur();
 
   return (
     <ScreenView scrollable keyboardShouldPersistTaps="handled">
@@ -102,7 +99,7 @@ export default function ElectionsScreen() {
                   <ThemedText variant="body" style={{ fontWeight: '600' }}>
                     {election.position}
                   </ThemedText>
-                  <ThemedText variant="caption" color="textSecondary" style={{ marginTop: 2 }}>
+                  <ThemedText variant="caption" color="textSecondary" style={{ marginTop: 4 }}>
                     {election.electoralArea} · {election.electoralAreaType}
                   </ThemedText>
                   <ThemedText variant="caption" color="textMuted">
