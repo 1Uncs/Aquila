@@ -1,13 +1,11 @@
 import React, { useState } from 'react';
-import { KeyboardAvoidingView, Platform } from 'react-native';
+import { Keyboard, TouchableWithoutFeedback, Platform, KeyboardAvoidingView, ScrollView, View } from 'react-native';
 import { ScreenView } from '@/core/components/ScreenView';
 import { ThemedText, Input, Button } from '@/core/components';
-import { useDismissKeyboardOnBlur } from '@/core/hooks';
 import { spacing } from '@/constants/tokens';
 import { login } from '@/features/auth/service';
 
 export default function LoginScreen() {
-  useDismissKeyboardOnBlur();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -29,15 +27,36 @@ export default function LoginScreen() {
     }
   };
 
+  const launchDemo = async (role: 'admin' | 'agent') => {
+    setLoading(true);
+    setError('');
+    try {
+      const demoEmail = role === 'admin' ? 'admin@aquila.ng' : 'agent@aquila.ng';
+      await login(demoEmail, 'demo');
+    } catch {
+      setError('Demo login failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <ScreenView>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        style={{ flex: 1, justifyContent: 'center' }}
-      >
-        <ThemedText variant="xxl" style={{ textAlign: 'center', marginBottom: spacing.sm }}>
-          Aquila
-        </ThemedText>
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <ScreenView>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          enabled={Platform.OS === 'ios'}
+          style={{ flex: 1, justifyContent: 'center' }}
+        >
+          <ScrollView
+            keyboardShouldPersistTaps="handled"
+            keyboardDismissMode="on-drag"
+            contentInsetAdjustmentBehavior="automatic"
+            contentContainerStyle={{ paddingBottom: spacing.xxl, justifyContent: 'center', flexGrow: 1 }}
+          >
+            <ThemedText variant="xxl" style={{ textAlign: 'center', marginBottom: spacing.sm }}>
+              Aquila
+            </ThemedText>
         <ThemedText
           variant="caption"
           color="textSecondary"
@@ -77,14 +96,33 @@ export default function LoginScreen() {
 
         <Button label="Sign In" onPress={handleLogin} loading={loading} fullWidth style={{ marginHorizontal: 16 }} />
 
+        <View style={{ flexDirection: 'row', gap: spacing.sm, marginHorizontal: 16, marginTop: spacing.md }}>
+          <Button
+            label="Admin Demo"
+            variant="outline"
+            onPress={() => launchDemo('admin')}
+            loading={loading}
+            style={{ flex: 1 }}
+          />
+          <Button
+            label="Agent Demo"
+            variant="ghost"
+            onPress={() => launchDemo('agent')}
+            loading={loading}
+            style={{ flex: 1 }}
+          />
+        </View>
+
         <ThemedText
           variant="caption"
           color="textMuted"
           style={{ textAlign: 'center', marginTop: spacing.lg }}
         >
-          Demo: use admin@aquila.ng or any email
+          Or enter any email/password manually
         </ThemedText>
-      </KeyboardAvoidingView>
-    </ScreenView>
+      </ScrollView>
+    </KeyboardAvoidingView>
+  </ScreenView>
+</TouchableWithoutFeedback>
   );
 }

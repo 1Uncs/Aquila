@@ -3,7 +3,7 @@ import { useColorScheme } from '@/core/hooks/useColorScheme';
 import Colors from '@/constants/colors';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from './ThemedText';
-import { radius, spacing } from '@/constants/tokens';
+import { radius, spacing, border } from '@/constants/tokens';
 
 type EmptyStateProps = {
   icon: keyof typeof Ionicons.glyphMap;
@@ -74,7 +74,7 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.xxl,
   },
   ghost: {
-    borderWidth: 2,
+    borderWidth: border.thick,
     borderColor: '#C5C9D4',
     borderStyle: 'dashed',
     borderRadius: radius.lg,

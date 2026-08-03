@@ -98,6 +98,7 @@ export const mockApi = {
       name: email.split('@')[0] ?? email,
       role: email.includes('admin') ? 'ADMIN' : 'FIELD_AGENT',
       assignedLocations: ['s25'],
+      token: `mock-token-${email}-${Date.now()}`,
     };
   },
 

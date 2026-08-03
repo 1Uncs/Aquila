@@ -3,34 +3,27 @@ import { router } from 'expo-router';
 import { StyleSheet, ScrollView, Pressable, PressableStateCallbackType, View } from 'react-native';
 import { ScreenView } from '@/core/components/ScreenView';
 import { ThemedText, Card, EmptyState } from '@/core/components';
-import { mockApi } from '@/features/elections/service';
-import { Election, ElectionCycle } from '@/features/auth/store';
 import { useElectionsStore } from '@/features/auth/store';
 import { ROUTES } from '@/constants/routes';
-import { spacing, radius } from '@/constants/tokens';
+import { spacing, radius, border } from '@/constants/tokens';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
+import { useElectionsQuery, useElectionCyclesQuery } from '@/features/elections/hooks';
 import Colors from '@/constants/colors';
 
 export default function ElectionsScreen() {
-  const [cycles, setCycles] = useState<ElectionCycle[]>([]);
-  const [elections, setElections] = useState<Election[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: cycles = [], isLoading: cyclesLoading } = useElectionCyclesQuery();
+  const { data: elections = [], isLoading: electionsLoading } = useElectionsQuery();
   const [selectedCycle, setSelectedCycle] = useState<string | null>(null);
   const scheme = useColorScheme() ?? 'light';
   const colors = Colors[scheme];
 
+  const loading = cyclesLoading || electionsLoading;
+
   useEffect(() => {
-    (async () => {
-      try {
-        const [c, e] = await Promise.all([mockApi.getElectionCycles(), mockApi.getElections()]);
-        setCycles(c);
-        setElections(e);
-        if (c.length > 0) setSelectedCycle(c[0]!.id);
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, []);
+    if (cycles.length > 0 && !selectedCycle) {
+      setSelectedCycle(cycles[0]!.id);
+    }
+  }, [cycles, selectedCycle]);
 
   const filteredElections = selectedCycle
     ? elections.filter((e) => e.cycleId === selectedCycle)
@@ -91,7 +84,7 @@ export default function ElectionsScreen() {
               pressable
               onPress={() => {
                 useElectionsStore.getState().setSelectedElectionId(election.id);
-                router.push({ pathname: ROUTES.ELECTION_DETAIL, params: { id: election.id } } as any);
+                router.push({ pathname: ROUTES.ELECTION_DETAIL, params: { id: election.id } });
               }}
             >
               <View style={styles.row}>
@@ -126,11 +119,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
     borderRadius: radius.full,
-    borderWidth: 1,
+    borderWidth: border.thin,
   },
   statusBadge: {
     paddingHorizontal: spacing.sm,
-    paddingVertical: 4,
+    paddingVertical: spacing.xs,
     borderRadius: radius.sm,
   },
 });

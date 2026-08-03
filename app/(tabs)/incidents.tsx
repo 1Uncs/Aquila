@@ -4,34 +4,24 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { ScreenView } from '@/core/components/ScreenView';
 import { ThemedText, Card, EmptyState } from '@/core/components';
-import { mockApi } from '@/features/elections/service';
-import { IncidentReport } from '@/features/auth/store';
-import { IncidentSeverity } from '@/types';
 import { useIncidentsStore } from '@/features/auth/store';
 import { ROUTES } from '@/constants/routes';
-import { spacing, radius } from '@/constants/tokens';
+import { spacing, radius, border } from '@/constants/tokens';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
+import { useIncidentsQuery } from '@/features/elections/hooks';
 import Colors from '@/constants/colors';
+import { IncidentSeverity } from '@/types';
 
 export default function IncidentsScreen() {
-  const [incidents, setIncidents] = useState<IncidentReport[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<IncidentSeverity | 'ALL'>('ALL');
+  const { data: incidents = [], isLoading: loading } = useIncidentsQuery();
   const { setIncidents: storeSetIncidents } = useIncidentsStore();
+  const [filter, setFilter] = useState<IncidentSeverity | 'ALL'>('ALL');
   const scheme = useColorScheme() ?? 'light';
   const colors = Colors[scheme];
 
   useEffect(() => {
-    (async () => {
-      try {
-        const data = await mockApi.getIncidents();
-        setIncidents(data);
-        storeSetIncidents(data);
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, []);
+    storeSetIncidents(incidents);
+  }, [incidents, storeSetIncidents]);
 
   const filtered = filter === 'ALL' ? incidents : incidents.filter((i) => i.severity === filter);
 
@@ -75,14 +65,14 @@ export default function IncidentsScreen() {
 
         <View style={{ flexDirection: 'row', gap: spacing.sm, marginHorizontal: 16, marginBottom: spacing.lg }}>
           <Pressable
-            onPress={() => router.push(ROUTES.INCIDENT_REPORT as any)}
+            onPress={() => router.push(ROUTES.INCIDENT_REPORT)}
             style={[styles.actionBtn, { backgroundColor: colors.accent }]}
           >
             <Ionicons name="add-outline" size={18} color="#fff" />
             <ThemedText variant="label" style={{ color: '#fff', marginLeft: 4 }}>Report</ThemedText>
           </Pressable>
           <Pressable
-            onPress={() => router.push(ROUTES.INCIDENT_SEARCH as any)}
+            onPress={() => router.push(ROUTES.INCIDENT_SEARCH)}
             style={[styles.actionBtn, { backgroundColor: colors.secondary }]}
           >
             <Ionicons name="search-outline" size={18} color="#fff" />
@@ -129,7 +119,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
     borderRadius: radius.full,
-    borderWidth: 1,
+    borderWidth: border.thin,
   },
   actionBtn: {
     flex: 1,
@@ -140,8 +130,8 @@ const styles = StyleSheet.create({
     borderRadius: radius.md,
   },
   severityDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+    width: spacing.sm,
+    height: spacing.sm,
+    borderRadius: radius.sm,
   },
 });

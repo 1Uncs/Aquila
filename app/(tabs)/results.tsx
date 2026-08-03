@@ -1,35 +1,25 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { StyleSheet, ScrollView, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { ScreenView } from '@/core/components/ScreenView';
 import { ThemedText, Card, EmptyState, DebouncedPressable } from '@/core/components';
-import { mockApi } from '@/features/elections/service';
 import { useResultsStore } from '@/features/auth/store';
 import { ROUTES } from '@/constants/routes';
-import { spacing, radius, shadows } from '@/constants/tokens';
+import { spacing, radius, shadows, sizes } from '@/constants/tokens';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
+import { useResultsQuery } from '@/features/elections/hooks';
 import Colors from '@/constants/colors';
-import { ResultSubmission } from '@/features/auth/store';
 
 export default function ResultsScreen() {
-  const [results, setResults] = useState<ResultSubmission[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: results = [], isLoading: loading } = useResultsQuery();
   const { setSubmissions } = useResultsStore();
   const scheme = useColorScheme() ?? 'light';
   const colors = Colors[scheme];
 
   useEffect(() => {
-    (async () => {
-      try {
-        const data = await mockApi.getResults();
-        setResults(data);
-        setSubmissions(data);
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, []);
+    setSubmissions(results);
+  }, [results, setSubmissions]);
 
   const totalVotes = results.reduce((sum, r) => sum + r.totalVotesCast, 0);
 
@@ -72,14 +62,14 @@ export default function ResultsScreen() {
 
         <View style={{ flexDirection: 'row', gap: spacing.sm, marginHorizontal: 16, marginBottom: spacing.lg }}>
           <DebouncedPressable
-            onPress={() => router.push(ROUTES.RESULT_SEARCH as any)}
+            onPress={() => router.push(ROUTES.RESULT_SEARCH)}
             style={[styles.actionBtn, { backgroundColor: colors.primary }]}
           >
             <Ionicons name="search-outline" size={18} color="#fff" />
             <ThemedText variant="label" style={{ color: '#fff', marginLeft: 4 }}>Search</ThemedText>
           </DebouncedPressable>
           <DebouncedPressable
-            onPress={() => router.push(ROUTES.RESULT_COLLATION as any)}
+            onPress={() => router.push(ROUTES.RESULT_COLLATION)}
             style={[styles.actionBtn, { backgroundColor: colors.secondary }]}
           >
             <Ionicons name="bar-chart-outline" size={18} color="#fff" />
@@ -124,7 +114,7 @@ export default function ResultsScreen() {
 }
 
 const styles = StyleSheet.create({
-  statCard: { width: 128, padding: spacing.md, borderRadius: radius.lg, backgroundColor: '#fff' },
+  statCard: { width: sizes.statCard, padding: spacing.md, borderRadius: radius.lg, backgroundColor: '#fff' },
   actionBtn: {
     flex: 1,
     flexDirection: 'row',
@@ -133,6 +123,6 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.md,
     borderRadius: radius.md,
   },
-  progressTrack: { height: 8, borderRadius: 4, overflow: 'hidden' },
-  progressFill: { height: '100%', borderRadius: 4 },
+  progressTrack: { height: spacing.sm, borderRadius: radius.sm, overflow: 'hidden' },
+  progressFill: { height: '100%', borderRadius: radius.sm },
 });

@@ -1,8 +1,8 @@
 import React from 'react';
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { UserRole, ElectionStatus, ResultStatus, IncidentStatus, IncidentSeverity, IncidentCategory } from '@/types';
+import { createMMKVStorage } from '@/core/utils/mmkvStorage';
 
 export interface AuthContextValue {
   user: User | null;
@@ -37,6 +37,7 @@ export interface User {
   role: UserRole;
   assignedLocations?: string[];
   avatarUrl?: string;
+  token?: string;
 }
 
 export interface Election {
@@ -148,7 +149,7 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: 'aquila-auth',
-      storage: createJSONStorage(() => AsyncStorage),
+      storage: createJSONStorage(() => createMMKVStorage()),
     }
   )
 );

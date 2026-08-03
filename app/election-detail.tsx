@@ -4,35 +4,25 @@ import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import { ScreenView } from '@/core/components/ScreenView';
 import { ThemedText, Card, Button, EmptyState } from '@/core/components';
-import { mockApi } from '@/features/elections/service';
 import { ROUTES } from '@/constants/routes';
-import { spacing, shadows, radius } from '@/constants/tokens';
+import { spacing, shadows, radius, sizes } from '@/constants/tokens';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
+import { useElectionDetailQuery, useCandidatesQuery } from '@/features/elections/hooks';
 import Colors from '@/constants/colors';
 
 export default function ElectionDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const [election, setElection] = useState<any>(null);
-  const [candidates, setCandidates] = useState<any[]>([]);
+  const { data: election, isLoading: electionLoading } = useElectionDetailQuery(id);
+  const { data: candidates = [], isLoading: candidatesLoading } = useCandidatesQuery(id);
   const [loading, setLoading] = useState(true);
   const scheme = useColorScheme() ?? 'light';
   const colors = Colors[scheme];
 
   useEffect(() => {
-    (async () => {
-      try {
-        const allElections = await mockApi.getElections();
-        const e = allElections.find((el) => el.id === id);
-        setElection(e);
-        if (e) {
-          const c = await mockApi.getCandidates(e.id);
-          setCandidates(c);
-        }
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, [id]);
+    if (!electionLoading && !candidatesLoading) {
+      setLoading(false);
+    }
+  }, [electionLoading, candidatesLoading]);
 
   if (loading) {
     return (
@@ -96,13 +86,13 @@ export default function ElectionDetailScreen() {
         <View style={{ flexDirection: 'row', gap: spacing.md, marginHorizontal: 16, marginTop: spacing.lg }}>
           <Button
             label="Submit Result"
-            onPress={() => router.push({ pathname: ROUTES.RESULT_SUBMIT, params: { electionId: id } } as any)}
+            onPress={() => router.push({ pathname: ROUTES.RESULT_SUBMIT, params: { electionId: id } })}
             style={{ flex: 1 }}
           />
           <Button
             label="Report Incident"
             variant="outline"
-            onPress={() => router.push({ pathname: ROUTES.INCIDENT_REPORT, params: { electionId: id } } as any)}
+            onPress={() => router.push({ pathname: ROUTES.INCIDENT_REPORT, params: { electionId: id } })}
             style={{ flex: 1 }}
           />
         </View>
@@ -112,7 +102,7 @@ export default function ElectionDetailScreen() {
 }
 
 const styles = StyleSheet.create({
-  headerCard: { marginHorizontal: 16, marginVertical: 16, borderRadius: radius.lg },
+  headerCard: { marginHorizontal: spacing.md, marginVertical: spacing.md, borderRadius: radius.lg },
   row: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
-  avatar: { width: 48, height: 48, borderRadius: 24, alignItems: 'center', justifyContent: 'center' },
+  avatar: { width: sizes.icon, height: sizes.icon, borderRadius: radius.xl, alignItems: 'center', justifyContent: 'center' },
 });

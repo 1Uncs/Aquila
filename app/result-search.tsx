@@ -1,22 +1,15 @@
-import React, { useEffect, useState } from 'react';
-import { View } from 'react-native';
+import React, { useState } from 'react';
+import { Keyboard, TouchableWithoutFeedback, Platform, KeyboardAvoidingView, ScrollView } from 'react-native';
 import { ScreenView } from '@/core/components/ScreenView';
 import { ThemedText, Card, EmptyState, Input } from '@/core/components';
-import { useDismissKeyboardOnBlur } from '@/core/hooks';
-import { mockApi } from '@/features/elections/service';
 import { useResultsStore } from '@/features/auth/store';
-import { ResultSubmission } from '@/features/auth/store';
 import { spacing, shadows } from '@/constants/tokens';
+import { useResultsQuery } from '@/features/elections/hooks';
 
 export default function ResultSearchScreen() {
-  useDismissKeyboardOnBlur();
-  const [results, setResults] = useState<ResultSubmission[]>([]);
+  const { data: results = [] } = useResultsQuery();
   const [search, setSearch] = useState('');
   const { submissions } = useResultsStore();
-
-  useEffect(() => {
-    mockApi.getResults().then(setResults);
-  }, []);
 
   const pool = results.length > 0 ? results : submissions;
   const filtered = search
@@ -24,11 +17,22 @@ export default function ResultSearchScreen() {
     : pool;
 
   return (
-    <ScreenView scrollable keyboardShouldPersistTaps="handled">
-      <View style={{ paddingBottom: spacing.xxl }}>
-        <ThemedText variant="h2" style={{ marginHorizontal: 16, marginTop: spacing.md, marginBottom: spacing.lg }}>
-          Search Results
-        </ThemedText>
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <ScreenView>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          enabled={Platform.OS === 'ios'}
+          style={{ flex: 1 }}
+        >
+          <ScrollView
+            keyboardShouldPersistTaps="handled"
+            keyboardDismissMode="on-drag"
+            contentInsetAdjustmentBehavior="automatic"
+            contentContainerStyle={{ paddingBottom: spacing.xxl }}
+          >
+            <ThemedText variant="h2" style={{ marginHorizontal: 16, marginTop: spacing.md, marginBottom: spacing.lg }}>
+              Search Results
+            </ThemedText>
 
         <Input
           label="Search by Polling Unit"
@@ -55,7 +59,9 @@ export default function ResultSearchScreen() {
             </Card>
           ))
         )}
-      </View>
-    </ScreenView>
+      </ScrollView>
+    </KeyboardAvoidingView>
+  </ScreenView>
+</TouchableWithoutFeedback>
   );
 }

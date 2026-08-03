@@ -1,13 +1,13 @@
-import React, { useEffect, useState } from 'react';
-import { StyleSheet, ScrollView, View } from 'react-native';
+import React from 'react';
+import { ScrollView, View, StyleSheet } from 'react-native';
 import { ScreenView } from '@/core/components/ScreenView';
 import { ThemedText, Card, EmptyState } from '@/core/components';
 import { Ionicons } from '@expo/vector-icons';
-import { mockApi } from '@/features/elections/service';
 import { useAuthStore } from '@/features/auth/store';
 import { ROUTES } from '@/constants/routes';
 import { spacing, radius, shadows } from '@/constants/tokens';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
+import { useElectionsQuery, useIncidentsQuery } from '@/features/elections/hooks';
 import Colors from '@/constants/colors';
 import { router } from 'expo-router';
 
@@ -33,24 +33,14 @@ function StatCard({ icon, label, value, color }: StatCardProps) {
 }
 
 export default function DashboardScreen() {
-  const [loading, setLoading] = useState(true);
-  const [elections, setElections] = useState<any[]>([]);
-  const [recentIncidents, setRecentIncidents] = useState<any[]>([]);
+  const { data: elections = [], isLoading: electionsLoading } = useElectionsQuery();
+  const { data: incidents = [], isLoading: incidentsLoading } = useIncidentsQuery();
   const { user } = useAuthStore();
   const scheme = useColorScheme() ?? 'light';
   const colors = Colors[scheme];
 
-  useEffect(() => {
-    (async () => {
-      try {
-        const [e, i] = await Promise.all([mockApi.getElections(), mockApi.getIncidents()]);
-        setElections(e);
-        setRecentIncidents(i.slice(0, 3));
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, []);
+  const loading = electionsLoading || incidentsLoading;
+  const recentIncidents = incidents.slice(0, 3);
 
   const activeElections = elections.filter((e) => e.status === 'ACTIVE' || e.status === 'SCHEDULED').length;
   const totalReportingPUs = 1874;
@@ -101,7 +91,7 @@ export default function DashboardScreen() {
           <EmptyState icon="calendar-outline" title="No Elections" subtitle="No elections configured yet" />
         ) : (
           elections.map((election) => (
-            <Card key={election.id} pressable onPress={() => router.push({ pathname: ROUTES.ELECTION_DETAIL, params: { id: election.id } } as any)}>
+            <Card key={election.id} pressable onPress={() => router.push({ pathname: ROUTES.ELECTION_DETAIL, params: { id: election.id } })}>
               <ThemedText variant="body" style={{ fontWeight: '600' }}>
                 {election.position} - {election.electoralArea}
               </ThemedText>
@@ -153,25 +143,17 @@ function CardProgressBar({ progress }: { progress: number }) {
 }
 
 const styles = StyleSheet.create({
-  statCard: {
-    width: 160,
-    padding: spacing.md,
-    borderRadius: radius.lg,
-    backgroundColor: '#fff',
+  statCard: { width: 160, padding: spacing.md, borderRadius: radius.lg, backgroundColor: '#fff' },
+  actionBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: spacing.md,
+    borderRadius: radius.md,
   },
-  progressTrack: {
-    height: 8,
-    borderRadius: 4,
-    marginTop: spacing.sm,
-    overflow: 'hidden',
-  },
-  progressFill: {
-    height: '100%',
-    borderRadius: 4,
-  },
-  severityDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-  },
+  progressTrack: { height: spacing.sm, borderRadius: radius.sm, marginTop: spacing.sm, overflow: 'hidden' },
+  progressFill: { height: '100%', borderRadius: radius.sm },
+  severityDot: { width: spacing.sm, height: spacing.sm, borderRadius: radius.sm },
+  row: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
 });

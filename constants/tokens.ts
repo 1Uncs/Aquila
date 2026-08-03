@@ -16,6 +16,18 @@ export const radius = {
   full: 9999,
 };
 
+export const border = {
+  thin: 1,
+  thick: 2,
+} as const;
+
+export const sizes = {
+  icon: 48,
+  avatar: 80,
+  statCard: 128,
+  rankBadge: 32,
+} as const;
+
 export const typography = {
   sizes: {
     xs: 12,

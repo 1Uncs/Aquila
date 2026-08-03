@@ -1,26 +1,23 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { StyleSheet, PressableStateCallbackType, View, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { ScreenView } from '@/core/components/ScreenView';
 import { ThemedText, Card, Button, DebouncedPressable } from '@/core/components';
 import { useAuthStore } from '@/features/auth/store';
-import { mockApi } from '@/features/elections/service';
 import { ROUTES } from '@/constants/routes';
-import { spacing, radius } from '@/constants/tokens';
+import { spacing, radius, border, sizes } from '@/constants/tokens';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
+import { useElectionsQuery } from '@/features/elections/hooks';
 import Colors from '@/constants/colors';
 import { UserRole } from '@/types';
 
 export default function ProfileTabScreen() {
   const { user, logout } = useAuthStore();
-  const [electionCount, setElectionCount] = useState(0);
+  const { data: elections = [] } = useElectionsQuery();
+  const electionCount = elections.length;
   const scheme = useColorScheme() ?? 'light';
   const colors = Colors[scheme];
-
-  useEffect(() => {
-    mockApi.getElections().then((e) => setElectionCount(e.length));
-  }, []);
 
   const roleLabels: Record<UserRole, string> = {
     SUPER_ADMIN: 'Super Administrator',
@@ -60,7 +57,7 @@ export default function ProfileTabScreen() {
         {menuItems.map((item) => (
           <DebouncedPressable
             key={item.label}
-            onPress={() => router.push(item.route as any)}
+            onPress={() => router.push(item.route)}
             style={({ pressed }: PressableStateCallbackType) => [
               styles.menuItem,
               { backgroundColor: colors.card, borderColor: colors.border },
@@ -115,13 +112,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: spacing.xxl,
     paddingHorizontal: spacing.lg,
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
+    borderBottomLeftRadius: radius.xl,
+    borderBottomRightRadius: radius.xl,
   },
   avatar: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+    width: sizes.avatar,
+    height: sizes.avatar,
+    borderRadius: sizes.avatar / 2,
     backgroundColor: 'rgba(255,255,255,0.2)',
     alignItems: 'center',
     justifyContent: 'center',
@@ -132,9 +129,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: spacing.md,
-    marginHorizontal: 16,
-    marginVertical: 4,
+    marginHorizontal: spacing.md,
+    marginVertical: spacing.xs,
     borderRadius: radius.md,
-    borderWidth: 1,
+    borderWidth: border.thin,
   },
 });

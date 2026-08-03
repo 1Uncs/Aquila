@@ -1,23 +1,19 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { ScreenView } from '@/core/components/ScreenView';
 import { ThemedText, Card, EmptyState, Button } from '@/core/components';
-import { mockApi } from '@/features/elections/service';
 import { useResultsStore } from '@/features/auth/store';
 import { router } from 'expo-router';
-import { spacing, shadows } from '@/constants/tokens';
+import { spacing, shadows, radius } from '@/constants/tokens';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
+import { useResultsQuery } from '@/features/elections/hooks';
 import Colors from '@/constants/colors';
 
 export default function CollationScreen() {
-  const [results, setResults] = useState<any[]>([]);
+  const { data: results = [] } = useResultsQuery();
   const { submissions } = useResultsStore();
   const scheme = useColorScheme() ?? 'light';
   const colors = Colors[scheme];
-
-  useEffect(() => {
-    mockApi.getResults().then(setResults);
-  }, []);
 
   const allResults = results.length > 0 ? results : submissions;
   const totalVotesByCandidate: Record<string, number> = {};
@@ -95,7 +91,7 @@ export default function CollationScreen() {
 
 const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
-  rankBadge: { width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
-  progressTrack: { height: 8, borderRadius: 4, marginTop: spacing.sm, overflow: 'hidden' },
-  progressFill: { height: '100%', borderRadius: 4 },
+  rankBadge: { width: spacing.xl, height: spacing.xl, borderRadius: radius.lg, alignItems: 'center', justifyContent: 'center' },
+  progressTrack: { height: spacing.sm, borderRadius: radius.sm, marginTop: spacing.sm, overflow: 'hidden' },
+  progressFill: { height: '100%', borderRadius: radius.sm },
 });

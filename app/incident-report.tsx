@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
-import { ScrollView, View } from 'react-native';
+import { ScrollView, View, Keyboard, TouchableWithoutFeedback, Platform, KeyboardAvoidingView } from 'react-native';
 import { ScreenView } from '@/core/components/ScreenView';
 import { ThemedText, Input, Button } from '@/core/components';
-import { useDismissKeyboardOnBlur } from '@/core/hooks';
 import { IncidentReport } from '@/features/auth/store';
 import { useIncidentsStore } from '@/features/auth/store';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -17,7 +16,6 @@ const CATEGORIES = [
 const SEVERITIES = ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'] as IncidentSeverity[];
 
 export default function ReportIncidentScreen() {
-  useDismissKeyboardOnBlur();
   const { electionId } = useLocalSearchParams<{ electionId?: string }>();
   const [category, setCategory] = useState<IncidentCategory>('OTHER');
   const [severity, setSeverity] = useState<IncidentSeverity>('MEDIUM');
@@ -49,11 +47,22 @@ export default function ReportIncidentScreen() {
   };
 
   return (
-    <ScreenView scrollable keyboardShouldPersistTaps="handled">
-      <View style={{ paddingBottom: spacing.xxl }}>
-        <ThemedText variant="h2" style={{ marginHorizontal: 16, marginTop: spacing.md, marginBottom: spacing.lg }}>
-          Report Incident
-        </ThemedText>
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <ScreenView>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          enabled={Platform.OS === 'ios'}
+          style={{ flex: 1 }}
+        >
+          <ScrollView
+            keyboardShouldPersistTaps="handled"
+            keyboardDismissMode="on-drag"
+            contentInsetAdjustmentBehavior="automatic"
+            contentContainerStyle={{ paddingBottom: spacing.xxl }}
+          >
+            <ThemedText variant="h2" style={{ marginHorizontal: 16, marginTop: spacing.md, marginBottom: spacing.lg }}>
+              Report Incident
+            </ThemedText>
 
         <Input
           label="Electoral Area"
@@ -107,7 +116,9 @@ export default function ReportIncidentScreen() {
           <Button label="Cancel" variant="outline" onPress={() => router.back()} style={{ flex: 1 }} />
           <Button label="Submit" onPress={handleSubmit} loading={submitting} style={{ flex: 1 }} />
         </View>
-      </View>
-    </ScreenView>
+      </ScrollView>
+    </KeyboardAvoidingView>
+  </ScreenView>
+</TouchableWithoutFeedback>
   );
 }

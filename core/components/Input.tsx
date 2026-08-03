@@ -10,7 +10,7 @@ import {
 import { useColorScheme } from '@/core/hooks/useColorScheme';
 import Colors from '@/constants/colors';
 import { ThemedText } from './ThemedText';
-import { radius, spacing } from '@/constants/tokens';
+import { radius, spacing, border } from '@/constants/tokens';
 import { Ionicons } from '@expo/vector-icons';
 
 type InputProps = {
@@ -89,7 +89,7 @@ const styles = StyleSheet.create({
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderWidth: 1.5,
+    borderWidth: border.thick,
     borderRadius: radius.md,
     paddingHorizontal: spacing.md,
     height: 48,

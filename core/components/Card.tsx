@@ -2,7 +2,7 @@ import { StyleSheet, ViewStyle, View, PressableStateCallbackType } from 'react-n
 import { DebouncedPressable } from './DebouncedPressable';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
 import Colors from '@/constants/colors';
-import { radius, shadows, opacities } from '@/constants/tokens';
+import { radius, shadows, opacities, border, spacing } from '@/constants/tokens';
 
 type CardProps = {
   children: React.ReactNode;
@@ -66,9 +66,9 @@ export function Card({
 const styles = StyleSheet.create({
   card: {
     borderRadius: radius.lg,
-    borderWidth: 1,
-    padding: 16,
-    marginHorizontal: 16,
+    borderWidth: border.thick,
+    padding: spacing.md,
+    marginHorizontal: spacing.md,
     marginVertical: 6,
   },
 });

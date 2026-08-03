@@ -1,22 +1,15 @@
-import React, { useEffect, useState } from 'react';
-import { View } from 'react-native';
+import React, { useState } from 'react';
+import { Keyboard, TouchableWithoutFeedback, Platform, KeyboardAvoidingView, ScrollView } from 'react-native';
 import { ScreenView } from '@/core/components/ScreenView';
 import { ThemedText, Card, EmptyState, Input } from '@/core/components';
-import { useDismissKeyboardOnBlur } from '@/core/hooks';
-import { mockApi } from '@/features/elections/service';
-import { IncidentReport } from '@/features/auth/store';
 import { useIncidentsStore } from '@/features/auth/store';
 import { spacing, shadows } from '@/constants/tokens';
+import { useIncidentsQuery } from '@/features/elections/hooks';
 
 export default function IncidentSearchScreen() {
-  useDismissKeyboardOnBlur();
-  const [incidents, setIncidents] = useState<IncidentReport[]>([]);
+  const { data: incidents = [] } = useIncidentsQuery();
   const [search, setSearch] = useState('');
   const { incidents: storeIncidents } = useIncidentsStore();
-
-  useEffect(() => {
-    mockApi.getIncidents().then(setIncidents);
-  }, []);
 
   const pool = incidents.length > 0 ? incidents : storeIncidents;
   const filtered = search
@@ -24,11 +17,22 @@ export default function IncidentSearchScreen() {
     : pool;
 
   return (
-    <ScreenView scrollable keyboardShouldPersistTaps="handled">
-      <View style={{ paddingBottom: spacing.xxl }}>
-        <ThemedText variant="h2" style={{ marginHorizontal: 16, marginTop: spacing.md, marginBottom: spacing.lg }}>
-          Search Incidents
-        </ThemedText>
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <ScreenView>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          enabled={Platform.OS === 'ios'}
+          style={{ flex: 1 }}
+        >
+          <ScrollView
+            keyboardShouldPersistTaps="handled"
+            keyboardDismissMode="on-drag"
+            contentInsetAdjustmentBehavior="automatic"
+            contentContainerStyle={{ paddingBottom: spacing.xxl }}
+          >
+            <ThemedText variant="h2" style={{ marginHorizontal: 16, marginTop: spacing.md, marginBottom: spacing.lg }}>
+              Search Incidents
+            </ThemedText>
 
         <Input
           label="Search"
@@ -55,7 +59,9 @@ export default function IncidentSearchScreen() {
             </Card>
           ))
         )}
-      </View>
-    </ScreenView>
+      </ScrollView>
+    </KeyboardAvoidingView>
+  </ScreenView>
+</TouchableWithoutFeedback>
   );
 }

@@ -1,22 +1,17 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { ScreenView } from '@/core/components/ScreenView';
 import { ThemedText, Card, EmptyState } from '@/core/components';
 import { Ionicons } from '@expo/vector-icons';
-import { mockApi } from '@/features/elections/service';
-import { PoliticalParty } from '@/features/auth/store';
-import { spacing, shadows } from '@/constants/tokens';
+import { usePartiesQuery } from '@/features/elections/hooks';
+import { spacing, shadows, radius, sizes } from '@/constants/tokens';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
 import Colors from '@/constants/colors';
 
 export default function PartiesScreen() {
-  const [parties, setParties] = useState<PoliticalParty[]>([]);
+  const { data: parties = [] } = usePartiesQuery();
   const scheme = useColorScheme() ?? 'light';
   const colors = Colors[scheme];
-
-  useEffect(() => {
-    mockApi.getParties().then(setParties);
-  }, []);
 
   return (
     <ScreenView scrollable keyboardShouldPersistTaps="handled">
@@ -63,9 +58,9 @@ export default function PartiesScreen() {
 
 const styles = StyleSheet.create({
   partyBadge: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: sizes.icon,
+    height: sizes.icon,
+    borderRadius: radius.xl,
     alignItems: 'center',
     justifyContent: 'center',
   },

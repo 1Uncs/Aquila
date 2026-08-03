@@ -1,41 +1,22 @@
-import React, { useEffect, useState } from 'react';
-import { View } from 'react-native';
+import React, { useState } from 'react';
+import { View, Keyboard, TouchableWithoutFeedback, Platform, KeyboardAvoidingView, ScrollView } from 'react-native';
 import { ScreenView } from '@/core/components/ScreenView';
 import { ThemedText, Button, Input } from '@/core/components';
-import { useDismissKeyboardOnBlur } from '@/core/hooks';
-import { mockApi } from '@/features/elections/service';
 import { useResultsStore } from '@/features/auth/store';
 import { router, useLocalSearchParams } from 'expo-router';
 import { spacing } from '@/constants/tokens';
-import { Candidate, PollingUnit } from '@/features/auth/store';
+import { useCandidatesQuery, usePollingUnitsQuery } from '@/features/elections/hooks';
 
 export default function SubmitResultScreen() {
-  useDismissKeyboardOnBlur();
   const { electionId } = useLocalSearchParams<{ electionId: string }>();
-  const [candidates, setCandidates] = useState<Candidate[]>([]);
-  const [pollingUnits, setPollingUnits] = useState<PollingUnit[]>([]);
+  const { data: candidates = [], isLoading: candidatesLoading } = useCandidatesQuery(electionId ?? '');
+  const { data: pollingUnits = [] } = usePollingUnitsQuery();
   const [selectedPU, setSelectedPU] = useState('');
   const [votes, setVotes] = useState<Record<string, string>>({});
   const [rejected, setRejected] = useState('');
   const [accredited, setAccredited] = useState('');
-  const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const { addSubmission } = useResultsStore();
-
-  useEffect(() => {
-    (async () => {
-      try {
-        const [c, p] = await Promise.all([
-          electionId ? mockApi.getCandidates(electionId) : Promise.resolve([]),
-          mockApi.getPollingUnits(),
-        ]);
-        setCandidates(c);
-        setPollingUnits(p);
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, [electionId]);
 
   const handleSubmit = async () => {
     if (!selectedPU) return;
@@ -63,7 +44,7 @@ export default function SubmitResultScreen() {
     router.back();
   };
 
-  if (loading) {
+  if (candidatesLoading) {
     return (
       <ScreenView>
         <ThemedText variant="body" color="textSecondary" style={{ textAlign: 'center', marginTop: spacing.xxl }}>
@@ -74,11 +55,22 @@ export default function SubmitResultScreen() {
   }
 
   return (
-    <ScreenView scrollable keyboardShouldPersistTaps="handled">
-      <View style={{ paddingBottom: spacing.xxl }}>
-        <ThemedText variant="h2" style={{ marginHorizontal: 16, marginTop: spacing.md, marginBottom: spacing.lg }}>
-          Submit Result
-        </ThemedText>
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <ScreenView>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          enabled={Platform.OS === 'ios'}
+          style={{ flex: 1 }}
+        >
+          <ScrollView
+            keyboardShouldPersistTaps="handled"
+            keyboardDismissMode="on-drag"
+            contentInsetAdjustmentBehavior="automatic"
+            contentContainerStyle={{ paddingBottom: spacing.xxl }}
+          >
+            <ThemedText variant="h2" style={{ marginHorizontal: 16, marginTop: spacing.md, marginBottom: spacing.lg }}>
+              Submit Result
+            </ThemedText>
 
         <Input
           label="Polling Unit"
@@ -137,7 +129,9 @@ export default function SubmitResultScreen() {
             style={{ flex: 1 }}
           />
         </View>
-      </View>
-    </ScreenView>
+      </ScrollView>
+    </KeyboardAvoidingView>
+  </ScreenView>
+</TouchableWithoutFeedback>
   );
 }

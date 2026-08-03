@@ -3,7 +3,7 @@ import { StyleSheet, View } from 'react-native';
 import { ScreenView } from '@/core/components/ScreenView';
 import { ThemedText, Card } from '@/core/components';
 import { Ionicons } from '@expo/vector-icons';
-import { spacing, shadows } from '@/constants/tokens';
+import { spacing, shadows, radius, sizes } from '@/constants/tokens';
 
 type RoleDef = {
   role: string;
@@ -53,9 +53,9 @@ export default function UsersScreen() {
 
 const styles = StyleSheet.create({
   roleIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: sizes.icon,
+    height: sizes.icon,
+    borderRadius: radius.xl,
     alignItems: 'center',
     justifyContent: 'center',
   },

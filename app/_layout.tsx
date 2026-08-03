@@ -1,5 +1,5 @@
 import { enableScreens } from 'react-native-screens';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { StyleSheet, Platform } from 'react-native';
 import { InteractionManager } from 'react-native';
 import { Stack, useRouter, useSegments, useRootNavigationState } from 'expo-router';
@@ -8,12 +8,9 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from '@/core/utils/queryClient';
 import { AuthProvider, useAuthStore } from '@/features/auth/store';
+import { ToastProvider } from '@/core/components/ToastProvider';
 
 enableScreens();
-
-export {
-  ErrorBoundary,
-} from 'expo-router';
 
 export const unstable_settings = {
   initialRouteName: '(auth)',
@@ -25,7 +22,9 @@ export default function RootLayout() {
       <SafeAreaProvider>
         <QueryClientProvider client={queryClient}>
           <AuthProvider>
-            <RootLayoutNav />
+            <ToastProvider>
+              <RootLayoutNav />
+            </ToastProvider>
           </AuthProvider>
         </QueryClientProvider>
       </SafeAreaProvider>
@@ -39,6 +38,7 @@ function RootLayoutNav() {
   const navigationState = useRootNavigationState();
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const [isNavigationReady, setIsNavigationReady] = useState(false);
+  const lastTargetRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (navigationState?.key) {
@@ -48,6 +48,9 @@ function RootLayoutNav() {
 
   useEffect(() => {
     if (!isNavigationReady) return;
+    const target = !isAuthenticated ? '/(auth)/login' : isAuthenticated && segments[0] === '(auth)' ? '/(tabs)/index' : null;
+    if (!target || lastTargetRef.current === target) return;
+    lastTargetRef.current = target;
     const task = InteractionManager.runAfterInteractions(() => {
       const inAuthGroup = segments[0] === '(auth)';
       if (!isAuthenticated && !inAuthGroup) {

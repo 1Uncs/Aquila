@@ -19,9 +19,13 @@ export default [
       globals: {
         React: 'readonly',
         setTimeout: 'readonly',
+        clearTimeout: 'readonly',
         require: 'readonly',
         module: 'readonly',
         __dirname: 'readonly',
+        AbortController: 'readonly',
+        process: 'readonly',
+        console: 'readonly',
       },
     },
     plugins: {

@@ -1,21 +1,17 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { ScreenView } from '@/core/components/ScreenView';
 import { ThemedText, Card, EmptyState } from '@/core/components';
 import { Ionicons } from '@expo/vector-icons';
-import { mockApi } from '@/features/elections/service';
-import { spacing, radius, shadows } from '@/constants/tokens';
+import { useStatesQuery } from '@/features/elections/hooks';
+import { spacing, radius, shadows, border } from '@/constants/tokens';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
 import Colors from '@/constants/colors';
 
 export default function LocationsScreen() {
-  const [states, setStates] = useState<{ id: string; name: string; code: string }[]>([]);
+  const { data: states = [] } = useStatesQuery();
   const scheme = useColorScheme() ?? 'light';
   const colors = Colors[scheme];
-
-  useEffect(() => {
-    mockApi.getStates().then(setStates);
-  }, []);
 
   return (
     <ScreenView scrollable keyboardShouldPersistTaps="handled">
@@ -107,6 +103,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
     borderRadius: radius.full,
-    borderWidth: 1,
+    borderWidth: border.thin,
   },
 });
