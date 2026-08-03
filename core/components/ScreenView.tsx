@@ -1,4 +1,4 @@
-import { View, ViewStyle, StatusBar, Platform, ScrollView, ScrollViewProps } from 'react-native';
+import { View, ViewStyle, Platform, ScrollView, ScrollViewProps } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
 import Colors from '@/constants/colors';
@@ -31,17 +31,9 @@ export function ScreenView({
     paddingBottom: Platform.OS === 'android' ? insets.bottom : 0,
   };
 
-  const header = (
-    <StatusBar
-      barStyle={scheme === 'dark' ? 'light-content' : 'dark-content'}
-      backgroundColor={colors.background}
-    />
-  );
-
   if (scrollable) {
     return (
       <View style={[baseStyle, style]} testID={testID} collapsable={false}>
-        {header}
         <ScrollView
           style={{ flex: 1 }}
           contentContainerStyle={contentContainerStyle}
@@ -54,10 +46,5 @@ export function ScreenView({
     );
   }
 
-  return (
-    <View style={[baseStyle, style]} testID={testID}>
-      {header}
-      {children}
-    </View>
-  );
+  return <View style={[baseStyle, style]} testID={testID}>{children}</View>;
 }
