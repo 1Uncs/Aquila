@@ -1,17 +1,15 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
-import { useEffect } from 'react';
-import { Platform } from 'react-native';
-import 'react-native-reanimated';
-
-import { useColorScheme } from '@/core/hooks/useColorScheme';
-import { AuthProvider } from '@/features/auth/store';
+import { enableScreens } from 'react-native-screens';
+import React, { useEffect } from 'react';
+import { StyleSheet } from 'react-native';
+import { Stack, useRouter, useSegments, useRootNavigationState } from 'expo-router';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from '@/core/utils/queryClient';
+import { AuthProvider, useAuthStore } from '@/features/auth/store';
+import { ErrorBoundary } from 'expo-router';
 
-SplashScreen.preventAutoHideAsync();
+enableScreens();
 
 export {
   ErrorBoundary,
@@ -22,81 +20,53 @@ export const unstable_settings = {
 };
 
 export default function RootLayout() {
-  const [loaded, error] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'), // eslint-disable-line @typescript-eslint/no-require-imports
-  });
-
-  useEffect(() => {
-    if (error) throw error;
-  }, [error]);
-
-  useEffect(() => {
-    if (loaded) {
-      SplashScreen.hideAsync();
-    }
-  }, [loaded]);
-
-  if (!loaded) {
-    return null;
-  }
-
-  return <RootLayoutNav />;
+  return (
+    <GestureHandlerRootView style={styles.root}>
+      <SafeAreaProvider>
+        <QueryClientProvider client={queryClient}>
+          <AuthProvider>
+            <RootLayoutNav />
+          </AuthProvider>
+        </QueryClientProvider>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
+  );
 }
 
 function RootLayoutNav() {
-  const colorScheme = useColorScheme();
-  const iOSHeader = {
-    headerTransparent: true,
-    headerShadowVisible: false,
-    headerBackButtonDisplayMode: 'minimal' as const,
-  };
+  const router = useRouter();
+  const segments = useSegments();
+  const navigationState = useRootNavigationState();
+
+  useEffect(() => {
+    if (navigationState?.routes) {
+      const inAuthGroup = segments[0] === '(auth)';
+      const { isAuthenticated } = useAuthStore.getState();
+      if (!isAuthenticated && !inAuthGroup) {
+        router.replace('/(auth)/login' as any);
+      } else if (isAuthenticated && inAuthGroup) {
+        router.replace('/(tabs)/index' as any);
+      }
+    }
+  }, [segments, navigationState?.routes, router]);
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <Stack>
-            <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-            <Stack.Screen
-              name="election-detail"
-              options={{ ...iOSHeader, headerShown: true, title: 'Election Details' }}
-            />
-            <Stack.Screen
-              name="result-submit"
-              options={{ ...iOSHeader, headerShown: true, title: 'Submit Result' }}
-            />
-            <Stack.Screen
-              name="result-collation"
-              options={{ ...iOSHeader, headerShown: true, title: 'Result Collation' }}
-            />
-            <Stack.Screen
-              name="result-search"
-              options={{ ...iOSHeader, headerShown: true, title: 'Search Results' }}
-            />
-            <Stack.Screen
-              name="incident-report"
-              options={{ ...iOSHeader, headerShown: true, title: 'Report Incident' }}
-            />
-            <Stack.Screen
-              name="incident-search"
-              options={{ ...iOSHeader, headerShown: true, title: 'Search Incidents' }}
-            />
-            <Stack.Screen
-              name="locations"
-              options={{ ...iOSHeader, headerShown: true, title: 'Locations' }}
-            />
-            <Stack.Screen
-              name="parties"
-              options={{ ...iOSHeader, headerShown: true, title: 'Political Parties' }}
-            />
-            <Stack.Screen
-              name="users"
-              options={{ ...iOSHeader, headerShown: true, title: 'User Management' }}
-            />
-          </Stack>
-        </AuthProvider>
-      </QueryClientProvider>
-    </ThemeProvider>
+    <Stack>
+      <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      <Stack.Screen name="election-detail" options={{ headerShown: true, title: 'Election Details' }} />
+      <Stack.Screen name="result-submit" options={{ headerShown: true, title: 'Submit Result' }} />
+      <Stack.Screen name="result-collation" options={{ headerShown: true, title: 'Result Collation' }} />
+      <Stack.Screen name="result-search" options={{ headerShown: true, title: 'Search Results' }} />
+      <Stack.Screen name="incident-report" options={{ headerShown: true, title: 'Report Incident' }} />
+      <Stack.Screen name="incident-search" options={{ headerShown: true, title: 'Search Incidents' }} />
+      <Stack.Screen name="locations" options={{ headerShown: true, title: 'Locations' }} />
+      <Stack.Screen name="parties" options={{ headerShown: true, title: 'Political Parties' }} />
+      <Stack.Screen name="users" options={{ headerShown: true, title: 'User Management' }} />
+    </Stack>
   );
 }
+
+const styles = StyleSheet.create({
+  root: { flex: 1 },
+});
