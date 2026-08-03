@@ -46,17 +46,17 @@ function RootLayoutNav() {
     }
   }, [navigationState?.key]);
 
-  useEffect(() => {
+useEffect(() => {
     if (!isNavigationReady) return;
-    const target = !isAuthenticated ? '/(auth)/login' : isAuthenticated && segments[0] === '(auth)' ? '/(tabs)/index' : null;
+    const target = !isAuthenticated ? '(auth)/login' : isAuthenticated && segments[0] === '(auth)' ? '(tabs)/index' : null;
     if (!target || lastTargetRef.current === target) return;
     lastTargetRef.current = target;
     const task = InteractionManager.runAfterInteractions(() => {
       const inAuthGroup = segments[0] === '(auth)';
       if (!isAuthenticated && !inAuthGroup) {
-        router.replace('/(auth)/login' as any);
+        router.replace('(auth)/login' as any);
       } else if (isAuthenticated && inAuthGroup) {
-        router.replace('/(tabs)/index' as any);
+        router.replace('(tabs)/index' as any);
       }
     });
     return () => task.cancel();
