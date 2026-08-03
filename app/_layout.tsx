@@ -1,5 +1,5 @@
 import { enableScreens } from 'react-native-screens';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { StyleSheet } from 'react-native';
 import { Stack, useRouter, useSegments, useRootNavigationState } from 'expo-router';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -36,9 +36,16 @@ function RootLayoutNav() {
   const router = useRouter();
   const segments = useSegments();
   const navigationState = useRootNavigationState();
+  const [isNavigationReady, setIsNavigationReady] = useState(false);
 
   useEffect(() => {
-    if (!navigationState?.key) return;
+    if (navigationState?.key) {
+      setIsNavigationReady(true);
+    }
+  }, [navigationState?.key]);
+
+  useEffect(() => {
+    if (!isNavigationReady) return;
     const inAuthGroup = segments[0] === '(auth)';
     const { isAuthenticated } = useAuthStore.getState();
     if (!isAuthenticated && !inAuthGroup) {
@@ -46,7 +53,7 @@ function RootLayoutNav() {
     } else if (isAuthenticated && inAuthGroup) {
       router.replace('/(tabs)/index' as any);
     }
-  }, [segments, navigationState?.key, router]);
+  }, [segments, isNavigationReady, router]);
 
   return (
     <Stack>
