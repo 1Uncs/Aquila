@@ -39,14 +39,13 @@ function RootLayoutNav() {
   const navigationState = useRootNavigationState();
 
   useEffect(() => {
-    if (navigationState?.routes) {
-      const inAuthGroup = segments[0] === '(auth)';
-      const { isAuthenticated } = useAuthStore.getState();
-      if (!isAuthenticated && !inAuthGroup) {
-        router.replace('/(auth)/login' as any);
-      } else if (isAuthenticated && inAuthGroup) {
-        router.replace('/(tabs)/index' as any);
-      }
+    if (!navigationState?.routes || navigationState.routes.length === 0) return;
+    const inAuthGroup = segments[0] === '(auth)';
+    const { isAuthenticated } = useAuthStore.getState();
+    if (!isAuthenticated && !inAuthGroup) {
+      router.replace('/(auth)/login' as any);
+    } else if (isAuthenticated && inAuthGroup) {
+      router.replace('/(tabs)/index' as any);
     }
   }, [segments, navigationState?.routes, router]);
 
