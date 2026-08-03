@@ -1,7 +1,7 @@
 import { enableScreens } from 'react-native-screens';
-import React from 'react';
-import { StyleSheet, View, ActivityIndicator } from 'react-native';
-import { Stack } from 'expo-router';
+import React, { useEffect } from 'react';
+import { StyleSheet } from 'react-native';
+import { Stack, useRouter, useSegments, useRootNavigationState } from 'expo-router';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { QueryClientProvider } from '@tanstack/react-query';
@@ -13,6 +13,10 @@ enableScreens();
 export {
   ErrorBoundary,
 } from 'expo-router';
+
+export const unstable_settings = {
+  initialRouteName: '(auth)',
+};
 
 export default function RootLayout() {
   return (
@@ -29,39 +33,38 @@ export default function RootLayout() {
 }
 
 function RootLayoutNav() {
-  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
-  const hasHydrated = useAuthStore((s) => s.hasHydrated);
+  const router = useRouter();
+  const segments = useSegments();
+  const navigationState = useRootNavigationState();
 
-  if (!hasHydrated) {
-    return (
-      <View style={styles.loading}>
-        <ActivityIndicator size="large" />
-      </View>
-    );
-  }
+  useEffect(() => {
+    if (!navigationState?.key) return;
+    const inAuthGroup = segments[0] === '(auth)';
+    const { isAuthenticated } = useAuthStore.getState();
+    if (!isAuthenticated && !inAuthGroup) {
+      router.replace('/(auth)/login' as any);
+    } else if (isAuthenticated && inAuthGroup) {
+      router.replace('/(tabs)/index' as any);
+    }
+  }, [segments, navigationState?.key, router]);
 
   return (
     <Stack>
-      <Stack.Protected guard={!isAuthenticated}>
-        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-      </Stack.Protected>
-      <Stack.Protected guard={isAuthenticated}>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="election-detail" options={{ headerShown: true, title: 'Election Details' }} />
-        <Stack.Screen name="result-submit" options={{ headerShown: true, title: 'Submit Result' }} />
-        <Stack.Screen name="result-collation" options={{ headerShown: true, title: 'Result Collation' }} />
-        <Stack.Screen name="result-search" options={{ headerShown: true, title: 'Search Results' }} />
-        <Stack.Screen name="incident-report" options={{ headerShown: true, title: 'Report Incident' }} />
-        <Stack.Screen name="incident-search" options={{ headerShown: true, title: 'Search Incidents' }} />
-        <Stack.Screen name="locations" options={{ headerShown: true, title: 'Locations' }} />
-        <Stack.Screen name="parties" options={{ headerShown: true, title: 'Political Parties' }} />
-        <Stack.Screen name="users" options={{ headerShown: true, title: 'User Management' }} />
-      </Stack.Protected>
+      <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      <Stack.Screen name="election-detail" options={{ headerShown: true, title: 'Election Details' }} />
+      <Stack.Screen name="result-submit" options={{ headerShown: true, title: 'Submit Result' }} />
+      <Stack.Screen name="result-collation" options={{ headerShown: true, title: 'Result Collation' }} />
+      <Stack.Screen name="result-search" options={{ headerShown: true, title: 'Search Results' }} />
+      <Stack.Screen name="incident-report" options={{ headerShown: true, title: 'Report Incident' }} />
+      <Stack.Screen name="incident-search" options={{ headerShown: true, title: 'Search Incidents' }} />
+      <Stack.Screen name="locations" options={{ headerShown: true, title: 'Locations' }} />
+      <Stack.Screen name="parties" options={{ headerShown: true, title: 'Political Parties' }} />
+      <Stack.Screen name="users" options={{ headerShown: true, title: 'User Management' }} />
     </Stack>
   );
 }
 
 const styles = StyleSheet.create({
   root: { flex: 1 },
-  loading: { flex: 1, alignItems: 'center', justifyContent: 'center' },
 });

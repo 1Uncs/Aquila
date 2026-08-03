@@ -8,7 +8,6 @@ export interface AuthContextValue {
   user: User | null;
   isAuthenticated: boolean;
   isOnboarded: boolean;
-  hasHydrated: boolean;
   login: (user: User) => void;
   logout: () => void;
   setOnboarded: (val: boolean) => void;
@@ -23,9 +22,9 @@ export function useAuthContext(): AuthContextValue {
 }
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const { user, isAuthenticated, isOnboarded, hasHydrated, login, logout, setOnboarded } = useAuthStore();
+  const { user, isAuthenticated, isOnboarded, login, logout, setOnboarded } = useAuthStore();
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated, isOnboarded, hasHydrated, login, logout, setOnboarded }}>
+    <AuthContext.Provider value={{ user, isAuthenticated, isOnboarded, login, logout, setOnboarded }}>
       {children}
     </AuthContext.Provider>
   );
@@ -132,11 +131,9 @@ interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
   isOnboarded: boolean;
-  hasHydrated: boolean;
   login: (user: User) => void;
   logout: () => void;
   setOnboarded: (val: boolean) => void;
-  setHasHydrated: (val: boolean) => void;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -145,18 +142,13 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       isAuthenticated: false,
       isOnboarded: false,
-      hasHydrated: false,
       login: (user) => set({ user, isAuthenticated: true }),
       logout: () => set({ user: null, isAuthenticated: false }),
       setOnboarded: (val) => set({ isOnboarded: val }),
-      setHasHydrated: (val) => set({ hasHydrated: val }),
     }),
     {
       name: 'aquila-auth',
       storage: createJSONStorage(() => AsyncStorage),
-      onRehydrateStorage: () => (state) => {
-        state?.setHasHydrated(true);
-      },
     }
   )
 );
