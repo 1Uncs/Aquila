@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import {
   View,
   TextInput as RNTextInput,
@@ -44,18 +44,11 @@ export const Input = ({
   const colors = Colors[scheme];
   const [focused, setFocused] = useState(false);
   const inputRef = useRef<RNTextInput>(null);
-
-  useEffect(() => {
-    if (focused) {
-      inputRef.current?.focus();
-    }
-  }, [focused, visible]);
-
   const rightIconName = secureToggle
     ? (visible ? 'eye-off' : 'eye')
     : rightIcon;
 
-const handleRightPress = secureToggle
+  const handleRightPress = secureToggle
     ? onToggleSecure
     : onRightIconPress;
 
