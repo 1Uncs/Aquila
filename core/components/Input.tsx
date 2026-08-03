@@ -84,10 +84,10 @@ export const Input = ({
             Platform.OS === 'android' && { textAlignVertical: rest.multiline ? 'top' : 'center' },
           ]}
           placeholderTextColor={colors.textMuted}
-          onFocus={() => setFocused(true)}
-          onBlur={() => setFocused(false)}
           testID={testID}
           maxFontSizeMultiplier={1.3}
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
           {...rest}
         />
         {(rightIconName || secureToggle) && (
