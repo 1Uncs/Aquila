@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { forwardRef, useState } from 'react';
 import {
   View,
   TextInput as RNTextInput,
@@ -6,6 +6,7 @@ import {
   StyleSheet,
   Pressable,
   ViewStyle,
+  Platform,
 } from 'react-native';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
 import Colors from '@/constants/colors';
@@ -19,23 +20,38 @@ type InputProps = {
   leftIcon?: keyof typeof Ionicons.glyphMap;
   rightIcon?: keyof typeof Ionicons.glyphMap;
   onRightIconPress?: () => void;
+  secureToggle?: boolean;
+  secureVisible?: boolean;
+  onToggleSecure?: () => void;
   containerStyle?: ViewStyle;
   testID?: string;
 } & RNTextInputProps;
 
-export function Input({
-  label,
-  error,
-  leftIcon,
-  rightIcon,
-  onRightIconPress,
-  containerStyle,
-  testID,
-  ...rest
-}: InputProps) {
+export const Input = forwardRef<RNTextInput, InputProps>(function Input(
+  {
+    label,
+    error,
+    leftIcon,
+    rightIcon,
+    onRightIconPress,
+    secureToggle,
+    secureVisible,
+    onToggleSecure,
+    containerStyle,
+    testID,
+    ...rest
+  }: InputProps,
+  ref,
+) {
   const scheme = useColorScheme() ?? 'light';
   const colors = Colors[scheme];
   const [focused, setFocused] = useState(false);
+
+  const rightIconName = secureToggle
+    ? (secureVisible ? 'eye-off' : 'eye')
+    : rightIcon;
+
+  const handleRightPress = secureToggle ? onToggleSecure : onRightIconPress;
 
   return (
     <View style={[styles.wrapper, containerStyle]}>
@@ -62,16 +78,24 @@ export function Input({
           <Ionicons name={leftIcon} size={20} color={colors.textMuted} style={{ marginRight: spacing.sm }} />
         )}
         <RNTextInput
-          style={[styles.input, { color: colors.text }]}
+          ref={ref}
+          style={[
+            styles.input,
+            { color: colors.text },
+            Platform.OS === 'android' && { textAlignVertical: rest.multiline ? 'top' : 'center' },
+          ]}
           placeholderTextColor={colors.textMuted}
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
           testID={testID}
+          maxFontSizeMultiplier={1.3}
           {...rest}
         />
-        {rightIcon && (
-          <Pressable onPress={onRightIconPress} hitSlop={8}>
-            <Ionicons name={rightIcon} size={20} color={colors.textMuted} />
+        {(rightIconName || secureToggle) && (
+          <Pressable onPress={handleRightPress} hitSlop={8} accessibilityRole="button">
+            {rightIconName && (
+              <Ionicons name={rightIconName} size={20} color={colors.textMuted} />
+            )}
           </Pressable>
         )}
       </View>
@@ -82,7 +106,7 @@ export function Input({
       )}
     </View>
   );
-}
+});
 
 const styles = StyleSheet.create({
   wrapper: { marginHorizontal: spacing.md, marginBottom: spacing.md },

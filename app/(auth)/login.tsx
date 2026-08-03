@@ -8,6 +8,7 @@ import { login } from '@/features/auth/service';
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -84,7 +85,10 @@ export default function LoginScreen() {
           placeholder="Enter your password"
           value={password}
           onChangeText={setPassword}
-          secureTextEntry
+          secureTextEntry={!showPassword}
+          secureToggle
+          secureVisible={showPassword}
+          onToggleSecure={() => setShowPassword((prev) => !prev)}
           leftIcon="lock-closed-outline"
         />
 
