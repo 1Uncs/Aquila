@@ -2,7 +2,6 @@ import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { ScreenView } from '@/core/components/ScreenView';
 import { ThemedText, Card, EmptyState, Button } from '@/core/components';
-import { useResultsStore } from '@/features/auth/store';
 import { router } from 'expo-router';
 import { spacing, shadows, radius } from '@/constants/tokens';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
@@ -11,15 +10,13 @@ import Colors from '@/constants/colors';
 
 export default function CollationScreen() {
   const { data: results = [] } = useResultsQuery();
-  const { submissions } = useResultsStore();
   const scheme = useColorScheme() ?? 'light';
   const colors = Colors[scheme];
 
-  const allResults = results.length > 0 ? results : submissions;
   const totalVotesByCandidate: Record<string, number> = {};
   let totalVotes = 0;
 
-  allResults.forEach((r) => {
+  results.forEach((r) => {
     Object.entries(r.candidateVotes).forEach(([candId, votes]) => {
       const v = votes as number;
       totalVotesByCandidate[candId] = (totalVotesByCandidate[candId] || 0) + v;
@@ -42,7 +39,7 @@ export default function CollationScreen() {
           Result Collation
         </ThemedText>
 
-        {allResults.length === 0 ? (
+        {results.length === 0 ? (
           <EmptyState icon="bar-chart-outline" title="No Collation Data" subtitle="No published results available" />
         ) : (
           <>
@@ -54,7 +51,7 @@ export default function CollationScreen() {
                 {totalVotes.toLocaleString()}
               </ThemedText>
               <ThemedText variant="caption" color="textSecondary">
-                Across {allResults.length} Polling Units
+                Across {results.length} Polling Units
               </ThemedText>
             </Card>
 

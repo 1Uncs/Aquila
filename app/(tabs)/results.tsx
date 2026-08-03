@@ -1,10 +1,9 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { StyleSheet, ScrollView, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { ScreenView } from '@/core/components/ScreenView';
 import { ThemedText, Card, EmptyState, DebouncedPressable } from '@/core/components';
-import { useResultsStore } from '@/features/auth/store';
 import { ROUTES } from '@/constants/routes';
 import { spacing, radius, shadows, sizes } from '@/constants/tokens';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
@@ -13,13 +12,8 @@ import Colors from '@/constants/colors';
 
 export default function ResultsScreen() {
   const { data: results = [], isLoading: loading } = useResultsQuery();
-  const { setSubmissions } = useResultsStore();
   const scheme = useColorScheme() ?? 'light';
   const colors = Colors[scheme];
-
-  useEffect(() => {
-    setSubmissions(results);
-  }, [results, setSubmissions]);
 
   const totalVotes = results.reduce((sum, r) => sum + r.totalVotesCast, 0);
 

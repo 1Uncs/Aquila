@@ -2,19 +2,16 @@ import React, { useState } from 'react';
 import { Keyboard, TouchableWithoutFeedback, Platform, KeyboardAvoidingView, ScrollView } from 'react-native';
 import { ScreenView } from '@/core/components/ScreenView';
 import { ThemedText, Card, EmptyState, Input } from '@/core/components';
-import { useResultsStore } from '@/features/auth/store';
 import { spacing, shadows } from '@/constants/tokens';
 import { useResultsQuery } from '@/features/elections/hooks';
 
 export default function ResultSearchScreen() {
   const { data: results = [] } = useResultsQuery();
   const [search, setSearch] = useState('');
-  const { submissions } = useResultsStore();
 
-  const pool = results.length > 0 ? results : submissions;
   const filtered = search
-    ? pool.filter((r) => r.pollingUnitName.toLowerCase().includes(search.toLowerCase()))
-    : pool;
+    ? results.filter((r) => r.pollingUnitName.toLowerCase().includes(search.toLowerCase()))
+    : results;
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
