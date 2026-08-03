@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, ScrollView, Pressable, PressableStateCallbackType, View } from 'react-native';
+import { StyleSheet, ScrollView, Pressable, PressableStateCallbackType, View, Keyboard } from 'react-native';
+import { useFocusEffect } from 'expo-router';
 import { ScreenView } from '@/core/components/ScreenView';
 import { ThemedText, Card, EmptyState } from '@/core/components';
 import { Ionicons } from '@expo/vector-icons';
@@ -42,14 +43,18 @@ export default function IncidentsScreen() {
     CRITICAL: colors.critical,
   };
 
+  useFocusEffect(() => {
+    return () => Keyboard.dismiss();
+  });
+
   return (
-    <ScreenView>
-      <ScrollView contentContainerStyle={{ paddingBottom: spacing.xxl }}>
+    <ScreenView scrollable keyboardShouldPersistTaps="handled">
+      <View style={{ paddingBottom: spacing.xxl }}>
         <ThemedText variant="xl" style={{ marginHorizontal: 16, marginTop: spacing.md, marginBottom: spacing.sm }}>
           Incidents
         </ThemedText>
 
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, gap: spacing.sm, marginBottom: spacing.lg }}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, gap: spacing.sm, marginBottom: spacing.lg }} keyboardShouldPersistTaps="handled">
           {(['ALL', 'LOW', 'MEDIUM', 'HIGH', 'CRITICAL'] as const).map((f) => (
             <Pressable
               key={f}
@@ -119,7 +124,7 @@ export default function IncidentsScreen() {
             </Card>
           ))
         )}
-      </ScrollView>
+      </View>
     </ScreenView>
   );
 }

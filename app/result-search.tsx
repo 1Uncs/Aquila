@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, ScrollView, View } from 'react-native';
+import { StyleSheet, View, Keyboard } from 'react-native';
+import { useFocusEffect } from 'expo-router';
 import { ScreenView } from '@/core/components/ScreenView';
 import { ThemedText, Card, EmptyState, Input } from '@/core/components';
 import { mockApi } from '@/features/elections/service';
@@ -16,6 +17,10 @@ export default function ResultSearchScreen() {
   const scheme = useColorScheme() ?? 'light';
   const colors = Colors[scheme];
 
+  useFocusEffect(() => {
+    return () => Keyboard.dismiss();
+  });
+
   useEffect(() => {
     mockApi.getResults().then(setResults);
   }, []);
@@ -26,8 +31,8 @@ export default function ResultSearchScreen() {
     : pool;
 
   return (
-    <ScreenView>
-      <ScrollView contentContainerStyle={{ paddingBottom: spacing.xxl }}>
+    <ScreenView scrollable keyboardShouldPersistTaps="handled">
+      <View style={{ paddingBottom: spacing.xxl }}>
         <ThemedText variant="h2" style={{ marginHorizontal: 16, marginTop: spacing.md, marginBottom: spacing.lg }}>
           Search Results
         </ThemedText>
@@ -58,7 +63,7 @@ export default function ResultSearchScreen() {
             </Card>
           ))
         )}
-      </ScrollView>
+      </View>
     </ScreenView>
   );
 }

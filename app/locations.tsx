@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, ScrollView, Pressable, PressableStateCallbackType, View } from 'react-native';
+import { StyleSheet, Pressable, PressableStateCallbackType, View, Keyboard } from 'react-native';
+import { useFocusEffect } from 'expo-router';
 import { ScreenView } from '@/core/components/ScreenView';
 import { ThemedText, Card, EmptyState } from '@/core/components';
 import { Ionicons } from '@expo/vector-icons';
@@ -17,9 +18,13 @@ export default function LocationsScreen() {
     mockApi.getStates().then(setStates);
   }, []);
 
+  useFocusEffect(() => {
+    return () => Keyboard.dismiss();
+  });
+
   return (
-    <ScreenView>
-      <ScrollView contentContainerStyle={{ paddingBottom: spacing.xxl }}>
+    <ScreenView scrollable keyboardShouldPersistTaps="handled">
+      <View style={{ paddingBottom: spacing.xxl }}>
         <ThemedText variant="h2" style={{ marginHorizontal: 16, marginTop: spacing.md, marginBottom: spacing.sm }}>
           Electoral Geography
         </ThemedText>
@@ -97,7 +102,7 @@ export default function LocationsScreen() {
             </View>
           </View>
         </Card>
-      </ScrollView>
+      </View>
     </ScreenView>
   );
 }

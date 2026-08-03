@@ -7,7 +7,6 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from '@/core/utils/queryClient';
 import { AuthProvider, useAuthStore } from '@/features/auth/store';
-import { ErrorBoundary } from 'expo-router';
 
 enableScreens();
 
@@ -16,7 +15,7 @@ export {
 } from 'expo-router';
 
 export const unstable_settings = {
-  initialRouteName: 'index',
+  initialRouteName: '(auth)',
 };
 
 export default function RootLayout() {
@@ -39,7 +38,7 @@ function RootLayoutNav() {
   const navigationState = useRootNavigationState();
 
   useEffect(() => {
-    if (!navigationState?.routes || navigationState.routes.length === 0) return;
+    if (!navigationState?.key) return;
     const inAuthGroup = segments[0] === '(auth)';
     const { isAuthenticated } = useAuthStore.getState();
     if (!isAuthenticated && !inAuthGroup) {
@@ -47,7 +46,7 @@ function RootLayoutNav() {
     } else if (isAuthenticated && inAuthGroup) {
       router.replace('/(tabs)/index' as any);
     }
-  }, [segments, navigationState?.routes, router]);
+  }, [segments, navigationState?.key, router]);
 
   return (
     <Stack>

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, ScrollView, View } from 'react-native';
+import { StyleSheet, ScrollView, View, Keyboard } from 'react-native';
+import { useFocusEffect } from 'expo-router';
 import { ScreenView } from '@/core/components/ScreenView';
 import { ThemedText, Card, EmptyState, Input, Button } from '@/core/components';
 import { mockApi } from '@/features/elections/service';
@@ -29,6 +30,10 @@ export default function ReportIncidentScreen() {
   const scheme = useColorScheme() ?? 'light';
   const colors = Colors[scheme];
 
+  useFocusEffect(() => {
+    return () => Keyboard.dismiss();
+  });
+
   const handleSubmit = async () => {
     if (!description.trim() || !electoralArea.trim()) return;
     setSubmitting(true);
@@ -52,8 +57,8 @@ export default function ReportIncidentScreen() {
   };
 
   return (
-    <ScreenView>
-      <ScrollView contentContainerStyle={{ paddingBottom: spacing.xxl }}>
+    <ScreenView scrollable keyboardShouldPersistTaps="handled">
+      <View style={{ paddingBottom: spacing.xxl }}>
         <ThemedText variant="h2" style={{ marginHorizontal: 16, marginTop: spacing.md, marginBottom: spacing.lg }}>
           Report Incident
         </ThemedText>
@@ -69,7 +74,7 @@ export default function ReportIncidentScreen() {
         <ThemedText variant="label" style={{ marginHorizontal: 16, marginBottom: spacing.sm }}>
           Category
         </ThemedText>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, gap: spacing.sm, marginBottom: spacing.lg }}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, gap: spacing.sm, marginBottom: spacing.lg }} keyboardShouldPersistTaps="handled">
           {CATEGORIES.map((cat) => (
             <Button
               key={cat}
@@ -84,7 +89,7 @@ export default function ReportIncidentScreen() {
         <ThemedText variant="label" style={{ marginHorizontal: 16, marginBottom: spacing.sm }}>
           Severity
         </ThemedText>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, gap: spacing.sm, marginBottom: spacing.lg }}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, gap: spacing.sm, marginBottom: spacing.lg }} keyboardShouldPersistTaps="handled">
           {SEVERITIES.map((sev) => (
             <Button
               key={sev}
@@ -110,7 +115,7 @@ export default function ReportIncidentScreen() {
           <Button label="Cancel" variant="outline" onPress={() => router.back()} style={{ flex: 1 }} />
           <Button label="Submit" onPress={handleSubmit} loading={submitting} style={{ flex: 1 }} />
         </View>
-      </ScrollView>
+      </View>
     </ScreenView>
   );
 }

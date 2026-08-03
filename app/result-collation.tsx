@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, ScrollView, View } from 'react-native';
+import { StyleSheet, View, Keyboard } from 'react-native';
+import { useFocusEffect } from 'expo-router';
 import { ScreenView } from '@/core/components/ScreenView';
 import { ThemedText, Card, EmptyState, Button } from '@/core/components';
 import { Ionicons } from '@expo/vector-icons';
@@ -40,9 +41,13 @@ export default function CollationScreen() {
       pct: totalVotes > 0 ? ((votes / totalVotes) * 100).toFixed(1) : '0.0',
     }));
 
+  useFocusEffect(() => {
+    return () => Keyboard.dismiss();
+  });
+
   return (
-    <ScreenView>
-      <ScrollView contentContainerStyle={{ paddingBottom: spacing.xxl }}>
+    <ScreenView scrollable keyboardShouldPersistTaps="handled">
+      <View style={{ paddingBottom: spacing.xxl }}>
         <ThemedText variant="h2" style={{ marginHorizontal: 16, marginTop: spacing.md, marginBottom: spacing.lg }}>
           Result Collation
         </ThemedText>
@@ -89,7 +94,7 @@ export default function CollationScreen() {
         )}
 
         <Button label="Back to Results" variant="outline" onPress={() => router.back()} style={{ marginHorizontal: 16, marginTop: spacing.lg }} />
-      </ScrollView>
+      </View>
     </ScreenView>
   );
 }

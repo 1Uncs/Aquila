@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, ScrollView, Pressable, PressableStateCallbackType, View } from 'react-native';
+import { StyleSheet, Pressable, PressableStateCallbackType, View, Keyboard } from 'react-native';
+import { useFocusEffect } from 'expo-router';
 import { ScreenView } from '@/core/components/ScreenView';
 import { ThemedText, Card, Button } from '@/core/components';
 import { Ionicons } from '@expo/vector-icons';
@@ -36,9 +37,13 @@ export default function ProfileTabScreen() {
     { label: 'Users', icon: 'person-add-outline', route: ROUTES.USERS },
   ];
 
+  useFocusEffect(() => {
+    return () => Keyboard.dismiss();
+  });
+
   return (
-    <ScreenView>
-      <ScrollView contentContainerStyle={{ paddingBottom: spacing.xxl }}>
+    <ScreenView scrollable keyboardShouldPersistTaps="handled">
+      <View style={{ paddingBottom: spacing.xxl }}>
         <View style={[styles.header, { backgroundColor: colors.primary }]}>
           <View style={styles.avatar}>
             <Ionicons name="person" size={40} color="#fff" />
@@ -100,7 +105,7 @@ export default function ProfileTabScreen() {
           style={{ marginHorizontal: 16, marginTop: spacing.xl }}
           fullWidth
         />
-      </ScrollView>
+      </View>
     </ScreenView>
   );
 }

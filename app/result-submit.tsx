@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, ScrollView, View } from 'react-native';
+import { StyleSheet, View, Keyboard } from 'react-native';
+import { useFocusEffect } from 'expo-router';
 import { ScreenView } from '@/core/components/ScreenView';
 import { ThemedText, Card, Button, Input, EmptyState } from '@/core/components';
 import { Ionicons } from '@expo/vector-icons';
@@ -24,6 +25,10 @@ export default function SubmitResultScreen() {
   const { addSubmission } = useResultsStore();
   const scheme = useColorScheme() ?? 'light';
   const colors = Colors[scheme];
+
+  useFocusEffect(() => {
+    return () => Keyboard.dismiss();
+  });
 
   useEffect(() => {
     (async () => {
@@ -77,8 +82,8 @@ export default function SubmitResultScreen() {
   }
 
   return (
-    <ScreenView>
-      <ScrollView contentContainerStyle={{ paddingBottom: spacing.xxl }}>
+    <ScreenView scrollable keyboardShouldPersistTaps="handled">
+      <View style={{ paddingBottom: spacing.xxl }}>
         <ThemedText variant="h2" style={{ marginHorizontal: 16, marginTop: spacing.md, marginBottom: spacing.lg }}>
           Submit Result
         </ThemedText>
@@ -140,7 +145,7 @@ export default function SubmitResultScreen() {
             style={{ flex: 1 }}
           />
         </View>
-      </ScrollView>
+      </View>
     </ScreenView>
   );
 }

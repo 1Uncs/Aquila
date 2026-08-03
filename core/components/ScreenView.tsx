@@ -1,4 +1,4 @@
-import { View, ViewStyle, StatusBar, Platform } from 'react-native';
+import { View, ViewStyle, StatusBar, Platform, ScrollView, ScrollViewProps } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
 import Colors from '@/constants/colors';
@@ -8,6 +8,7 @@ type ScreenViewProps = {
   style?: ViewStyle;
   contentContainerStyle?: ViewStyle;
   scrollable?: boolean;
+  keyboardShouldPersistTaps?: ScrollViewProps['keyboardShouldPersistTaps'];
   testID?: string;
 };
 
@@ -16,6 +17,7 @@ export function ScreenView({
   style,
   contentContainerStyle,
   scrollable = false,
+  keyboardShouldPersistTaps,
   testID,
 }: ScreenViewProps) {
   const insets = useSafeAreaInsets();
@@ -29,24 +31,31 @@ export function ScreenView({
     paddingBottom: Platform.OS === 'android' ? insets.bottom : 0,
   };
 
+  const header = (
+    <StatusBar
+      barStyle={scheme === 'dark' ? 'light-content' : 'dark-content'}
+      backgroundColor={colors.background}
+    />
+  );
+
   if (scrollable) {
     return (
       <View style={[baseStyle, style]} testID={testID}>
-        <StatusBar
-          barStyle={scheme === 'dark' ? 'light-content' : 'dark-content'}
-          backgroundColor={colors.background}
-        />
-        <View style={[contentContainerStyle]}>{children}</View>
+        {header}
+        <ScrollView
+          contentContainerStyle={contentContainerStyle}
+          contentInsetAdjustmentBehavior="automatic"
+          keyboardShouldPersistTaps={keyboardShouldPersistTaps}
+        >
+          {children}
+        </ScrollView>
       </View>
     );
   }
 
   return (
     <View style={[baseStyle, style]} testID={testID}>
-      <StatusBar
-        barStyle={scheme === 'dark' ? 'light-content' : 'dark-content'}
-        backgroundColor={colors.background}
-      />
+      {header}
       {children}
     </View>
   );

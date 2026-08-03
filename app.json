@@ -2,7 +2,9 @@
   "expo": {
     "name": "Aquila",
     "slug": "aquila",
+    "owner": "aquila-app",
     "version": "1.0.0",
+    "scheme": "aquila",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
@@ -11,7 +13,9 @@
       "resizeMode": "contain",
       "backgroundColor": "#0D47A1"
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.alabiansolutions.aquila"
@@ -28,13 +32,16 @@
       "output": "static",
       "favicon": "./assets/favicon.png"
     },
-    "plugins": ["expo-router", "expo-font"],
+    "plugins": [
+      "expo-router",
+      "expo-font"
+    ],
     "experiments": {
       "typedRoutes": true
     },
     "extra": {
       "eas": {
-        "projectId": "aquila-election-intel"
+        "projectId": "67b3bfc8-0a77-4dda-a58b-9d78dff7a1ff"
       }
     }
   }

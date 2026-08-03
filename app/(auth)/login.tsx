@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { StyleSheet, KeyboardAvoidingView, Platform } from 'react-native';
+import { StyleSheet, KeyboardAvoidingView, Platform, Keyboard } from 'react-native';
+import { useFocusEffect } from 'expo-router';
 import { ScreenView } from '@/core/components/ScreenView';
 import { ThemedText, Input, Button } from '@/core/components';
-import { spacing, radius } from '@/constants/tokens';
+import { spacing } from '@/constants/tokens';
 import { Ionicons } from '@expo/vector-icons';
 import { login } from '@/features/auth/service';
 
@@ -11,6 +12,10 @@ export default function LoginScreen() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  useFocusEffect(() => {
+    return () => Keyboard.dismiss();
+  });
 
   const handleLogin = async () => {
     if (!email.trim() || !password.trim()) {

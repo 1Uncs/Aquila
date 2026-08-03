@@ -5,10 +5,10 @@ import { mockApi } from '@/features/elections/service';
 export const login = async (email: string, password: string) => {
   const user = await mockApi.login(email, password);
   useAuthStore.getState().login(user);
-  router.replace('/(tabs)/index');
+  router.replace('/(tabs)/index' as any);
 };
 
 export const logout = () => {
   useAuthStore.getState().logout();
-  router.replace('/(auth)/login');
+  router.replace('/(auth)/login' as any);
 };

@@ -1,5 +1,6 @@
 import React from 'react';
-import { StyleSheet, ScrollView, View } from 'react-native';
+import { StyleSheet, View, Keyboard } from 'react-native';
+import { useFocusEffect } from 'expo-router';
 import { ScreenView } from '@/core/components/ScreenView';
 import { ThemedText, Card } from '@/core/components';
 import { Ionicons } from '@expo/vector-icons';
@@ -26,9 +27,13 @@ export default function UsersScreen() {
   const scheme = useColorScheme() ?? 'light';
   const colors = Colors[scheme];
 
+  useFocusEffect(() => {
+    return () => Keyboard.dismiss();
+  });
+
   return (
-    <ScreenView>
-      <ScrollView contentContainerStyle={{ paddingBottom: spacing.xxl }}>
+    <ScreenView scrollable keyboardShouldPersistTaps="handled">
+      <View style={{ paddingBottom: spacing.xxl }}>
         <ThemedText variant="h2" style={{ marginHorizontal: 16, marginTop: spacing.md, marginBottom: spacing.sm }}>
           User Roles
         </ThemedText>
@@ -51,7 +56,7 @@ export default function UsersScreen() {
             </View>
           </Card>
         ))}
-      </ScrollView>
+      </View>
     </ScreenView>
   );
 }

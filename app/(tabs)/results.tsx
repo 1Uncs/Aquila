@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, ScrollView, Pressable, PressableStateCallbackType, View } from 'react-native';
+import { StyleSheet, ScrollView, Pressable, PressableStateCallbackType, View, Keyboard } from 'react-native';
+import { useFocusEffect } from 'expo-router';
 import { ScreenView } from '@/core/components/ScreenView';
 import { ThemedText, Card, EmptyState } from '@/core/components';
 import { Ionicons } from '@expo/vector-icons';
@@ -33,14 +34,18 @@ export default function ResultsScreen() {
 
   const totalVotes = results.reduce((sum, r) => sum + r.totalVotesCast, 0);
 
+  useFocusEffect(() => {
+    return () => Keyboard.dismiss();
+  });
+
   return (
-    <ScreenView>
-      <ScrollView contentContainerStyle={{ paddingBottom: spacing.xxl }}>
+    <ScreenView scrollable keyboardShouldPersistTaps="handled">
+      <View style={{ paddingBottom: spacing.xxl }}>
         <ThemedText variant="xl" style={{ marginHorizontal: 16, marginTop: spacing.md, marginBottom: spacing.sm }}>
           Live Results
         </ThemedText>
 
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, gap: spacing.md, marginBottom: spacing.lg }}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, gap: spacing.md, marginBottom: spacing.lg }} keyboardShouldPersistTaps="handled">
           <Card style={[styles.statCard, shadows.md]}>
             <Ionicons name="document-text-outline" size={24} color={colors.primary} />
             <ThemedText variant="xxl" style={{ marginTop: spacing.xs, fontWeight: '700' }}>
@@ -119,7 +124,7 @@ export default function ResultsScreen() {
             );
           })
         )}
-      </ScrollView>
+      </View>
     </ScreenView>
   );
 }

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { router } from 'expo-router';
-import { StyleSheet, ScrollView, Pressable, PressableStateCallbackType, View } from 'react-native';
+import { StyleSheet, ScrollView, Pressable, PressableStateCallbackType, View, Keyboard } from 'react-native';
+import { useFocusEffect } from 'expo-router';
 import { ScreenView } from '@/core/components/ScreenView';
 import { ThemedText, Card, Button, EmptyState } from '@/core/components';
 import { Ionicons } from '@expo/vector-icons';
@@ -48,14 +49,18 @@ export default function ElectionsScreen() {
     ARCHIVED: colors.textSecondary,
   };
 
+  useFocusEffect(() => {
+    return () => Keyboard.dismiss();
+  });
+
   return (
-    <ScreenView>
-      <ScrollView contentContainerStyle={{ paddingBottom: spacing.xxl }}>
+    <ScreenView scrollable keyboardShouldPersistTaps="handled">
+      <View style={{ paddingBottom: spacing.xxl }}>
         <ThemedText variant="xl" style={{ marginHorizontal: 16, marginTop: spacing.md, marginBottom: spacing.sm }}>
           Elections
         </ThemedText>
 
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, gap: spacing.sm, marginBottom: spacing.lg }}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, gap: spacing.sm, marginBottom: spacing.lg }} keyboardShouldPersistTaps="handled">
           {cycles.map((cycle) => (
             <Pressable
               key={cycle.id}
@@ -119,7 +124,7 @@ export default function ElectionsScreen() {
             </Card>
           ))
         )}
-      </ScrollView>
+      </View>
     </ScreenView>
   );
 }

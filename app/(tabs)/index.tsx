@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, ScrollView, View } from 'react-native';
+import { StyleSheet, ScrollView, View, Keyboard } from 'react-native';
+import { useFocusEffect } from 'expo-router';
 import { ScreenView } from '@/core/components/ScreenView';
 import { ThemedText, Card, Button, EmptyState } from '@/core/components';
 import { Ionicons } from '@expo/vector-icons';
@@ -59,9 +60,13 @@ export default function DashboardScreen() {
   const totalPUs = 2500;
   const reportingPct = Math.round((totalReportingPUs / totalPUs) * 100);
 
+  useFocusEffect(() => {
+    return () => Keyboard.dismiss();
+  });
+
   return (
-    <ScreenView>
-      <ScrollView contentContainerStyle={{ paddingBottom: spacing.xxl }}>
+    <ScreenView scrollable keyboardShouldPersistTaps="handled">
+      <View style={{ paddingBottom: spacing.xxl }}>
         <ThemedText variant="xl" style={{ marginHorizontal: 16, marginTop: spacing.md }}>
           Welcome back, {user?.name ?? 'User'}
         </ThemedText>
@@ -73,7 +78,7 @@ export default function DashboardScreen() {
           Election Intelligence Dashboard
         </ThemedText>
 
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, gap: spacing.md }}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, gap: spacing.md }} keyboardShouldPersistTaps="handled">
           <StatCard icon="file-tray-full" label="Total Elections" value={String(elections.length)} color={colors.primary} />
           <StatCard icon="checkmark-circle" label="Active Elections" value={String(activeElections)} color={colors.success} />
           <StatCard icon="alert-circle" label="Open Incidents" value={String(recentIncidents.length)} color={colors.warning} />
@@ -139,7 +144,7 @@ export default function DashboardScreen() {
             </Card>
           ))
         )}
-      </ScrollView>
+      </View>
     </ScreenView>
   );
 }

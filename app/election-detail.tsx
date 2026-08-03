@@ -1,17 +1,17 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, ScrollView, View } from 'react-native';
+import { StyleSheet, View, Keyboard } from 'react-native';
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { ScreenView } from '@/core/components/ScreenView';
 import { ThemedText, Card, Button, EmptyState } from '@/core/components';
 import { Ionicons } from '@expo/vector-icons';
 import { mockApi } from '@/features/elections/service';
 import { ROUTES } from '@/constants/routes';
-import { router } from 'expo-router';
 import { spacing, shadows, radius } from '@/constants/tokens';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
 import Colors from '@/constants/colors';
 
-export default function ElectionDetailScreen({ route }: { route: { params: { id: string } } }) {
-  const { id } = route.params;
+export default function ElectionDetailScreen() {
+  const { id } = useLocalSearchParams<{ id: string }>();
   const [election, setElection] = useState<any>(null);
   const [candidates, setCandidates] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -34,6 +34,10 @@ export default function ElectionDetailScreen({ route }: { route: { params: { id:
     })();
   }, [id]);
 
+  useFocusEffect(() => {
+    return () => Keyboard.dismiss();
+  });
+
   if (loading) {
     return (
       <ScreenView>
@@ -53,8 +57,8 @@ export default function ElectionDetailScreen({ route }: { route: { params: { id:
   }
 
   return (
-    <ScreenView>
-      <ScrollView contentContainerStyle={{ paddingBottom: spacing.xxl }}>
+    <ScreenView scrollable keyboardShouldPersistTaps="handled">
+      <View style={{ paddingBottom: spacing.xxl }}>
         <Card style={[styles.headerCard, shadows.lg, { backgroundColor: colors.primary }]}>
           <ThemedText variant="xxl" style={{ color: '#fff', fontWeight: '700', marginBottom: spacing.xs }}>
             {election.position}
@@ -106,7 +110,7 @@ export default function ElectionDetailScreen({ route }: { route: { params: { id:
             style={{ flex: 1 }}
           />
         </View>
-      </ScrollView>
+      </View>
     </ScreenView>
   );
 }
