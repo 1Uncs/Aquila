@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import { ScreenView } from '@/core/components/ScreenView';
 import { ThemedText, Button, Input } from '@/core/components';
+import { useDismissKeyboardOnBlur } from '@/core/hooks';
 import { mockApi } from '@/features/elections/service';
 import { useResultsStore } from '@/features/auth/store';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -9,6 +10,7 @@ import { spacing } from '@/constants/tokens';
 import { Candidate, PollingUnit } from '@/features/auth/store';
 
 export default function SubmitResultScreen() {
+  useDismissKeyboardOnBlur();
   const { electionId } = useLocalSearchParams<{ electionId: string }>();
   const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [pollingUnits, setPollingUnits] = useState<PollingUnit[]>([]);

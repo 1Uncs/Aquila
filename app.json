@@ -25,7 +25,8 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#0D47A1"
       },
-      "package": "com.alabiansolutions.aquila"
+      "package": "com.alabiansolutions.aquila",
+      "softwareKeyboardLayoutMode": "pan"
     },
     "web": {
       "bundler": "metro",

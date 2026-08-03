@@ -2,10 +2,12 @@ import React, { useState } from 'react';
 import { KeyboardAvoidingView, Platform } from 'react-native';
 import { ScreenView } from '@/core/components/ScreenView';
 import { ThemedText, Input, Button } from '@/core/components';
+import { useDismissKeyboardOnBlur } from '@/core/hooks';
 import { spacing } from '@/constants/tokens';
 import { login } from '@/features/auth/service';
 
 export default function LoginScreen() {
+  useDismissKeyboardOnBlur();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -30,7 +32,7 @@ export default function LoginScreen() {
   return (
     <ScreenView>
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={{ flex: 1, justifyContent: 'center' }}
       >
         <ThemedText variant="xxl" style={{ textAlign: 'center', marginBottom: spacing.sm }}>

@@ -2,12 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import { ScreenView } from '@/core/components/ScreenView';
 import { ThemedText, Card, EmptyState, Input } from '@/core/components';
+import { useDismissKeyboardOnBlur } from '@/core/hooks';
 import { mockApi } from '@/features/elections/service';
 import { IncidentReport } from '@/features/auth/store';
 import { useIncidentsStore } from '@/features/auth/store';
 import { spacing, shadows } from '@/constants/tokens';
 
 export default function IncidentSearchScreen() {
+  useDismissKeyboardOnBlur();
   const [incidents, setIncidents] = useState<IncidentReport[]>([]);
   const [search, setSearch] = useState('');
   const { incidents: storeIncidents } = useIncidentsStore();

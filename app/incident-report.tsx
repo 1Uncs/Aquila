@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { ScrollView, View } from 'react-native';
 import { ScreenView } from '@/core/components/ScreenView';
 import { ThemedText, Input, Button } from '@/core/components';
+import { useDismissKeyboardOnBlur } from '@/core/hooks';
 import { IncidentReport } from '@/features/auth/store';
 import { useIncidentsStore } from '@/features/auth/store';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -16,6 +17,7 @@ const CATEGORIES = [
 const SEVERITIES = ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'] as IncidentSeverity[];
 
 export default function ReportIncidentScreen() {
+  useDismissKeyboardOnBlur();
   const { electionId } = useLocalSearchParams<{ electionId?: string }>();
   const [category, setCategory] = useState<IncidentCategory>('OTHER');
   const [severity, setSeverity] = useState<IncidentSeverity>('MEDIUM');

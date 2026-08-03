@@ -27,7 +27,7 @@ export function ScreenView({
   const baseStyle: ViewStyle = {
     flex: 1,
     backgroundColor: colors.background,
-    paddingTop: Platform.OS === 'ios' ? insets.top : 0,
+    paddingTop: Platform.OS === 'android' ? insets.top : 0,
     paddingBottom: Platform.OS === 'android' ? insets.bottom : 0,
   };
 
@@ -40,9 +40,10 @@ export function ScreenView({
 
   if (scrollable) {
     return (
-      <View style={[baseStyle, style]} testID={testID}>
+      <View style={[baseStyle, style]} testID={testID} collapsable={false}>
         {header}
         <ScrollView
+          style={{ flex: 1 }}
           contentContainerStyle={contentContainerStyle}
           contentInsetAdjustmentBehavior="automatic"
           keyboardShouldPersistTaps={keyboardShouldPersistTaps}
