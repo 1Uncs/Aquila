@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   View,
   TextInput as RNTextInput,
@@ -44,6 +44,15 @@ export const Input = ({
   const colors = Colors[scheme];
   const [focused, setFocused] = useState(false);
   const inputRef = useRef<RNTextInput>(null);
+
+  // When visibility changes (e.g., toggling password), refocus if already focused
+  // to prevent keyboard dismissal on Android
+  useEffect(() => {
+    if (visible && focused) {
+      inputRef.current?.focus();
+    }
+  }, [visible, focused]);
+
   const rightIconName = secureToggle
     ? (visible ? 'eye-off' : 'eye')
     : rightIcon;
@@ -84,10 +93,10 @@ export const Input = ({
             Platform.OS === 'android' && { textAlignVertical: rest.multiline ? 'top' : 'center' },
           ]}
           placeholderTextColor={colors.textMuted}
-          testID={testID}
-          maxFontSizeMultiplier={1.3}
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
+          testID={testID}
+          maxFontSizeMultiplier={1.3}
           {...rest}
         />
         {(rightIconName || secureToggle) && (
