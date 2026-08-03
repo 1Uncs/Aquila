@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Keyboard, TouchableWithoutFeedback, Platform, KeyboardAvoidingView, ScrollView, View } from 'react-native';
+import { Platform, KeyboardAvoidingView, ScrollView, View } from 'react-native';
 import { ScreenView } from '@/core/components/ScreenView';
 import { ThemedText, Input, Button } from '@/core/components';
 import { spacing } from '@/constants/tokens';
@@ -42,19 +42,18 @@ export default function LoginScreen() {
   };
 
   return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <ScreenView>
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-          enabled={Platform.OS === 'ios'}
-          style={{ flex: 1, justifyContent: 'center' }}
+    <ScreenView>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        enabled={Platform.OS === 'ios'}
+        style={{ flex: 1, justifyContent: 'center' }}
+      >
+        <ScrollView
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
+          contentInsetAdjustmentBehavior="automatic"
+          contentContainerStyle={{ paddingBottom: spacing.xxl, justifyContent: 'center', flexGrow: 1 }}
         >
-          <ScrollView
-            keyboardShouldPersistTaps="handled"
-            keyboardDismissMode="on-drag"
-            contentInsetAdjustmentBehavior="automatic"
-            contentContainerStyle={{ paddingBottom: spacing.xxl, justifyContent: 'center', flexGrow: 1 }}
-          >
             <ThemedText variant="xxl" style={{ textAlign: 'center', marginBottom: spacing.sm }}>
               Aquila
             </ThemedText>
@@ -127,6 +126,5 @@ export default function LoginScreen() {
       </ScrollView>
     </KeyboardAvoidingView>
   </ScreenView>
-</TouchableWithoutFeedback>
   );
 }

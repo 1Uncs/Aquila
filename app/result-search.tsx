@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Keyboard, TouchableWithoutFeedback, Platform, KeyboardAvoidingView, ScrollView } from 'react-native';
+import { Platform, KeyboardAvoidingView, ScrollView } from 'react-native';
 import { ScreenView } from '@/core/components/ScreenView';
 import { ThemedText, Card, EmptyState, Input } from '@/core/components';
 import { spacing, shadows } from '@/constants/tokens';
@@ -14,19 +14,18 @@ export default function ResultSearchScreen() {
     : results;
 
   return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <ScreenView>
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-          enabled={Platform.OS === 'ios'}
-          style={{ flex: 1 }}
+    <ScreenView>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        enabled={Platform.OS === 'ios'}
+        style={{ flex: 1 }}
+      >
+        <ScrollView
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
+          contentInsetAdjustmentBehavior="automatic"
+          contentContainerStyle={{ paddingBottom: spacing.xxl }}
         >
-          <ScrollView
-            keyboardShouldPersistTaps="handled"
-            keyboardDismissMode="on-drag"
-            contentInsetAdjustmentBehavior="automatic"
-            contentContainerStyle={{ paddingBottom: spacing.xxl }}
-          >
             <ThemedText variant="h2" style={{ marginHorizontal: 16, marginTop: spacing.md, marginBottom: spacing.lg }}>
               Search Results
             </ThemedText>
@@ -59,6 +58,5 @@ export default function ResultSearchScreen() {
       </ScrollView>
     </KeyboardAvoidingView>
   </ScreenView>
-</TouchableWithoutFeedback>
   );
 }

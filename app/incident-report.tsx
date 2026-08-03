@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ScrollView, View, Keyboard, TouchableWithoutFeedback, Platform, KeyboardAvoidingView } from 'react-native';
+import { ScrollView, View, Platform, KeyboardAvoidingView } from 'react-native';
 import { ScreenView } from '@/core/components/ScreenView';
 import { ThemedText, Input, Button } from '@/core/components';
 import { IncidentReport } from '@/features/auth/store';
@@ -47,19 +47,18 @@ export default function ReportIncidentScreen() {
   };
 
   return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <ScreenView>
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-          enabled={Platform.OS === 'ios'}
-          style={{ flex: 1 }}
+    <ScreenView>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        enabled={Platform.OS === 'ios'}
+        style={{ flex: 1 }}
+      >
+        <ScrollView
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
+          contentInsetAdjustmentBehavior="automatic"
+          contentContainerStyle={{ paddingBottom: spacing.xxl }}
         >
-          <ScrollView
-            keyboardShouldPersistTaps="handled"
-            keyboardDismissMode="on-drag"
-            contentInsetAdjustmentBehavior="automatic"
-            contentContainerStyle={{ paddingBottom: spacing.xxl }}
-          >
             <ThemedText variant="h2" style={{ marginHorizontal: 16, marginTop: spacing.md, marginBottom: spacing.lg }}>
               Report Incident
             </ThemedText>
@@ -119,6 +118,5 @@ export default function ReportIncidentScreen() {
       </ScrollView>
     </KeyboardAvoidingView>
   </ScreenView>
-</TouchableWithoutFeedback>
   );
 }

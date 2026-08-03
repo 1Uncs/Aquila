@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Keyboard, TouchableWithoutFeedback, Platform, KeyboardAvoidingView, ScrollView } from 'react-native';
+import { View, Platform, KeyboardAvoidingView, ScrollView } from 'react-native';
 import { ScreenView } from '@/core/components/ScreenView';
 import { ThemedText, Button, Input } from '@/core/components';
 import { useResultsStore } from '@/features/auth/store';
@@ -55,19 +55,18 @@ export default function SubmitResultScreen() {
   }
 
   return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <ScreenView>
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-          enabled={Platform.OS === 'ios'}
-          style={{ flex: 1 }}
+    <ScreenView>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        enabled={Platform.OS === 'ios'}
+        style={{ flex: 1 }}
+      >
+        <ScrollView
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
+          contentInsetAdjustmentBehavior="automatic"
+          contentContainerStyle={{ paddingBottom: spacing.xxl }}
         >
-          <ScrollView
-            keyboardShouldPersistTaps="handled"
-            keyboardDismissMode="on-drag"
-            contentInsetAdjustmentBehavior="automatic"
-            contentContainerStyle={{ paddingBottom: spacing.xxl }}
-          >
             <ThemedText variant="h2" style={{ marginHorizontal: 16, marginTop: spacing.md, marginBottom: spacing.lg }}>
               Submit Result
             </ThemedText>
@@ -132,6 +131,5 @@ export default function SubmitResultScreen() {
       </ScrollView>
     </KeyboardAvoidingView>
   </ScreenView>
-</TouchableWithoutFeedback>
   );
 }

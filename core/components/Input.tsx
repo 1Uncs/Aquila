@@ -48,7 +48,7 @@ export const Input = forwardRef<RNTextInput, InputProps>(function Input(
   const [focused, setFocused] = useState(false);
 
   const rightIconName = secureToggle
-    ? (secureVisible ? 'eye-off' : 'eye')
+    ? (secureVisible ? 'eye' : 'eye-off')
     : rightIcon;
 
   const handleRightPress = secureToggle ? onToggleSecure : onRightIconPress;
