@@ -4,7 +4,7 @@ import {
   TextInput as RNTextInput,
   TextInputProps as RNTextInputProps,
   StyleSheet,
-  Pressable,
+  TouchableWithoutFeedback,
   ViewStyle,
   Platform,
 } from 'react-native';
@@ -98,11 +98,11 @@ const handleRightPress = secureToggle
           {...rest}
         />
         {(rightIconName || secureToggle) && (
-          <Pressable onPress={handleRightPress} hitSlop={8} accessibilityRole="button">
+          <TouchableWithoutFeedback onPress={handleRightPress} hitSlop={8} accessibilityRole="button">
             {rightIconName && (
               <Ionicons name={rightIconName} size={20} color={colors.textMuted} />
             )}
-          </Pressable>
+          </TouchableWithoutFeedback>
         )}
       </View>
       {error && (
