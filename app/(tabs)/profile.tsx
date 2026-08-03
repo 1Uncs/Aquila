@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, PressableStateCallbackType, View } from 'react-native';
+import { StyleSheet, PressableStateCallbackType, View, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { ScreenView } from '@/core/components/ScreenView';
@@ -96,7 +96,12 @@ export default function ProfileTabScreen() {
         <Button
           label="Sign Out"
           variant="outline"
-          onPress={logout}
+          onPress={() =>
+            Alert.alert('Sign out', 'Are you sure you want to sign out?', [
+              { text: 'Cancel', style: 'cancel' },
+              { text: 'Sign Out', style: 'destructive', onPress: logout },
+            ])
+          }
           style={{ marginHorizontal: 16, marginTop: spacing.xl }}
           fullWidth
         />

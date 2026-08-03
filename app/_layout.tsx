@@ -37,6 +37,7 @@ function RootLayoutNav() {
   const router = useRouter();
   const segments = useSegments();
   const navigationState = useRootNavigationState();
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const [isNavigationReady, setIsNavigationReady] = useState(false);
 
   useEffect(() => {
@@ -49,7 +50,6 @@ function RootLayoutNav() {
     if (!isNavigationReady) return;
     const task = InteractionManager.runAfterInteractions(() => {
       const inAuthGroup = segments[0] === '(auth)';
-      const { isAuthenticated } = useAuthStore.getState();
       if (!isAuthenticated && !inAuthGroup) {
         router.replace('/(auth)/login' as any);
       } else if (isAuthenticated && inAuthGroup) {
@@ -57,19 +57,7 @@ function RootLayoutNav() {
       }
     });
     return () => task.cancel();
-  }, [segments, isNavigationReady, router]);
-
-  const pushOptions = (title: string) => ({
-    headerShown: true,
-    title,
-    ...(Platform.OS === 'ios'
-      ? {
-          headerTransparent: true,
-          headerShadowVisible: false,
-          headerBackButtonDisplayMode: 'minimal' as const,
-        }
-      : {}),
-  });
+  }, [segments, isNavigationReady, isAuthenticated, router]);
 
   return (
     <Stack>
@@ -86,6 +74,20 @@ function RootLayoutNav() {
       <Stack.Screen name="users" options={pushOptions('User Management')} />
     </Stack>
   );
+}
+
+function pushOptions(title: string) {
+  return {
+    headerShown: true,
+    title,
+    ...(Platform.OS === 'ios'
+      ? {
+          headerTransparent: true,
+          headerShadowVisible: false,
+          headerBackButtonDisplayMode: 'minimal' as const,
+        }
+      : {}),
+  };
 }
 
 const styles = StyleSheet.create({
