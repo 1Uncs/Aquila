@@ -3,10 +3,10 @@
   "version": "1.0.0",
   "main": "expo-router/entry",
   "scripts": {
-    "start": "EXPO_NO_METRO_LAZY=1 expo start",
-    "android": "EXPO_NO_METRO_LAZY=1 expo start --android",
-    "ios": "EXPO_NO_METRO_LAZY=1 expo start --ios",
-    "web": "expo start --web",
+    "start": "node scripts/start.js",
+    "android": "node scripts/start.js --android",
+    "ios": "node scripts/start.js --ios",
+    "web": "node scripts/start.js --web",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit"
   },

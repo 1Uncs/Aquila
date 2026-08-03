@@ -5,7 +5,7 @@ import tsParser from '@typescript-eslint/parser';
 export default [
   js.configs.recommended,
   {
-    ignores: ['metro.config.cjs'],
+    ignores: ['metro.config.cjs', 'scripts/'],
   },
   {
     files: ['**/*.ts', '**/*.tsx', '**/*.js'],
