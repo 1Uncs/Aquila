@@ -79,17 +79,17 @@ export default function LoginScreen() {
           leftIcon="mail-outline"
         />
 
-        <Input
-          label="Password"
-          placeholder="Enter your password"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry={!showPassword}
-          secureToggle
-          secureVisible={showPassword}
-          onToggleSecure={() => setShowPassword((prev) => !prev)}
-          leftIcon="lock-closed-outline"
-        />
+<Input
+            label="Password"
+            placeholder="Enter your password"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry={!showPassword}
+            secureToggle
+            visible={showPassword}
+            onToggleSecure={() => setShowPassword((prev) => !prev)}
+            leftIcon="lock-closed-outline"
+          />
 
         {error ? (
           <ThemedText variant="caption" color="error" style={{ marginHorizontal: 16, marginBottom: spacing.md }}>

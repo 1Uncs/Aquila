@@ -1,4 +1,4 @@
-import React, { forwardRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   View,
   TextInput as RNTextInput,
@@ -21,37 +21,43 @@ type InputProps = {
   rightIcon?: keyof typeof Ionicons.glyphMap;
   onRightIconPress?: () => void;
   secureToggle?: boolean;
-  secureVisible?: boolean;
+  visible?: boolean;
   onToggleSecure?: () => void;
   containerStyle?: ViewStyle;
   testID?: string;
 } & RNTextInputProps;
 
-export const Input = forwardRef<RNTextInput, InputProps>(function Input(
-  {
-    label,
-    error,
-    leftIcon,
-    rightIcon,
-    onRightIconPress,
-    secureToggle,
-    secureVisible,
-    onToggleSecure,
-    containerStyle,
-    testID,
-    ...rest
-  }: InputProps,
-  ref,
-) {
+export const Input = ({
+  label,
+  error,
+  leftIcon,
+  rightIcon,
+  onRightIconPress,
+  secureToggle,
+  visible,
+  onToggleSecure,
+  containerStyle,
+  testID,
+  ...rest
+}: InputProps) => {
   const scheme = useColorScheme() ?? 'light';
   const colors = Colors[scheme];
   const [focused, setFocused] = useState(false);
+  const inputRef = useRef<RNTextInput>(null);
 
-const rightIconName = secureToggle
-    ? (secureVisible ? 'eye-off' : 'eye')
+  useEffect(() => {
+    if (focused) {
+      inputRef.current?.focus();
+    }
+  }, [focused, visible]);
+
+  const rightIconName = secureToggle
+    ? (visible ? 'eye-off' : 'eye')
     : rightIcon;
 
-  const handleRightPress = secureToggle ? onToggleSecure : onRightIconPress;
+const handleRightPress = secureToggle
+    ? onToggleSecure
+    : onRightIconPress;
 
   return (
     <View style={[styles.wrapper, containerStyle]}>
@@ -78,7 +84,7 @@ const rightIconName = secureToggle
           <Ionicons name={leftIcon} size={20} color={colors.textMuted} style={{ marginRight: spacing.sm }} />
         )}
         <RNTextInput
-          ref={ref}
+          ref={inputRef}
           style={[
             styles.input,
             { color: colors.text },
@@ -106,7 +112,7 @@ const rightIconName = secureToggle
       )}
     </View>
   );
-});
+};
 
 const styles = StyleSheet.create({
   wrapper: { marginHorizontal: spacing.md, marginBottom: spacing.md },
