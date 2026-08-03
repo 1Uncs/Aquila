@@ -1,17 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, ScrollView, Pressable, PressableStateCallbackType, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
 import { ScreenView } from '@/core/components/ScreenView';
 import { ThemedText, Card, EmptyState } from '@/core/components';
-import { Ionicons } from '@expo/vector-icons';
 import { mockApi } from '@/features/elections/service';
 import { IncidentReport } from '@/features/auth/store';
+import { IncidentSeverity } from '@/types';
 import { useIncidentsStore } from '@/features/auth/store';
 import { ROUTES } from '@/constants/routes';
-import { router } from 'expo-router';
 import { spacing, radius } from '@/constants/tokens';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
 import Colors from '@/constants/colors';
-import { IncidentSeverity } from '@/types';
 
 export default function IncidentsScreen() {
   const [incidents, setIncidents] = useState<IncidentReport[]>([]);

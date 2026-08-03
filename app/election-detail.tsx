@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import { ScreenView } from '@/core/components/ScreenView';
 import { ThemedText, Card, Button, EmptyState } from '@/core/components';
-import { Ionicons } from '@expo/vector-icons';
 import { mockApi } from '@/features/elections/service';
 import { ROUTES } from '@/constants/routes';
 import { spacing, shadows, radius } from '@/constants/tokens';

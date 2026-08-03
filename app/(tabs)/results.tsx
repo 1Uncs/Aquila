@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, ScrollView, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
 import { ScreenView } from '@/core/components/ScreenView';
 import { ThemedText, Card, EmptyState, DebouncedPressable } from '@/core/components';
-import { Ionicons } from '@expo/vector-icons';
 import { mockApi } from '@/features/elections/service';
 import { useResultsStore } from '@/features/auth/store';
 import { ROUTES } from '@/constants/routes';
-import { router } from 'expo-router';
 import { spacing, radius, shadows } from '@/constants/tokens';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
 import Colors from '@/constants/colors';
