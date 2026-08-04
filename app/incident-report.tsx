@@ -76,6 +76,7 @@ export default function ReportIncidentScreen() {
         Alert.alert('Permission needed', 'Microphone permission is required to record audio.');
         return;
       }
+      await Audio.setAudioModeAsync({ allowsRecordingIOS: true });
       const { recording } = await Audio.Recording.createAsync(
         Audio.RecordingOptionsPresets.HIGH_QUALITY
       );

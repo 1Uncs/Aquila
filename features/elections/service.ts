@@ -85,6 +85,36 @@ const POLLING_UNITS: PollingUnit[] = LGAS.slice(0, 50).flatMap((lga) =>
   }))
 );
 
+const WARDS = LGAS.slice(0, 20).flatMap((lga) =>
+  Array.from({ length: 2 }, (_, i) => ({
+    id: `ward-${lga.id}-${i + 1}`,
+    name: `${lga.name} Ward ${i + 1}`,
+    lgaId: lga.id,
+    lgaName: lga.name,
+    stateId: lga.stateId,
+    stateName: NIGERIA_STATES.find((s) => s.id === lga.stateId)?.name ?? '',
+  }))
+);
+
+const SENATORIAL_DISTRICTS = NIGERIA_STATES.slice(0, 20).flatMap((state) =>
+  Array.from({ length: 3 }, (_, i) => ({
+    id: `sd-${state.id}-${i + 1}`,
+    name: `${state.name} Senatorial District ${i + 1}`,
+    stateId: state.id,
+    stateName: state.name,
+  }))
+);
+
+const CONSTITUENCIES = NIGERIA_STATES.slice(0, 15).flatMap((state) =>
+  Array.from({ length: 4 }, (_, i) => ({
+    id: `con-${state.id}-${i + 1}`,
+    name: `${state.name} Federal Constituency ${i + 1}`,
+    stateId: state.id,
+    stateName: state.name,
+    type: i % 2 === 0 ? 'Federal' : 'State',
+  }))
+);
+
 function delay(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -305,5 +335,23 @@ export const mockApi = {
   getPositions: async () => {
     await delay(300);
     return POSITIONS;
+  },
+
+  getWards: async (lgaId?: string) => {
+    await delay(300);
+    const filtered = lgaId ? WARDS.filter((w) => w.lgaId === lgaId) : WARDS;
+    return filtered.slice(0, 20);
+  },
+
+  getSenatorialDistricts: async (stateId?: string) => {
+    await delay(300);
+    const filtered = stateId ? SENATORIAL_DISTRICTS.filter((d) => d.stateId === stateId) : SENATORIAL_DISTRICTS;
+    return filtered.slice(0, 10);
+  },
+
+  getConstituencies: async (stateId?: string) => {
+    await delay(300);
+    const filtered = stateId ? CONSTITUENCIES.filter((c) => c.stateId === stateId) : CONSTITUENCIES;
+    return filtered.slice(0, 10);
   },
 };

@@ -79,3 +79,24 @@ export function usePartiesQuery() {
     queryFn: mockApi.getParties,
   });
 }
+
+export function useWardsQuery(lgaId?: string) {
+  return useQuery({
+    queryKey: ['locations', 'wards', lgaId],
+    queryFn: () => mockApi.getWards(lgaId),
+  });
+}
+
+export function useSenatorialDistrictsQuery(stateId?: string) {
+  return useQuery({
+    queryKey: ['locations', 'senatorialDistricts', stateId],
+    queryFn: () => mockApi.getSenatorialDistricts(stateId),
+  });
+}
+
+export function useConstituenciesQuery(stateId?: string) {
+  return useQuery({
+    queryKey: ['locations', 'constituencies', stateId],
+    queryFn: () => mockApi.getConstituencies(stateId),
+  });
+}
