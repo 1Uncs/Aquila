@@ -90,8 +90,6 @@ export function Button({
       {renderIcon(leftIcon, textColor)}
       <ThemedText
         variant="label"
-        numberOfLines={1}
-        ellipsizeMode="tail"
         style={[
           styles.label,
           { color: textColor },

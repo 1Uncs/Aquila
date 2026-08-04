@@ -30,7 +30,9 @@ export default function ReportIncidentScreen() {
   const [submitting, setSubmitting] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [recordingUri, setRecordingUri] = useState<string | null>(null);
+  const [recordingDuration, setRecordingDuration] = useState(0);
   const recordingRef = useRef<Audio.Recording | null>(null);
+  const durationIntervalRef = useRef<ReturnType<typeof globalThis.setInterval> | null>(null);
   const { addIncident } = useIncidentsStore();
   const { user } = useAuthStore();
 
@@ -81,8 +83,12 @@ export default function ReportIncidentScreen() {
         Audio.RecordingOptionsPresets.HIGH_QUALITY
       );
       recordingRef.current = recording;
+      setRecordingDuration(0);
       setIsRecording(true);
       setRecordingUri(null);
+      durationIntervalRef.current = globalThis.setInterval(() => {
+        setRecordingDuration((prev) => prev + 1);
+      }, 1000);
     } catch (error) {
       console.error('Failed to start recording:', error);
       Alert.alert('Error', 'Failed to start audio recording.');
@@ -92,6 +98,10 @@ export default function ReportIncidentScreen() {
   const stopRecording = async () => {
     try {
       if (!recordingRef.current) return;
+      if (durationIntervalRef.current) {
+        globalThis.clearInterval(durationIntervalRef.current);
+        durationIntervalRef.current = null;
+      }
       await recordingRef.current.stopAndUnloadAsync();
       const uri = recordingRef.current.getURI();
       setIsRecording(false);
@@ -104,8 +114,18 @@ export default function ReportIncidentScreen() {
     } catch (error) {
       console.error('Failed to stop recording:', error);
       setIsRecording(false);
+      if (durationIntervalRef.current) {
+        globalThis.clearInterval(durationIntervalRef.current);
+        durationIntervalRef.current = null;
+      }
       await Audio.setAudioModeAsync({ allowsRecordingIOS: false, playsInSilentModeIOS: false });
     }
+  };
+
+  const formatDuration = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
   const handleAddPhoto = async () => {
@@ -268,7 +288,7 @@ export default function ReportIncidentScreen() {
             <Button label="Audio" variant="outline" size="sm" onPress={handleAttachAudio} leftIcon="musical-notes-outline" style={{ flex: 1, minWidth: 80 }} />
           </View>
 
-          <View style={{ flexDirection: 'row', gap: spacing.sm, marginHorizontal: spacing.md, marginBottom: spacing.md, flexWrap: 'wrap' }}>
+          <View style={{ flexDirection: 'row', gap: spacing.sm, marginHorizontal: spacing.md, marginBottom: spacing.md, flexWrap: 'wrap', alignItems: 'center' }}>
             <Button
               label={isRecording ? 'Stop Recording' : 'Record Memo'}
               variant={isRecording ? 'primary' : 'outline'}
@@ -277,7 +297,11 @@ export default function ReportIncidentScreen() {
               leftIcon={isRecording ? 'stop-circle' : 'mic'}
               style={{ flex: 1, minWidth: 120 }}
             />
-            {recordingUri ? (
+            {isRecording ? (
+              <ThemedText variant="caption" color="error" style={{ minWidth: 60, textAlign: 'center' }}>
+                {formatDuration(recordingDuration)}
+              </ThemedText>
+            ) : recordingUri ? (
               <ThemedText variant="caption" color="success" style={{ alignSelf: 'center' }}>
                 Recording saved
               </ThemedText>
