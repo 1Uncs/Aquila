@@ -1,10 +1,10 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import {
   View,
   TextInput as RNTextInput,
   TextInputProps as RNTextInputProps,
   StyleSheet,
-  TouchableWithoutFeedback,
+  Pressable,
   ViewStyle,
   Platform,
 } from 'react-native';
@@ -44,15 +44,6 @@ export const Input = ({
   const colors = Colors[scheme];
   const [focused, setFocused] = useState(false);
   const inputRef = useRef<RNTextInput>(null);
-
-  // When visibility changes (e.g., toggling password), refocus if already focused
-  // to prevent keyboard dismissal on Android
-  useEffect(() => {
-    if (visible && focused) {
-      inputRef.current?.focus();
-    }
-  }, [visible, focused]);
-
   const rightIconName = secureToggle
     ? (visible ? 'eye-off' : 'eye')
     : rightIcon;
@@ -100,11 +91,11 @@ export const Input = ({
           {...rest}
         />
         {(rightIconName || secureToggle) && (
-          <TouchableWithoutFeedback onPress={handleRightPress} hitSlop={8} accessibilityRole="button">
+          <Pressable onPress={handleRightPress} hitSlop={8} accessibilityRole="button">
             {rightIconName && (
               <Ionicons name={rightIconName} size={20} color={colors.textMuted} />
             )}
-          </TouchableWithoutFeedback>
+          </Pressable>
         )}
       </View>
       {error && (
