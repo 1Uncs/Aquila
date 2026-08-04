@@ -4,9 +4,14 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ThemedText, Input, Button } from '@/core/components';
 import { spacing } from '@/constants/tokens';
 import { login } from '@/features/auth/service';
+import { useColorScheme } from '@/core/hooks/useColorScheme';
+import Colors from '@/constants/colors';
 
 export default function LoginScreen() {
   const insets = useSafeAreaInsets();
+  const scheme = useColorScheme() ?? 'light';
+  const colors = Colors[scheme];
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -43,7 +48,7 @@ export default function LoginScreen() {
   };
 
   return (
-    <View style={{ flex: 1 }}>
+    <View style={{ flex: 1, backgroundColor: colors.background }}>
       <KeyboardAvoidingView
         enabled={Platform.OS === 'ios'}
         behavior="padding"
