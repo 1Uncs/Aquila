@@ -2,7 +2,6 @@ import { View, ViewStyle, Platform, ScrollView, ScrollViewProps, StyleSheet } fr
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
 import Colors from '@/constants/colors';
-import { LinearGradient } from 'expo-linear-gradient';
 import { spacing } from '@/constants/tokens';
 
 type ScreenViewProps = {
@@ -12,7 +11,6 @@ type ScreenViewProps = {
   scrollable?: boolean;
   keyboardShouldPersistTaps?: ScrollViewProps['keyboardShouldPersistTaps'];
   testID?: string;
-  headerGradient?: readonly [string, string, ...string[]];
   noScrollPadding?: boolean;
   refreshControl?: React.ReactElement;
 };
@@ -24,7 +22,6 @@ export function ScreenView({
   scrollable = false,
   keyboardShouldPersistTaps,
   testID,
-  headerGradient,
   noScrollPadding = false,
   refreshControl,
 }: ScreenViewProps) {
@@ -35,20 +32,8 @@ export function ScreenView({
   const baseStyle: ViewStyle = {
     flex: 1,
     backgroundColor: colors.background,
-    paddingTop: insets.top,
-    paddingBottom: Platform.OS === 'ios' ? insets.bottom : insets.bottom,
-  };
-
-  const renderHeaderGradient = () => {
-    if (!headerGradient || headerGradient.length === 0) return null;
-    return (
-      <LinearGradient
-        colors={headerGradient}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 0, y: 1 }}
-        style={styles.headerGradient}
-      />
-    );
+    paddingTop: Platform.OS === 'android' ? insets.top : 0,
+    paddingBottom: Platform.OS === 'android' ? insets.bottom : 0,
   };
 
   if (scrollable) {
@@ -59,7 +44,6 @@ export function ScreenView({
     ];
 
     const scrollViewProps: ScrollViewProps = {
-      style: styles.scrollView,
       contentContainerStyle: scrollContentStyle,
       contentInsetAdjustmentBehavior: 'automatic',
       keyboardShouldPersistTaps: keyboardShouldPersistTaps,
@@ -73,8 +57,7 @@ export function ScreenView({
 
     return (
       <View style={[baseStyle, style]} testID={testID} collapsable={false}>
-        {renderHeaderGradient()}
-        <ScrollView {...scrollViewProps}>
+        <ScrollView style={styles.scrollView} {...scrollViewProps}>
           {children}
         </ScrollView>
       </View>
@@ -83,7 +66,6 @@ export function ScreenView({
 
   return (
     <View style={[baseStyle, style]} testID={testID}>
-      {renderHeaderGradient()}
       <View style={noScrollPadding ? {} : { paddingHorizontal: spacing.md, paddingTop: spacing.md }}>
         {children}
       </View>
@@ -92,14 +74,6 @@ export function ScreenView({
 }
 
 const styles = StyleSheet.create({
-  headerGradient: {
-    height: spacing.screen.headerHeight,
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    zIndex: 0,
-  },
   scrollView: {
     flex: 1,
   },
