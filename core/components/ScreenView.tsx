@@ -36,7 +36,7 @@ export function ScreenView({
       <View style={[baseStyle, style]} testID={testID} collapsable={false}>
         <ScrollView
           style={{ flex: 1 }}
-          contentContainerStyle={contentContainerStyle}
+          contentContainerStyle={[{ alignSelf: 'stretch' }, contentContainerStyle]}
           contentInsetAdjustmentBehavior="automatic"
           keyboardShouldPersistTaps={keyboardShouldPersistTaps}
         >

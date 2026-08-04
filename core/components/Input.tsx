@@ -91,7 +91,7 @@ export const Input = ({
             { color: colors.text },
             hasLeftIcon && styles.inputWithLeftIcon,
             hasRightIcon && styles.inputWithRightIcon,
-            Platform.OS === 'android' && { textAlignVertical: rest.multiline ? 'top' : 'center' },
+            Platform.OS === 'android' && { textAlignVertical: rest.multiline ? 'top' : 'center', paddingVertical: spacing.md, minHeight: 48 },
           ]}
           placeholderTextColor={colors.textMuted}
           onFocus={() => setFocused(true)}
@@ -137,7 +137,6 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 16,
     fontFamily: 'System',
-    paddingVertical: 12,
   },
   leftIcon: {
     position: 'absolute',
