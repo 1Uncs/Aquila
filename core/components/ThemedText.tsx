@@ -16,8 +16,6 @@ type ThemedTextProps = {
   testID?: string;
   numberOfLines?: number;
   ellipsizeMode?: 'tail' | 'head' | 'middle' | 'clip';
-  adjustsFontSizeToFit?: boolean;
-  minimumFontScale?: number;
   onPress?: () => void;
   uppercase?: boolean;
   tracking?: number;
@@ -58,8 +56,6 @@ export function ThemedText({
   testID,
   numberOfLines,
   ellipsizeMode,
-  adjustsFontSizeToFit,
-  minimumFontScale,
   onPress,
   uppercase,
   tracking,
@@ -128,8 +124,6 @@ export function ThemedText({
         maxFontSizeMultiplier={maxFontSizeMultiplier}
         numberOfLines={numberOfLines}
         ellipsizeMode={ellipsizeMode}
-        adjustsFontSizeToFit={adjustsFontSizeToFit}
-        minimumFontScale={minimumFontScale}
         testID={testID}
         onPress={onPress}
       >
@@ -149,8 +143,6 @@ export function ThemedText({
             maxFontSizeMultiplier={maxFontSizeMultiplier}
             numberOfLines={numberOfLines}
             ellipsizeMode={ellipsizeMode}
-            adjustsFontSizeToFit={adjustsFontSizeToFit}
-            minimumFontScale={minimumFontScale}
             testID={testID}
             onPress={onPress}
           >
@@ -168,8 +160,6 @@ export function ThemedText({
       maxFontSizeMultiplier={maxFontSizeMultiplier}
       numberOfLines={numberOfLines}
       ellipsizeMode={ellipsizeMode}
-      adjustsFontSizeToFit={adjustsFontSizeToFit}
-      minimumFontScale={minimumFontScale}
       testID={testID}
       onPress={onPress}
     >

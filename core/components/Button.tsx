@@ -26,8 +26,6 @@ type ButtonProps = {
   fullWidth?: boolean;
   leftIcon?: keyof typeof Ionicons.glyphMap;
   rightIcon?: keyof typeof Ionicons.glyphMap;
-  adjustsFontSizeToFit?: boolean;
-  minimumFontScale?: number;
 } & Omit<PressableProps, 'children'>;
 
 export function Button({
@@ -42,8 +40,6 @@ export function Button({
   fullWidth = false,
   leftIcon,
   rightIcon,
-  adjustsFontSizeToFit,
-  minimumFontScale,
   ...rest
 }: ButtonProps) {
   const scheme = useColorScheme() ?? 'light';
@@ -96,8 +92,6 @@ export function Button({
         variant="label"
         numberOfLines={1}
         ellipsizeMode="tail"
-        adjustsFontSizeToFit={adjustsFontSizeToFit ?? true}
-        minimumFontScale={minimumFontScale ?? 0.75}
         style={[
           styles.label,
           { color: textColor },
