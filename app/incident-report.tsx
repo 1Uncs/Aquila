@@ -76,7 +76,7 @@ export default function ReportIncidentScreen() {
         Alert.alert('Permission needed', 'Microphone permission is required to record audio.');
         return;
       }
-      await Audio.setAudioModeAsync({ allowsRecordingIOS: true });
+      await Audio.setAudioModeAsync({ allowsRecordingIOS: true, playsInSilentModeIOS: true });
       const { recording } = await Audio.Recording.createAsync(
         Audio.RecordingOptionsPresets.HIGH_QUALITY
       );
@@ -95,14 +95,16 @@ export default function ReportIncidentScreen() {
       await recordingRef.current.stopAndUnloadAsync();
       const uri = recordingRef.current.getURI();
       setIsRecording(false);
+      recordingRef.current = null;
+      await Audio.setAudioModeAsync({ allowsRecordingIOS: false, playsInSilentModeIOS: false });
       if (uri) {
         setRecordingUri(uri);
         setMediaUris((prev) => [...prev, uri]);
       }
-      recordingRef.current = null;
     } catch (error) {
       console.error('Failed to stop recording:', error);
       setIsRecording(false);
+      await Audio.setAudioModeAsync({ allowsRecordingIOS: false, playsInSilentModeIOS: false });
     }
   };
 
