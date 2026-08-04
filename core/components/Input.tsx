@@ -52,6 +52,9 @@ export const Input = ({
     ? onToggleSecure
     : onRightIconPress;
 
+  const hasLeftIcon = !!leftIcon;
+  const hasRightIcon = !!(rightIconName || secureToggle);
+
   return (
     <View style={[styles.wrapper, containerStyle]}>
       {label && (
@@ -73,14 +76,21 @@ export const Input = ({
           focused && { shadowColor: colors.primary, shadowOpacity: 0.15 },
         ]}
       >
-        {leftIcon && (
-          <Ionicons name={leftIcon} size={20} color={colors.textMuted} style={{ marginRight: spacing.sm }} />
+        {hasLeftIcon && (
+          <Ionicons
+            name={leftIcon}
+            size={20}
+            color={colors.textMuted}
+            style={styles.leftIcon}
+          />
         )}
         <RNTextInput
           ref={inputRef}
           style={[
             styles.input,
             { color: colors.text },
+            hasLeftIcon && styles.inputWithLeftIcon,
+            hasRightIcon && styles.inputWithRightIcon,
             Platform.OS === 'android' && { textAlignVertical: rest.multiline ? 'top' : 'center' },
           ]}
           placeholderTextColor={colors.textMuted}
@@ -90,8 +100,13 @@ export const Input = ({
           maxFontSizeMultiplier={1.3}
           {...rest}
         />
-        {(rightIconName || secureToggle) && (
-          <Pressable onPress={handleRightPress} hitSlop={8} accessibilityRole="button">
+        {hasRightIcon && (
+          <Pressable
+            onPress={handleRightPress}
+            hitSlop={8}
+            accessibilityRole="button"
+            style={styles.rightIcon}
+          >
             {rightIconName && (
               <Ionicons name={rightIconName} size={20} color={colors.textMuted} />
             )}
@@ -116,6 +131,28 @@ const styles = StyleSheet.create({
     borderRadius: radius.md,
     paddingHorizontal: spacing.md,
     height: 48,
+    position: 'relative',
   },
-  input: { flex: 1, fontSize: 16, fontFamily: 'System' },
+  input: {
+    flex: 1,
+    fontSize: 16,
+    fontFamily: 'System',
+    paddingVertical: 12,
+  },
+  leftIcon: {
+    position: 'absolute',
+    left: spacing.md,
+    zIndex: 1,
+  },
+  rightIcon: {
+    position: 'absolute',
+    right: spacing.md,
+    zIndex: 1,
+  },
+  inputWithLeftIcon: {
+    paddingLeft: 44,
+  },
+  inputWithRightIcon: {
+    paddingRight: 44,
+  },
 });
