@@ -4,7 +4,7 @@ import { FlashList } from '@shopify/flash-list';
 import { ScreenView } from '@/core/components/ScreenView';
 import { ThemedText, FlashListItem, EmptyState, Input, Button } from '@/core/components';
 import { router, useLocalSearchParams } from 'expo-router';
-import { spacing, radius, shadows } from '@/constants/tokens';
+import { spacing, radius } from '@/constants/tokens';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
 import { usePollingUnitsQuery, useLgasQuery, useStatesQuery } from '@/features/elections/hooks';
 import { useAuthStore } from '@/features/auth/store';

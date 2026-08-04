@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Platform, KeyboardAvoidingView } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import { ScreenView } from '@/core/components/ScreenView';
 import { ThemedText, FlashListItem, EmptyState, Input } from '@/core/components';
 import { useIncidentsStore } from '@/features/auth/store';
-import { spacing, shadows, radius } from '@/constants/tokens';
+import { spacing, radius } from '@/constants/tokens';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
 import { useIncidentsQuery } from '@/features/elections/hooks';
 import Colors from '@/constants/colors';
