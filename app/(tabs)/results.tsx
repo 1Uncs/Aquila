@@ -66,12 +66,12 @@ export default function ResultsScreen() {
               <StatCard icon="✓" label="Published" value={String(results.filter((r) => r.status === 'PUBLISHED').length)} gradient={gradientPresets.accent} />
             </ScrollView>
 
-            <View style={{ flexDirection: 'row', gap: spacing.sm, marginHorizontal: spacing.md, marginBottom: spacing.lg }}>
-              <Button label="Drafts" variant="outline" size="sm" onPress={() => router.push(ROUTES.RESULT_DRAFTS as any)} style={styles.actionBtn} />
-              <Button label="Search" variant="primary" size="sm" onPress={() => router.push(ROUTES.RESULT_SEARCH)} style={styles.actionBtn} />
-              <Button label="Collation" variant="outline" size="sm" onPress={() => router.push(ROUTES.RESULT_COLLATION)} style={styles.actionBtn} />
-              <Button label="Incident" variant="outline" size="sm" onPress={() => router.push(ROUTES.INCIDENT_REPORT)} style={styles.actionBtn} />
-            </View>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: spacing.md, gap: spacing.sm, marginBottom: spacing.lg }} keyboardShouldPersistTaps="handled">
+              <Button label="Drafts" variant="outline" size="sm" onPress={() => router.push(ROUTES.RESULT_DRAFTS as any)} style={{ minWidth: 80 }} />
+              <Button label="Search" variant="primary" size="sm" onPress={() => router.push(ROUTES.RESULT_SEARCH)} style={{ minWidth: 80 }} />
+              <Button label="Collation" variant="outline" size="sm" onPress={() => router.push(ROUTES.RESULT_COLLATION)} style={{ minWidth: 80 }} />
+              <Button label="Incident" variant="outline" size="sm" onPress={() => router.push(ROUTES.INCIDENT_REPORT)} style={{ minWidth: 80 }} />
+            </ScrollView>
 
             <ThemedText variant="h3" style={{ marginHorizontal: spacing.md, marginBottom: spacing.sm }}>
               Recent Results
@@ -113,7 +113,7 @@ const styles = StyleSheet.create({
   statCard: { width: sizes.statCard, padding: spacing.md, borderRadius: radius.lg },
   gradientIconWrap: { overflow: 'hidden', alignSelf: 'flex-start' },
   gradientIconBg: { width: 48, height: 48, borderRadius: radius.md, alignItems: 'center', justifyContent: 'center' },
-  actionBtn: { flex: 1 },
+  actionBtn: { minWidth: 80 },
   progressTrack: { height: spacing.sm, borderRadius: radius.sm, overflow: 'hidden' },
   progressFill: { height: '100%', borderRadius: radius.sm },
 });
