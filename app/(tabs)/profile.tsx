@@ -1,12 +1,12 @@
 import React from 'react';
-import { StyleSheet, PressableStateCallbackType, View, Alert } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { StyleSheet, View, Alert } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { ScreenView } from '@/core/components/ScreenView';
-import { ThemedText, Card, Button, DebouncedPressable } from '@/core/components';
+import { ThemedText, Card, Button } from '@/core/components';
 import { useAuthStore } from '@/features/auth/store';
 import { ROUTES } from '@/constants/routes';
-import { spacing, radius, border, sizes } from '@/constants/tokens';
+import { spacing, radius, shadows, sizes, gradientPresets, border } from '@/constants/tokens';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
 import { useElectionsQuery } from '@/features/elections/hooks';
 import Colors from '@/constants/colors';
@@ -28,17 +28,21 @@ export default function ProfileTabScreen() {
   };
 
   const menuItems = [
-    { label: 'Locations', icon: 'location-outline', route: ROUTES.LOCATIONS },
-    { label: 'Political Parties', icon: 'people-outline', route: ROUTES.PARTIES },
-    { label: 'Users', icon: 'person-add-outline', route: ROUTES.USERS },
+    { label: 'Locations', icon: '📍', route: ROUTES.LOCATIONS },
+    { label: 'Political Parties', icon: '👥', route: ROUTES.PARTIES },
+    { label: 'Users', icon: '👤', route: ROUTES.USERS },
   ];
 
   return (
     <ScreenView scrollable keyboardShouldPersistTaps="handled">
       <View style={{ paddingBottom: spacing.xxl }}>
-        <View style={[styles.header, { backgroundColor: colors.primary }]}>
-          <View style={styles.avatar}>
-            <Ionicons name="person" size={40} color="#fff" />
+        <LinearGradient colors={[...gradientPresets.primary]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.header}>
+          <View style={[styles.avatar, shadows.lg]}>
+            <LinearGradient colors={['rgba(255,255,255,0.25)', 'rgba(255,255,255,0.15)']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.avatarBg}>
+              <ThemedText variant="xxl" style={{ color: '#fff', fontWeight: '700' }}>
+                {user?.name?.charAt(0)?.toUpperCase() ?? 'U'}
+              </ThemedText>
+            </LinearGradient>
           </View>
           <ThemedText variant="lg" style={{ color: '#fff', marginTop: spacing.sm, fontWeight: '700' }}>
             {user?.name ?? 'User'}
@@ -49,59 +53,43 @@ export default function ProfileTabScreen() {
           <ThemedText variant="caption" style={{ color: 'rgba(255,255,255,0.6)' }}>
             {user?.email}
           </ThemedText>
-        </View>
+        </LinearGradient>
 
         <ThemedText variant="h3" style={{ marginHorizontal: 16, marginTop: spacing.lg, marginBottom: spacing.sm }}>
           Management
         </ThemedText>
         {menuItems.map((item) => (
-          <DebouncedPressable
-            key={item.label}
-            onPress={() => router.push(item.route)}
-            style={({ pressed }: PressableStateCallbackType) => [
-              styles.menuItem,
-              { backgroundColor: colors.card, borderColor: colors.border },
-              pressed && { opacity: 0.7 },
-            ]}
-          >
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
-              <Ionicons name={item.icon as any} size={22} color={colors.primary} />
-              <ThemedText variant="body">{item.label}</ThemedText>
+          <Card key={item.label} pressable onPress={() => router.push(item.route)} style={styles.menuItem}>
+            <View style={styles.menuItemRow}>
+              <ThemedText variant="body">{item.icon} {item.label}</ThemedText>
+              <ThemedText variant="caption" color="textMuted">›</ThemedText>
             </View>
-            <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
-          </DebouncedPressable>
+          </Card>
         ))}
 
         <ThemedText variant="h3" style={{ marginHorizontal: 16, marginTop: spacing.lg, marginBottom: spacing.sm }}>
           Account
         </ThemedText>
-        <Card>
-          <View style={styles.row}>
-            <View>
+        <Card style={[shadows.md]}>
+          <View style={styles.statsRow}>
+            <View style={styles.statItem}>
+              <ThemedText variant="xxl" style={{ fontWeight: '700', color: colors.primary }}>{electionCount}</ThemedText>
               <ThemedText variant="caption" color="textSecondary">Elections Configured</ThemedText>
-              <ThemedText variant="lg" style={{ fontWeight: '700' }}>{electionCount}</ThemedText>
             </View>
-            <View>
+            <View style={[styles.statDivider, { backgroundColor: colors.border }]} />
+            <View style={styles.statItem}>
+              <ThemedText variant="body" style={{ fontWeight: '600' }}>{user?.role ? roleLabels[user.role] : '—'}</ThemedText>
               <ThemedText variant="caption" color="textSecondary">Role</ThemedText>
-              <ThemedText variant="body" style={{ fontWeight: '600' }}>
-                {user?.role ? roleLabels[user.role] : '—'}
-              </ThemedText>
             </View>
           </View>
         </Card>
 
-        <Button
-          label="Sign Out"
-          variant="outline"
-          onPress={() =>
-            Alert.alert('Sign out', 'Are you sure you want to sign out?', [
-              { text: 'Cancel', style: 'cancel' },
-              { text: 'Sign Out', style: 'destructive', onPress: logout },
-            ])
-          }
-          style={{ marginTop: spacing.xl }}
-          fullWidth
-        />
+        <Button label="Sign Out" variant="outline" onPress={() =>
+          Alert.alert('Sign out', 'Are you sure you want to sign out?', [
+            { text: 'Cancel', style: 'cancel' },
+            { text: 'Sign Out', style: 'destructive', onPress: logout },
+          ])
+        } style={{ marginHorizontal: 16, marginTop: spacing.xl }} fullWidth />
       </View>
     </ScreenView>
   );
@@ -119,19 +107,18 @@ const styles = StyleSheet.create({
     width: sizes.avatar,
     height: sizes.avatar,
     borderRadius: sizes.avatar / 2,
-    backgroundColor: 'rgba(255,255,255,0.2)',
+    overflow: 'hidden',
+  },
+  avatarBg: {
+    width: '100%',
+    height: '100%',
+    borderRadius: sizes.avatar / 2,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  menuItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: spacing.md,
-    marginHorizontal: spacing.md,
-    marginVertical: spacing.xs,
-    borderRadius: radius.md,
-    borderWidth: border.thin,
-  },
+  menuItem: { marginHorizontal: 16, marginVertical: spacing.xs },
+  menuItemRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  statsRow: { flexDirection: 'row', alignItems: 'center' },
+  statItem: { flex: 1, paddingVertical: spacing.sm },
+  statDivider: { width: border.thin, height: 40, marginHorizontal: spacing.md },
 });

@@ -1,14 +1,45 @@
 import React from 'react';
 import { StyleSheet, ScrollView, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { ScreenView } from '@/core/components/ScreenView';
-import { ThemedText, Card, EmptyState, DebouncedPressable } from '@/core/components';
+import { ThemedText, Card, EmptyState, Button } from '@/core/components';
 import { ROUTES } from '@/constants/routes';
-import { spacing, radius, shadows, sizes } from '@/constants/tokens';
+import { spacing, radius, shadows, sizes, gradientPresets } from '@/constants/tokens';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
 import { useResultsQuery } from '@/features/elections/hooks';
 import Colors from '@/constants/colors';
+
+function GradientIcon({ name, gradient }: { name: string; gradient: readonly [string, string] }) {
+  return (
+    <View style={[styles.gradientIconWrap, { borderRadius: radius.md }]}>
+      <LinearGradient colors={[...gradient]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.gradientIconBg}>
+        <ThemedText variant="xl" style={{ color: '#fff', fontWeight: '700' }}>{name}</ThemedText>
+      </LinearGradient>
+    </View>
+  );
+}
+
+type StatCardProps = {
+  icon: string;
+  label: string;
+  value: string;
+  gradient: readonly [string, string];
+};
+
+function StatCard({ icon, label, value, gradient }: StatCardProps) {
+  return (
+    <Card style={[styles.statCard, shadows.md]}>
+      <GradientIcon name={icon} gradient={gradient} />
+      <ThemedText variant="xxl" style={{ marginTop: spacing.sm, fontWeight: '700' }}>
+        {value}
+      </ThemedText>
+      <ThemedText variant="caption" color="textSecondary">
+        {label}
+      </ThemedText>
+    </Card>
+  );
+}
 
 export default function ResultsScreen() {
   const { data: results = [], isLoading: loading } = useResultsQuery();
@@ -25,50 +56,14 @@ export default function ResultsScreen() {
         </ThemedText>
 
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, gap: spacing.md, marginBottom: spacing.lg }} keyboardShouldPersistTaps="handled">
-          <Card style={[styles.statCard, shadows.md]}>
-            <Ionicons name="document-text-outline" size={24} color={colors.primary} />
-            <ThemedText variant="xxl" style={{ marginTop: spacing.xs, fontWeight: '700' }}>
-              {results.length}
-            </ThemedText>
-            <ThemedText variant="caption" color="textSecondary">
-              Reports
-            </ThemedText>
-          </Card>
-          <Card style={[styles.statCard, shadows.md]}>
-            <Ionicons name="people-outline" size={24} color={colors.success} />
-            <ThemedText variant="xxl" style={{ marginTop: spacing.xs, fontWeight: '700' }}>
-              {totalVotes.toLocaleString()}
-            </ThemedText>
-            <ThemedText variant="caption" color="textSecondary">
-              Total Votes
-            </ThemedText>
-          </Card>
-          <Card style={[styles.statCard, shadows.md]}>
-            <Ionicons name="checkmark-done-outline" size={24} color={colors.warning} />
-            <ThemedText variant="xxl" style={{ marginTop: spacing.xs, fontWeight: '700' }}>
-              {results.filter((r) => r.status === 'PUBLISHED').length}
-            </ThemedText>
-            <ThemedText variant="caption" color="textSecondary">
-              Published
-            </ThemedText>
-          </Card>
+          <StatCard icon="📋" label="Reports" value={String(results.length)} gradient={gradientPresets.primary} />
+          <StatCard icon="👥" label="Total Votes" value={totalVotes.toLocaleString()} gradient={gradientPresets.success} />
+          <StatCard icon="✓" label="Published" value={String(results.filter((r) => r.status === 'PUBLISHED').length)} gradient={gradientPresets.accent} />
         </ScrollView>
 
         <View style={{ flexDirection: 'row', gap: spacing.sm, marginHorizontal: 16, marginBottom: spacing.lg }}>
-          <DebouncedPressable
-            onPress={() => router.push(ROUTES.RESULT_SEARCH)}
-            style={[styles.actionBtn, { backgroundColor: colors.primary }]}
-          >
-            <Ionicons name="search-outline" size={18} color="#fff" />
-            <ThemedText variant="label" style={{ color: '#fff', marginLeft: 4 }}>Search</ThemedText>
-          </DebouncedPressable>
-          <DebouncedPressable
-            onPress={() => router.push(ROUTES.RESULT_COLLATION)}
-            style={[styles.actionBtn, { backgroundColor: colors.secondary }]}
-          >
-            <Ionicons name="bar-chart-outline" size={18} color="#fff" />
-            <ThemedText variant="label" style={{ color: '#fff', marginLeft: 4 }}>Collation</ThemedText>
-          </DebouncedPressable>
+          <Button label="Search" variant="primary" size="sm" onPress={() => router.push(ROUTES.RESULT_SEARCH)} style={styles.actionBtn} />
+          <Button label="Collation" variant="outline" size="sm" onPress={() => router.push(ROUTES.RESULT_COLLATION)} style={styles.actionBtn} />
         </View>
 
         <ThemedText variant="h3" style={{ marginHorizontal: 16, marginBottom: spacing.sm }}>
@@ -81,26 +76,24 @@ export default function ResultsScreen() {
         ) : results.length === 0 ? (
           <EmptyState icon="analytics-outline" title="No Results" subtitle="No results submitted yet" />
         ) : (
-          results.map((result) => {
-            return (
-              <Card key={result.id}>
-                <ThemedText variant="body" style={{ fontWeight: '600' }}>
-                  {result.pollingUnitName}
-                </ThemedText>
-                <ThemedText variant="caption" color="textSecondary">
-                  {result.totalVotesCast.toLocaleString()} votes · {result.status}
-                </ThemedText>
-                <View style={[styles.progressTrack, { backgroundColor: colors.border, marginTop: spacing.sm }]}>
-                  <View
-                    style={[
-                      styles.progressFill,
-                      { width: `${Math.min((result.totalVotesCast / 800) * 100, 100)}%`, backgroundColor: colors.success },
-                    ]}
-                  />
-                </View>
-              </Card>
-            );
-          })
+          results.map((result) => (
+            <Card key={result.id}>
+              <ThemedText variant="body" style={{ fontWeight: '600' }}>
+                {result.pollingUnitName}
+              </ThemedText>
+              <ThemedText variant="caption" color="textSecondary" style={{ marginTop: 4 }}>
+                {result.totalVotesCast.toLocaleString()} votes · {result.status}
+              </ThemedText>
+              <View style={[styles.progressTrack, { backgroundColor: colors.border, marginTop: spacing.sm }]}>
+                <View
+                  style={[
+                    styles.progressFill,
+                    { width: `${Math.min((result.totalVotesCast / 800) * 100, 100)}%`, backgroundColor: colors.success },
+                  ]}
+                />
+              </View>
+            </Card>
+          ))
         )}
       </View>
     </ScreenView>
@@ -108,15 +101,10 @@ export default function ResultsScreen() {
 }
 
 const styles = StyleSheet.create({
-  statCard: { width: sizes.statCard, padding: spacing.md, borderRadius: radius.lg, backgroundColor: '#fff' },
-  actionBtn: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: spacing.md,
-    borderRadius: radius.md,
-  },
+  statCard: { width: sizes.statCard, padding: spacing.md, borderRadius: radius.lg },
+  gradientIconWrap: { overflow: 'hidden', alignSelf: 'flex-start' },
+  gradientIconBg: { width: 48, height: 48, borderRadius: radius.md, alignItems: 'center', justifyContent: 'center' },
+  actionBtn: { flex: 1 },
   progressTrack: { height: spacing.sm, borderRadius: radius.sm, overflow: 'hidden' },
   progressFill: { height: '100%', borderRadius: radius.sm },
 });

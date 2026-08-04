@@ -1,13 +1,17 @@
 import React, { useState } from 'react';
-import { Platform, KeyboardAvoidingView, ScrollView } from 'react-native';
+import { StyleSheet, View, Platform, KeyboardAvoidingView, ScrollView } from 'react-native';
 import { ScreenView } from '@/core/components/ScreenView';
 import { ThemedText, Card, EmptyState, Input } from '@/core/components';
-import { spacing, shadows } from '@/constants/tokens';
+import { spacing, shadows, radius } from '@/constants/tokens';
+import { useColorScheme } from '@/core/hooks/useColorScheme';
 import { useResultsQuery } from '@/features/elections/hooks';
+import Colors from '@/constants/colors';
 
 export default function ResultSearchScreen() {
   const { data: results = [] } = useResultsQuery();
   const [search, setSearch] = useState('');
+  const scheme = useColorScheme() ?? 'light';
+  const colors = Colors[scheme];
 
   const filtered = search
     ? results.filter((r) => r.pollingUnitName.toLowerCase().includes(search.toLowerCase()))
@@ -26,7 +30,7 @@ export default function ResultSearchScreen() {
           contentInsetAdjustmentBehavior="automatic"
           contentContainerStyle={{ paddingBottom: spacing.xxl }}
         >
-            <ThemedText variant="h2" style={{ marginHorizontal: 16, marginTop: spacing.md, marginBottom: spacing.lg }}>
+            <ThemedText variant="h2" style={{ marginBottom: spacing.lg }}>
               Search Results
             </ThemedText>
 
@@ -43,15 +47,20 @@ export default function ResultSearchScreen() {
         ) : (
           filtered.map((result) => (
             <Card key={result.id} style={shadows.sm}>
-              <ThemedText variant="body" style={{ fontWeight: '600' }}>
-                {result.pollingUnitName}
-              </ThemedText>
-              <ThemedText variant="caption" color="textSecondary" style={{ marginTop: 4 }}>
-                {result.totalVotesCast.toLocaleString()} votes · {result.status}
-              </ThemedText>
-              <ThemedText variant="caption" color="textMuted">
-                {new Date(result.submittedAt).toLocaleString()}
-              </ThemedText>
+              <View style={styles.resultRow}>
+                <View style={{ flex: 1 }}>
+                  <ThemedText variant="body" style={{ fontWeight: '600' }}>
+                    {result.pollingUnitName}
+                  </ThemedText>
+                  <ThemedText variant="caption" color="textSecondary" style={{ marginTop: 2 }}>
+                    {result.totalVotesCast.toLocaleString()} votes · {result.status}
+                  </ThemedText>
+                  <ThemedText variant="caption" color="textMuted">
+                    {new Date(result.submittedAt).toLocaleString()}
+                  </ThemedText>
+                </View>
+                <View style={[styles.statusDot, { backgroundColor: colors.success }]} />
+              </View>
             </Card>
           ))
         )}
@@ -60,3 +69,8 @@ export default function ResultSearchScreen() {
   </ScreenView>
   );
 }
+
+const styles = StyleSheet.create({
+  resultRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
+  statusDot: { width: spacing.sm, height: spacing.sm, borderRadius: radius.full },
+});

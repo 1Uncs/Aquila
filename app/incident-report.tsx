@@ -59,7 +59,7 @@ export default function ReportIncidentScreen() {
           contentInsetAdjustmentBehavior="automatic"
           contentContainerStyle={{ paddingBottom: spacing.xxl }}
         >
-            <ThemedText variant="h2" style={{ marginHorizontal: 16, marginTop: spacing.md, marginBottom: spacing.lg }}>
+            <ThemedText variant="h2" style={{ marginBottom: spacing.lg }}>
               Report Incident
             </ThemedText>
 
@@ -71,10 +71,10 @@ export default function ReportIncidentScreen() {
           leftIcon="location-outline"
         />
 
-        <ThemedText variant="label" style={{ marginHorizontal: 16, marginBottom: spacing.sm }}>
+        <ThemedText variant="label" style={{ marginHorizontal: spacing.md, marginBottom: spacing.sm }}>
           Category
         </ThemedText>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, gap: spacing.sm, marginBottom: spacing.lg }} keyboardShouldPersistTaps="handled">
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: spacing.md, gap: spacing.sm, marginBottom: spacing.lg }} keyboardShouldPersistTaps="handled">
           {CATEGORIES.map((cat) => (
             <Button
               key={cat}
@@ -86,10 +86,10 @@ export default function ReportIncidentScreen() {
           ))}
         </ScrollView>
 
-        <ThemedText variant="label" style={{ marginHorizontal: 16, marginBottom: spacing.sm }}>
+        <ThemedText variant="label" style={{ marginHorizontal: spacing.md, marginBottom: spacing.sm }}>
           Severity
         </ThemedText>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, gap: spacing.sm, marginBottom: spacing.lg }} keyboardShouldPersistTaps="handled">
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: spacing.md, gap: spacing.sm, marginBottom: spacing.lg }} keyboardShouldPersistTaps="handled">
           {SEVERITIES.map((sev) => (
             <Button
               key={sev}
@@ -108,12 +108,12 @@ export default function ReportIncidentScreen() {
           onChangeText={setDescription}
           multiline
           numberOfLines={4}
-          style={{ marginHorizontal: 16, minHeight: 100 }}
+          containerStyle={{ minHeight: 120 }}
         />
 
-        <View style={{ flexDirection: 'row', gap: spacing.md, marginHorizontal: 16, marginTop: spacing.lg }}>
-          <Button label="Cancel" variant="outline" onPress={() => router.back()} style={{ flex: 1 }} />
-          <Button label="Submit" onPress={handleSubmit} loading={submitting} style={{ flex: 1 }} />
+        <View style={{ flexDirection: 'row', gap: spacing.md, marginHorizontal: spacing.md, marginTop: spacing.lg }}>
+          <Button label="Cancel" variant="outline" onPress={() => router.back()} fullWidth />
+          <Button label="Submit" onPress={handleSubmit} loading={submitting} fullWidth />
         </View>
       </ScrollView>
     </KeyboardAvoidingView>

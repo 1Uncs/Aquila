@@ -4,9 +4,11 @@ import { useColorScheme } from '@/core/hooks/useColorScheme';
 import Colors from '@/constants/colors';
 import { radius, shadows, opacities, border, spacing } from '@/constants/tokens';
 
+type CardVariant = 'default' | 'highlighted' | 'elevated' | 'flat';
+
 type CardProps = {
   children: React.ReactNode;
-  variant?: 'default' | 'highlighted';
+  variant?: CardVariant;
   pressable?: boolean;
   onPress?: () => void;
   style?: ViewStyle | ViewStyle[];
@@ -25,23 +27,33 @@ export function Card({
   const scheme = useColorScheme() ?? 'light';
   const colors = Colors[scheme];
 
-  const borderColor = variant === 'highlighted' ? colors.primary : colors.border;
-  const shadow = variant === 'highlighted' ? shadows.lg : shadows.md;
+  const isHighlighted = variant === 'highlighted';
+  const isElevated = variant === 'elevated';
+  const isFlat = variant === 'flat';
+
+  const borderColor = isHighlighted ? colors.primary : colors.border;
+  const borderWidth = isHighlighted ? border.thick : border.thin;
+  const shadow = isElevated
+    ? shadows.lg
+    : isHighlighted
+      ? shadows.md
+      : isFlat
+        ? {}
+        : shadows.md;
 
   const mergedStyle = Array.isArray(style)
     ? Object.assign({}, ...style)
     : style;
 
+  const cardStyle = [
+    styles.card,
+    { backgroundColor: colors.surface, borderColor, borderWidth },
+    shadow,
+    mergedStyle,
+  ];
+
   const content = (
-    <View
-      style={[
-        styles.card,
-        { backgroundColor: colors.card, borderColor },
-        shadow,
-        mergedStyle,
-      ]}
-      testID={testID}
-    >
+    <View style={cardStyle} testID={testID}>
       {children}
     </View>
   );
@@ -52,7 +64,10 @@ export function Card({
         onPress={onPress}
         style={({ pressed }: PressableStateCallbackType) => [
           styles.card,
-          pressed && { opacity: opacities.press },
+          { backgroundColor: colors.surface, borderColor, borderWidth },
+          shadow,
+          pressed && { opacity: opacities.press, transform: [{ scale: 0.98 }] },
+          mergedStyle,
         ]}
       >
         {content}
@@ -66,9 +81,6 @@ export function Card({
 const styles = StyleSheet.create({
   card: {
     borderRadius: radius.lg,
-    borderWidth: border.thick,
     padding: spacing.md,
-    marginHorizontal: spacing.md,
-    marginVertical: 6,
   },
 });

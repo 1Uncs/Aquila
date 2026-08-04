@@ -5,7 +5,7 @@ export const spacing = {
   lg: 24,
   xl: 32,
   xxl: 48,
-  screen: { padding: 16, paddingHorizontal: 16 },
+  screen: { padding: 16, paddingHorizontal: 16, headerHeight: 64 },
 };
 
 export const radius = {
@@ -53,9 +53,9 @@ export const typography = {
 };
 
 export const shadows = {
-  sm: { shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 4, elevation: 1 } as const,
-  md: { shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 8, elevation: 3 } as const,
-  lg: { shadowColor: '#000', shadowOpacity: 0.15, shadowRadius: 16, elevation: 6 } as const,
+  sm: { shadowColor: '#000', shadowOpacity: 0.04, shadowRadius: 8, elevation: 2 } as const,
+  md: { shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 12, elevation: 4 } as const,
+  lg: { shadowColor: '#000', shadowOpacity: 0.12, shadowRadius: 20, elevation: 8 } as const,
 };
 
 export const opacities = {
@@ -68,10 +68,17 @@ export const opacities = {
   muted: 0.7,
 };
 
-export const durations = {
+export const animation = {
   fast: 150,
   xfast: 200,
   normal: 300,
   slow: 500,
   xslow: 800,
+};
+
+export const gradientPresets = {
+  primary: ['#0f172a', '#1e3a5f'] as const,
+  accent: ['#f59e0b', '#d97706'] as const,
+  success: ['#10b981', '#059669'] as const,
+  election: ['#0f172a', '#1e40af'] as const,
 };

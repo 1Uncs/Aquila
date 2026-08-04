@@ -1,14 +1,16 @@
-import { StyleSheet, View, Pressable, PressableStateCallbackType } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
 import Colors from '@/constants/colors';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from './ThemedText';
+import { Button } from './Button';
 import { radius, spacing, border } from '@/constants/tokens';
 
 type EmptyStateProps = {
   icon: keyof typeof Ionicons.glyphMap;
   title: string;
   subtitle?: string;
+  description?: string;
   actionLabel?: string;
   onAction?: () => void;
   ghost?: boolean;
@@ -19,6 +21,7 @@ export function EmptyState({
   icon,
   title,
   subtitle,
+  description,
   actionLabel,
   onAction,
   ghost = false,
@@ -31,35 +34,33 @@ export function EmptyState({
     <View style={[styles.container, ghost && styles.ghost]} testID={testID}>
       <Ionicons
         name={icon}
-        size={64}
+        size={56}
         color={colors.textMuted}
-        style={{ marginBottom: spacing.md }}
+        style={styles.icon}
       />
-      <ThemedText variant="h3" style={{ textAlign: 'center', marginBottom: spacing.xs }}>
+      <ThemedText variant="h3" style={styles.title}>
         {title}
       </ThemedText>
       {subtitle && (
         <ThemedText
           variant="body"
           color="textSecondary"
-          style={{ textAlign: 'center', marginBottom: spacing.lg }}
+          style={styles.subtitle}
         >
           {subtitle}
         </ThemedText>
       )}
-      {actionLabel && onAction && (
-        <Pressable
-          onPress={onAction}
-          style={({ pressed }: PressableStateCallbackType) => [
-            styles.button,
-            { backgroundColor: colors.primary },
-            pressed && { opacity: 0.7 },
-          ]}
+      {description && (
+        <ThemedText
+          variant="body"
+          color="textSecondary"
+          style={styles.description}
         >
-          <ThemedText variant="label" style={{ color: '#fff', fontWeight: '600' }}>
-            {actionLabel}
-          </ThemedText>
-        </Pressable>
+          {description}
+        </ThemedText>
+      )}
+      {actionLabel && onAction && (
+        <Button label={actionLabel} onPress={onAction} size="md" testID={testID ? `${testID}-action` : undefined} />
       )}
     </View>
   );
@@ -72,18 +73,31 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: spacing.xl,
     paddingVertical: spacing.xxl,
+    maxWidth: 400,
+    alignSelf: 'center',
+  },
+  icon: {
+    marginBottom: spacing.md,
+    opacity: 0.8,
+  },
+  title: {
+    textAlign: 'center',
+    marginBottom: spacing.sm,
+  },
+  subtitle: {
+    textAlign: 'center',
+    marginBottom: spacing.xs,
+  },
+  description: {
+    textAlign: 'center',
+    marginBottom: spacing.lg,
   },
   ghost: {
     borderWidth: border.thick,
-    borderColor: '#C5C9D4',
+    borderColor: '#0f172a',
     borderStyle: 'dashed',
     borderRadius: radius.lg,
     marginHorizontal: spacing.lg,
     marginVertical: spacing.lg,
-  },
-  button: {
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.sm,
-    borderRadius: radius.md,
   },
 });

@@ -3,7 +3,7 @@ import { StyleSheet, View } from 'react-native';
 import { ScreenView } from '@/core/components/ScreenView';
 import { ThemedText, Card } from '@/core/components';
 import { Ionicons } from '@expo/vector-icons';
-import { spacing, shadows, radius, sizes } from '@/constants/tokens';
+import { spacing, shadows, radius, sizes, border } from '@/constants/tokens';
 
 type RoleDef = {
   role: string;
@@ -24,10 +24,10 @@ export default function UsersScreen() {
   return (
     <ScreenView scrollable keyboardShouldPersistTaps="handled">
       <View style={{ paddingBottom: spacing.xxl }}>
-        <ThemedText variant="h2" style={{ marginHorizontal: 16, marginTop: spacing.md, marginBottom: spacing.sm }}>
+        <ThemedText variant="h2" style={{ marginBottom: spacing.sm }}>
           User Roles
         </ThemedText>
-        <ThemedText variant="body" color="textSecondary" style={{ marginHorizontal: 16, marginBottom: spacing.lg }}>
+        <ThemedText variant="body" color="textSecondary" style={{ marginBottom: spacing.lg }}>
           Aquila role definitions and permissions
         </ThemedText>
 
@@ -39,8 +39,13 @@ export default function UsersScreen() {
               </View>
               <View style={{ flex: 1 }}>
                 <ThemedText variant="body" style={{ fontWeight: '600' }}>{label}</ThemedText>
-                <ThemedText variant="caption" color="textSecondary" style={{ marginTop: 4 }}>
+                <ThemedText variant="caption" color="textSecondary" style={{ marginTop: spacing.xs }}>
                   {role}
+                </ThemedText>
+              </View>
+              <View style={[styles.roleBadge, { backgroundColor: color + '20', borderColor: color + '40' }]}>
+                <ThemedText variant="caption" style={{ color, fontWeight: '600' }}>
+                  {role.split('_')[0]}
                 </ThemedText>
               </View>
             </View>
@@ -55,8 +60,14 @@ const styles = StyleSheet.create({
   roleIcon: {
     width: sizes.icon,
     height: sizes.icon,
-    borderRadius: radius.xl,
+    borderRadius: radius.full,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  roleBadge: {
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+    borderRadius: radius.sm,
+    borderWidth: border.thin,
   },
 });

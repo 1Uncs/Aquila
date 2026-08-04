@@ -1,10 +1,11 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { ScreenView } from '@/core/components/ScreenView';
 import { ThemedText, Card, EmptyState } from '@/core/components';
 import { Ionicons } from '@expo/vector-icons';
 import { usePartiesQuery } from '@/features/elections/hooks';
-import { spacing, shadows, radius, sizes } from '@/constants/tokens';
+import { spacing, shadows, radius, sizes, gradientPresets } from '@/constants/tokens';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
 import Colors from '@/constants/colors';
 
@@ -16,10 +17,10 @@ export default function PartiesScreen() {
   return (
     <ScreenView scrollable keyboardShouldPersistTaps="handled">
       <View style={{ paddingBottom: spacing.xxl }}>
-        <ThemedText variant="h2" style={{ marginHorizontal: 16, marginTop: spacing.md, marginBottom: spacing.sm }}>
+        <ThemedText variant="h2" style={{ marginBottom: spacing.sm }}>
           Political Parties
         </ThemedText>
-        <ThemedText variant="body" color="textSecondary" style={{ marginHorizontal: 16, marginBottom: spacing.lg }}>
+        <ThemedText variant="body" color="textSecondary" style={{ marginBottom: spacing.lg }}>
           Registered parties participating in elections
         </ThemedText>
 
@@ -29,11 +30,11 @@ export default function PartiesScreen() {
           parties.map((party) => (
             <Card key={party.id} style={shadows.sm}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
-                <View style={[styles.partyBadge, { backgroundColor: colors.primary + '15' }]}>
-                  <ThemedText variant="label" style={{ color: colors.primary, fontWeight: '700' }}>
+                <LinearGradient colors={gradientPresets.accent} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={[styles.partyBadge, { borderRadius: radius.lg }]}>
+                  <ThemedText variant="label" style={{ color: '#fff', fontWeight: '700' }}>
                     {party.acronym}
                   </ThemedText>
-                </View>
+                </LinearGradient>
                 <View style={{ flex: 1 }}>
                   <ThemedText variant="body" style={{ fontWeight: '600' }}>
                     {party.name}
@@ -60,8 +61,8 @@ const styles = StyleSheet.create({
   partyBadge: {
     width: sizes.icon,
     height: sizes.icon,
-    borderRadius: radius.xl,
     alignItems: 'center',
     justifyContent: 'center',
+    overflow: 'hidden',
   },
 });

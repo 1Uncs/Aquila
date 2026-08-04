@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { router, useLocalSearchParams } from 'expo-router';
 import { ScreenView } from '@/core/components/ScreenView';
 import { ThemedText, Card, Button, EmptyState } from '@/core/components';
 import { ROUTES } from '@/constants/routes';
-import { spacing, shadows, radius, sizes } from '@/constants/tokens';
+import { spacing, shadows, radius, sizes, gradientPresets } from '@/constants/tokens';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
 import { useElectionDetailQuery, useCandidatesQuery } from '@/features/elections/hooks';
 import Colors from '@/constants/colors';
@@ -45,17 +46,22 @@ export default function ElectionDetailScreen() {
   return (
     <ScreenView scrollable keyboardShouldPersistTaps="handled">
       <View style={{ paddingBottom: spacing.xxl }}>
-        <Card style={[styles.headerCard, shadows.lg, { backgroundColor: colors.primary }]}>
+        <LinearGradient
+          colors={gradientPresets.election}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={[styles.headerCard, shadows.lg]}
+        >
           <ThemedText variant="xxl" style={{ color: '#fff', fontWeight: '700', marginBottom: spacing.xs }}>
             {election.position}
           </ThemedText>
-          <ThemedText variant="body" style={{ color: 'rgba(255,255,255,0.9)' }}>
+          <ThemedText variant="body" style={{ color: 'rgba(255,255,255,0.95)' }}>
             {election.electoralArea}
           </ThemedText>
           <ThemedText variant="caption" style={{ color: 'rgba(255,255,255,0.7)', marginTop: spacing.sm }}>
             {election.electionDate} · {election.electoralAreaType}
           </ThemedText>
-        </Card>
+        </LinearGradient>
 
         <ThemedText variant="h3" style={{ marginHorizontal: 16, marginTop: spacing.lg, marginBottom: spacing.sm }}>
           Candidates ({candidates.length})
@@ -64,10 +70,10 @@ export default function ElectionDetailScreen() {
           <EmptyState icon="people-outline" title="No Candidates" subtitle="No candidates added yet" />
         ) : (
           candidates.map((c) => (
-            <Card key={c.id} style={[shadows.sm]}>
+            <Card key={c.id} style={shadows.sm}>
               <View style={styles.row}>
-                <View style={[styles.avatar, { backgroundColor: colors.primary + '20' }]}>
-                  <Ionicons name="person" size={24} color={colors.primary} />
+                <View style={[styles.avatar, { backgroundColor: colors.accent }]}>
+                  <Ionicons name="person" size={24} color="#fff" />
                 </View>
                 <View style={{ flex: 1 }}>
                   <ThemedText variant="body" style={{ fontWeight: '600' }}>{c.fullName}</ThemedText>
@@ -75,26 +81,22 @@ export default function ElectionDetailScreen() {
                     {c.partyName} ({c.partyAcronym})
                   </ThemedText>
                 </View>
-                <ThemedText variant="caption" color={c.status === 'ACTIVE' ? 'success' : 'textMuted'}>
-                  {c.status}
-                </ThemedText>
+                <View style={[
+                  styles.statusBadge,
+                  { backgroundColor: c.status === 'ACTIVE' ? colors.success + '20' : colors.border }
+                ]}>
+                  <ThemedText variant="caption" style={{ color: c.status === 'ACTIVE' ? colors.success : colors.textMuted, fontWeight: '600' }}>
+                    {c.status}
+                  </ThemedText>
+                </View>
               </View>
             </Card>
           ))
         )}
 
-        <View style={{ flexDirection: 'row', gap: spacing.md, marginHorizontal: 16, marginTop: spacing.lg }}>
-          <Button
-            label="Submit Result"
-            onPress={() => router.push({ pathname: ROUTES.RESULT_SUBMIT, params: { electionId: id } })}
-            style={{ flex: 1 }}
-          />
-          <Button
-            label="Report Incident"
-            variant="outline"
-            onPress={() => router.push({ pathname: ROUTES.INCIDENT_REPORT, params: { electionId: id } })}
-            style={{ flex: 1 }}
-          />
+        <View style={{ flexDirection: 'row', gap: spacing.md, marginHorizontal: spacing.md, marginTop: spacing.lg }}>
+          <Button label="Submit Result" onPress={() => router.push({ pathname: ROUTES.RESULT_SUBMIT, params: { electionId: id } })} fullWidth />
+          <Button label="Report Incident" variant="outline" onPress={() => router.push({ pathname: ROUTES.INCIDENT_REPORT, params: { electionId: id } })} fullWidth />
         </View>
       </View>
     </ScreenView>
@@ -102,7 +104,8 @@ export default function ElectionDetailScreen() {
 }
 
 const styles = StyleSheet.create({
-  headerCard: { marginHorizontal: spacing.md, marginVertical: spacing.md, borderRadius: radius.lg },
+  headerCard: { marginHorizontal: spacing.md, marginVertical: spacing.md, borderRadius: radius.lg, padding: spacing.lg },
   row: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
-  avatar: { width: sizes.icon, height: sizes.icon, borderRadius: radius.xl, alignItems: 'center', justifyContent: 'center' },
+  avatar: { width: sizes.icon, height: sizes.icon, borderRadius: radius.full, alignItems: 'center', justifyContent: 'center' },
+  statusBadge: { paddingHorizontal: spacing.sm, paddingVertical: spacing.xs, borderRadius: radius.sm },
 });

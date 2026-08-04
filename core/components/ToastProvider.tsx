@@ -40,7 +40,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
             key={toast.id}
             style={[
               styles.toast,
-              { backgroundColor: colors.card, borderColor: colors.border },
+              { backgroundColor: colors.surface, borderColor: colors.border },
               toast.type === 'error' && { borderColor: colors.error },
               toast.type === 'success' && { borderColor: colors.success },
             ]}

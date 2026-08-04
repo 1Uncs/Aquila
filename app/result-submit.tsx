@@ -67,7 +67,7 @@ export default function SubmitResultScreen() {
           contentInsetAdjustmentBehavior="automatic"
           contentContainerStyle={{ paddingBottom: spacing.xxl }}
         >
-            <ThemedText variant="h2" style={{ marginHorizontal: 16, marginTop: spacing.md, marginBottom: spacing.lg }}>
+            <ThemedText variant="h2" style={{ marginBottom: spacing.lg }}>
               Submit Result
             </ThemedText>
 
@@ -79,11 +79,11 @@ export default function SubmitResultScreen() {
           leftIcon="location"
         />
 
-        <ThemedText variant="h3" style={{ marginHorizontal: 16, marginTop: spacing.lg, marginBottom: spacing.sm }}>
+        <ThemedText variant="h3" style={{ marginHorizontal: spacing.md, marginTop: spacing.lg, marginBottom: spacing.sm }}>
           Candidate Votes
         </ThemedText>
         {candidates.map((c) => (
-          <View key={c.id} style={{ flexDirection: 'row', alignItems: 'center', marginHorizontal: 16, marginBottom: spacing.sm, gap: spacing.md }}>
+          <View key={c.id} style={{ flexDirection: 'row', alignItems: 'center', marginBottom: spacing.sm, gap: spacing.md, paddingHorizontal: spacing.md }}>
             <View style={{ flex: 1 }}>
               <ThemedText variant="body">{c.fullName}</ThemedText>
               <ThemedText variant="caption" color="textSecondary">{c.partyAcronym}</ThemedText>
@@ -93,7 +93,8 @@ export default function SubmitResultScreen() {
               value={votes[c.id] ?? ''}
               onChangeText={(text) => setVotes({ ...votes, [c.id]: text })}
               keyboardType="numeric"
-              style={{ width: 80, marginBottom: 0 }}
+              style={{ width: 80, marginBottom: 0, marginHorizontal: 0 }}
+              containerStyle={{ marginBottom: 0 }}
             />
           </View>
         ))}
@@ -114,19 +115,9 @@ export default function SubmitResultScreen() {
           leftIcon="people-outline"
         />
 
-        <View style={{ flexDirection: 'row', gap: spacing.md, marginHorizontal: 16, marginTop: spacing.lg }}>
-          <Button
-            label="Save Draft"
-            variant="outline"
-            onPress={() => router.back()}
-            style={{ flex: 1 }}
-          />
-          <Button
-            label="Publish"
-            onPress={handleSubmit}
-            loading={submitting}
-            style={{ flex: 1 }}
-          />
+        <View style={{ flexDirection: 'row', gap: spacing.md, marginHorizontal: spacing.md, marginTop: spacing.lg }}>
+          <Button label="Save Draft" variant="outline" onPress={() => router.back()} fullWidth />
+          <Button label="Publish" onPress={handleSubmit} loading={submitting} fullWidth />
         </View>
       </ScrollView>
     </KeyboardAvoidingView>

@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
 import { Platform, KeyboardAvoidingView, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Ionicons } from '@expo/vector-icons';
 import { ThemedText, Input, Button } from '@/core/components';
-import { spacing } from '@/constants/tokens';
+import { spacing, radius, shadows, opacities } from '@/constants/tokens';
 import { login } from '@/features/auth/service';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
 import Colors from '@/constants/colors';
+import { gradientPresets } from '@/constants/tokens';
 
 export default function LoginScreen() {
   const insets = useSafeAreaInsets();
@@ -64,16 +67,29 @@ export default function LoginScreen() {
           keyboardDismissMode="on-drag"
           showsVerticalScrollIndicator={false}
         >
-          <ThemedText variant="xxl" style={{ textAlign: 'center', marginBottom: spacing.sm }}>
-            Aquila
-          </ThemedText>
-          <ThemedText
-            variant="caption"
-            color="textSecondary"
-            style={{ textAlign: 'center', marginBottom: spacing.xxl }}
+          <LinearGradient
+            colors={gradientPresets.primary}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={{
+              borderRadius: radius.xl,
+              paddingVertical: spacing.xxl,
+              paddingHorizontal: spacing.lg,
+              alignItems: 'center',
+              marginBottom: spacing.xxl,
+              ...shadows.md,
+            }}
           >
-            Trusted Election Intelligence
-          </ThemedText>
+            <View style={{ alignItems: 'center', gap: spacing.sm }}>
+              <Ionicons name="shield-checkmark" size={56} color="#f59e0b" />
+              <ThemedText variant="xxl" color="#ffffff" fontFamily="bold" style={{ letterSpacing: 1 }}>
+                Aquila
+              </ThemedText>
+              <ThemedText variant="caption" color="#ffffff" style={{ opacity: opacities.subtle + 0.6, textAlign: 'center' }}>
+                Trusted Election Intelligence
+              </ThemedText>
+            </View>
+          </LinearGradient>
 
           <ThemedText variant="h3" style={{ marginBottom: spacing.lg }}>
             Sign In
@@ -107,7 +123,14 @@ export default function LoginScreen() {
             </ThemedText>
           ) : null}
 
-          <Button label="Sign In" onPress={handleLogin} loading={loading} fullWidth style={{ marginBottom: spacing.md }} />
+          <Button
+            label="Sign In"
+            onPress={handleLogin}
+            loading={loading}
+            fullWidth
+            leftIcon="log-in-outline"
+            style={{ marginBottom: spacing.md }}
+          />
 
           <View style={{ flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.md }}>
             <Button

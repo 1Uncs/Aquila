@@ -1,16 +1,24 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, ScrollView, Pressable, PressableStateCallbackType, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { StyleSheet, ScrollView, View } from 'react-native';
 import { router } from 'expo-router';
 import { ScreenView } from '@/core/components/ScreenView';
-import { ThemedText, Card, EmptyState } from '@/core/components';
+import { ThemedText, Card, EmptyState, Button } from '@/core/components';
 import { useIncidentsStore } from '@/features/auth/store';
 import { ROUTES } from '@/constants/routes';
-import { spacing, radius, border } from '@/constants/tokens';
+import { spacing, radius } from '@/constants/tokens';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
 import { useIncidentsQuery } from '@/features/elections/hooks';
 import Colors from '@/constants/colors';
 import { IncidentSeverity } from '@/types';
+
+const SEVERITY_FILTERS = ['ALL', 'LOW', 'MEDIUM', 'HIGH', 'CRITICAL'] as const;
+
+const SEVERITY_COLORS: Record<IncidentSeverity, string> = {
+  LOW: 'success',
+  MEDIUM: 'warning',
+  HIGH: 'error',
+  CRITICAL: 'critical',
+};
 
 export default function IncidentsScreen() {
   const { data: incidents = [], isLoading: loading } = useIncidentsQuery();
@@ -25,59 +33,29 @@ export default function IncidentsScreen() {
 
   const filtered = filter === 'ALL' ? incidents : incidents.filter((i) => i.severity === filter);
 
-  const severityColors: Record<IncidentSeverity, string> = {
-    LOW: colors.success,
-    MEDIUM: colors.warning,
-    HIGH: colors.error,
-    CRITICAL: colors.critical,
-  };
-
   return (
     <ScreenView scrollable keyboardShouldPersistTaps="handled">
-      <View style={{ paddingBottom: spacing.xxl }}>
+      <View style={styles.content}>
         <ThemedText variant="xl" style={{ marginHorizontal: 16, marginTop: spacing.md, marginBottom: spacing.sm }}>
           Incidents
         </ThemedText>
 
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, gap: spacing.sm, marginBottom: spacing.lg }} keyboardShouldPersistTaps="handled">
-          {(['ALL', 'LOW', 'MEDIUM', 'HIGH', 'CRITICAL'] as const).map((f) => (
-            <Pressable
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipRow} keyboardShouldPersistTaps="handled">
+          {SEVERITY_FILTERS.map((f) => (
+            <Button
               key={f}
+              label={f === 'ALL' ? 'All' : f}
+              size="sm"
+              variant={filter === f ? 'primary' : 'outline'}
               onPress={() => setFilter(f)}
-              style={({ pressed }: PressableStateCallbackType) => [
-                styles.filterChip,
-                {
-                  backgroundColor: filter === f ? colors.primary : colors.card,
-                  borderColor: filter === f ? colors.primary : colors.border,
-                },
-                pressed && { opacity: 0.7 },
-              ]}
-            >
-              <ThemedText
-                variant="label"
-                style={{ color: filter === f ? '#fff' : colors.text }}
-              >
-                {f === 'ALL' ? 'All' : f}
-              </ThemedText>
-            </Pressable>
+              style={styles.chip}
+            />
           ))}
         </ScrollView>
 
-        <View style={{ flexDirection: 'row', gap: spacing.sm, marginHorizontal: 16, marginBottom: spacing.lg }}>
-          <Pressable
-            onPress={() => router.push(ROUTES.INCIDENT_REPORT)}
-            style={[styles.actionBtn, { backgroundColor: colors.accent }]}
-          >
-            <Ionicons name="add-outline" size={18} color="#fff" />
-            <ThemedText variant="label" style={{ color: '#fff', marginLeft: 4 }}>Report</ThemedText>
-          </Pressable>
-          <Pressable
-            onPress={() => router.push(ROUTES.INCIDENT_SEARCH)}
-            style={[styles.actionBtn, { backgroundColor: colors.secondary }]}
-          >
-            <Ionicons name="search-outline" size={18} color="#fff" />
-            <ThemedText variant="label" style={{ color: '#fff', marginLeft: 4 }}>Search</ThemedText>
-          </Pressable>
+        <View style={styles.actionRow}>
+          <Button label="Report" variant="primary" size="sm" onPress={() => router.push(ROUTES.INCIDENT_REPORT)} style={styles.actionBtn} />
+          <Button label="Search" variant="outline" size="sm" onPress={() => router.push(ROUTES.INCIDENT_SEARCH)} style={styles.actionBtn} />
         </View>
 
         {loading ? (
@@ -87,27 +65,31 @@ export default function IncidentsScreen() {
         ) : filtered.length === 0 ? (
           <EmptyState icon="shield-checkmark-outline" title="No Incidents" subtitle="All quiet — no incidents reported" />
         ) : (
-          filtered.map((incident) => (
-            <Card key={incident.id}>
-              <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: spacing.sm }}>
-                <View style={[styles.severityDot, { backgroundColor: severityColors[incident.severity] }]} />
-                <View style={{ flex: 1 }}>
-                  <ThemedText variant="body" style={{ fontWeight: '600' }}>
-                    {incident.category.replace(/_/g, ' ')}
-                  </ThemedText>
-                  <ThemedText variant="caption" color="textSecondary" style={{ marginTop: 4 }}>
-                    {incident.electoralArea}
-                  </ThemedText>
-                  <ThemedText variant="caption" color="textMuted">
-                    {incident.description.slice(0, 80)}{incident.description.length > 80 ? '...' : ''}
-                  </ThemedText>
-                  <ThemedText variant="caption" color="textMuted" style={{ marginTop: 4 }}>
-                    {new Date(incident.reportedAt).toLocaleString()} · {incident.status}
-                  </ThemedText>
+          filtered.map((incident) => {
+            const sevColorKey = SEVERITY_COLORS[incident.severity] || 'textSecondary';
+            const sevColor = colors[sevColorKey as keyof typeof Colors.light] as string;
+            return (
+              <Card key={incident.id}>
+                <View style={styles.row}>
+                  <View style={[styles.severityDot, { backgroundColor: sevColor }]} />
+                  <View style={styles.incidentInfo}>
+                    <ThemedText variant="body" style={{ fontWeight: '600' }}>
+                      {incident.category.replace(/_/g, ' ')}
+                    </ThemedText>
+                    <ThemedText variant="caption" color="textSecondary" style={{ marginTop: 4 }}>
+                      {incident.electoralArea}
+                    </ThemedText>
+                    <ThemedText variant="caption" color="textMuted" numberOfLines={2}>
+                      {incident.description.length > 80 ? incident.description.slice(0, 80) + '...' : incident.description}
+                    </ThemedText>
+                    <ThemedText variant="caption" color="textMuted" style={{ marginTop: 4 }}>
+                      {new Date(incident.reportedAt).toLocaleString()} · {incident.status}
+                    </ThemedText>
+                  </View>
                 </View>
-              </View>
-            </Card>
-          ))
+              </Card>
+            );
+          })
         )}
       </View>
     </ScreenView>
@@ -115,23 +97,12 @@ export default function IncidentsScreen() {
 }
 
 const styles = StyleSheet.create({
-  filterChip: {
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    borderRadius: radius.full,
-    borderWidth: border.thin,
-  },
-  actionBtn: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: spacing.md,
-    borderRadius: radius.md,
-  },
-  severityDot: {
-    width: spacing.sm,
-    height: spacing.sm,
-    borderRadius: radius.sm,
-  },
+  content: { paddingBottom: spacing.xxl },
+  chipRow: { paddingHorizontal: 16, gap: spacing.sm, marginBottom: spacing.lg },
+  chip: { marginRight: spacing.sm },
+  actionRow: { flexDirection: 'row', gap: spacing.sm, marginHorizontal: 16, marginBottom: spacing.lg },
+  actionBtn: { flex: 1 },
+  row: { flexDirection: 'row', alignItems: 'flex-start', gap: spacing.sm },
+  incidentInfo: { flex: 1 },
+  severityDot: { width: spacing.sm, height: spacing.sm, borderRadius: radius.sm, marginTop: 4 },
 });

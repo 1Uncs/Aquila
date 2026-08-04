@@ -9,6 +9,7 @@ import { useColorScheme } from '@/core/hooks/useColorScheme';
 import { DebouncedPressable } from './DebouncedPressable';
 import Colors from '@/constants/colors';
 import { ThemedText } from './ThemedText';
+import { Ionicons } from '@expo/vector-icons';
 import { radius, spacing, opacities, border } from '@/constants/tokens';
 
 type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost';
@@ -23,6 +24,8 @@ type ButtonProps = {
   testID?: string;
   size?: 'sm' | 'md' | 'lg';
   fullWidth?: boolean;
+  leftIcon?: keyof typeof Ionicons.glyphMap;
+  rightIcon?: keyof typeof Ionicons.glyphMap;
 } & Omit<PressableProps, 'children'>;
 
 export function Button({
@@ -35,26 +38,33 @@ export function Button({
   testID,
   size = 'md',
   fullWidth = false,
+  leftIcon,
+  rightIcon,
   ...rest
 }: ButtonProps) {
   const scheme = useColorScheme() ?? 'light';
   const colors = Colors[scheme];
 
   const sizeStyles = {
-    sm: { paddingVertical: spacing.sm, paddingHorizontal: spacing.md, height: 44 },
+    sm: { paddingVertical: spacing.sm, paddingHorizontal: spacing.md, height: 40 },
     md: { paddingVertical: spacing.md, paddingHorizontal: spacing.lg, height: 48 },
     lg: { paddingVertical: spacing.lg, paddingHorizontal: spacing.xl, height: 56 },
   };
 
   const variantStyles: Record<ButtonVariant, ViewStyle> = {
     primary: { backgroundColor: colors.primary },
-    secondary: { backgroundColor: colors.secondary },
+    secondary: { backgroundColor: colors.primaryLight },
     outline: { backgroundColor: 'transparent', borderWidth: border.thick, borderColor: colors.primary },
     ghost: { backgroundColor: 'transparent' },
   };
 
   const textColor =
     variant === 'outline' || variant === 'ghost' ? colors.primary : '#FFFFFF';
+
+  const renderIcon = (iconName: keyof typeof Ionicons.glyphMap | undefined, iconColor: string) => {
+    if (!iconName) return null;
+    return <Ionicons name={iconName} size={20} color={iconColor} style={styles.icon} />;
+  };
 
   return (
     <DebouncedPressable
@@ -66,13 +76,18 @@ export function Button({
         sizeStyles[size],
         variantStyles[variant],
         fullWidth && { alignSelf: 'stretch' },
-        (pressed || loading) && { opacity: opacities.press },
+        pressed && {
+          opacity: opacities.press,
+          transform: [{ scale: 0.97 }],
+          ...(size === 'lg' && { transform: [{ scale: 0.97 }, { translateY: 1 }] }),
+        },
         disabled && { opacity: opacities.disabled },
         style,
       ]}
       testID={testID}
       {...rest}
     >
+      {renderIcon(leftIcon, textColor)}
       <ThemedText
         variant="label"
         style={[
@@ -83,11 +98,18 @@ export function Button({
       >
         {loading ? 'Loading...' : label}
       </ThemedText>
+      {renderIcon(rightIcon, textColor)}
     </DebouncedPressable>
   );
 }
 
 const styles = StyleSheet.create({
-  button: { alignItems: 'center', justifyContent: 'center' },
+  button: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+    gap: 8,
+  },
   label: { fontWeight: '600', letterSpacing: 0.3 },
+  icon: { lineHeight: 20 },
 });

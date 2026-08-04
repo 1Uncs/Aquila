@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, forwardRef } from 'react';
 import {
   View,
   TextInput as RNTextInput,
@@ -7,11 +7,13 @@ import {
   Pressable,
   ViewStyle,
   Platform,
+  Animated,
+  Easing,
 } from 'react-native';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
 import Colors from '@/constants/colors';
 import { ThemedText } from './ThemedText';
-import { radius, spacing, border } from '@/constants/tokens';
+import { radius, spacing, border, animation } from '@/constants/tokens';
 import { Ionicons } from '@expo/vector-icons';
 
 type InputProps = {
@@ -25,9 +27,10 @@ type InputProps = {
   onToggleSecure?: () => void;
   containerStyle?: ViewStyle;
   testID?: string;
+  description?: string;
 } & RNTextInputProps;
 
-export const Input = ({
+export const Input = forwardRef<RNTextInput, InputProps>(({
   label,
   error,
   leftIcon,
@@ -38,12 +41,15 @@ export const Input = ({
   onToggleSecure,
   containerStyle,
   testID,
+  description,
   ...rest
-}: InputProps) => {
+}: InputProps, ref) => {
   const scheme = useColorScheme() ?? 'light';
   const colors = Colors[scheme];
   const [focused, setFocused] = useState(false);
-  const inputRef = useRef<RNTextInput>(null);
+  const internalRef = useRef<RNTextInput>(null);
+
+  const inputRef = (ref as React.Ref<RNTextInput>) ?? internalRef;
   const rightIconName = secureToggle
     ? (visible ? 'eye-off' : 'eye')
     : rightIcon;
@@ -55,6 +61,33 @@ export const Input = ({
   const hasLeftIcon = !!leftIcon;
   const hasRightIcon = !!(rightIconName || secureToggle);
 
+  const animatedValue = useRef(new Animated.Value(0)).current;
+
+  React.useEffect(() => {
+    const toValue = focused && !error ? 1 : 0;
+    Animated.timing(animatedValue, {
+      toValue,
+      duration: animation.normal,
+      easing: Easing.inOut(Easing.ease),
+      useNativeDriver: false,
+    }).start();
+  }, [focused, error, animatedValue]);
+
+  const animatedBorderColor = animatedValue.interpolate({
+    inputRange: [0, 1],
+    outputRange: [colors.border, error ? colors.error : colors.primary],
+  });
+
+  const animatedShadowOpacity = animatedValue.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, focused && !error ? 0.18 : 0],
+  });
+
+  const animatedShadowRadius = animatedValue.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, focused && !error ? 8 : 0],
+  });
+
   return (
     <View style={[styles.wrapper, containerStyle]}>
       {label && (
@@ -62,25 +95,25 @@ export const Input = ({
           {label}
         </ThemedText>
       )}
-      <View
+      <Animated.View
         style={[
           styles.inputContainer,
           {
             backgroundColor: colors.surface,
-            borderColor: error
-              ? colors.error
-              : focused
-                ? colors.primary
-                : colors.border,
+            borderColor: animatedBorderColor as unknown as string,
+            borderRadius: radius.lg,
+            shadowColor: colors.primary,
+            shadowOpacity: animatedShadowOpacity as unknown as number,
+            shadowRadius: animatedShadowRadius as unknown as number,
+            elevation: focused && !error ? 4 : 0,
           },
-          focused && { shadowColor: colors.primary, shadowOpacity: 0.15 },
         ]}
       >
         {hasLeftIcon && (
           <Ionicons
             name={leftIcon}
             size={20}
-            color={colors.textMuted}
+            color={focused ? colors.primary : colors.textSecondary}
             style={styles.leftIcon}
           />
         )}
@@ -91,7 +124,7 @@ export const Input = ({
             { color: colors.text },
             hasLeftIcon && styles.inputWithLeftIcon,
             hasRightIcon && styles.inputWithRightIcon,
-            Platform.OS === 'android' && { textAlignVertical: rest.multiline ? 'top' : 'center', paddingVertical: spacing.md, minHeight: 48 },
+            Platform.OS === 'android' && { textAlignVertical: rest.multiline ? 'top' : 'center', paddingVertical: spacing.md },
           ]}
           placeholderTextColor={colors.textMuted}
           onFocus={() => setFocused(true)}
@@ -112,15 +145,22 @@ export const Input = ({
             )}
           </Pressable>
         )}
-      </View>
+      </Animated.View>
       {error && (
         <ThemedText variant="caption" color="error" style={{ marginTop: spacing.xs }}>
           {error}
         </ThemedText>
       )}
+      {description && !error && (
+        <ThemedText variant="caption" color="textMuted" style={{ marginTop: spacing.xs }}>
+          {description}
+        </ThemedText>
+      )}
     </View>
   );
-};
+});
+
+Input.displayName = 'Input';
 
 const styles = StyleSheet.create({
   wrapper: { marginHorizontal: spacing.md, marginBottom: spacing.md },
@@ -128,15 +168,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: border.thick,
-    borderRadius: radius.md,
     paddingHorizontal: spacing.md,
-    height: 48,
-    position: 'relative',
+    height: 52,
   },
   input: {
     flex: 1,
     fontSize: 16,
     fontFamily: 'System',
+    paddingVertical: spacing.sm,
   },
   leftIcon: {
     position: 'absolute',
