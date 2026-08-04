@@ -47,7 +47,8 @@ export default function ResultsScreen() {
   const { data: results = [], isLoading: loading } = useResultsQuery();
 
   const openMoreActions = () => {
-    if (Platform.OS === 'ios') {
+    const canUseActionSheet = Platform.OS === 'ios' && !!ActionSheetIOS;
+    if (canUseActionSheet) {
       ActionSheetIOS.showActionSheetWithOptions(
         {
           options: ['Collation', 'Report Incident', 'Cancel'],
