@@ -115,7 +115,7 @@ export default function ElectionsScreen() {
 }
 
 const styles = StyleSheet.create({
-  chipRow: { paddingHorizontal: spacing.md, gap: spacing.sm, marginBottom: spacing.lg },
+  chipRow: { paddingHorizontal: spacing.sm, gap: spacing.sm, marginBottom: spacing.lg },
   chip: { marginRight: spacing.sm },
   row: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
   electionInfo: { flex: 1 },

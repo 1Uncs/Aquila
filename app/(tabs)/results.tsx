@@ -66,7 +66,7 @@ export default function ResultsScreen() {
               <StatCard icon="✓" label="Published" value={String(results.filter((r) => r.status === 'PUBLISHED').length)} gradient={gradientPresets.accent} />
             </ScrollView>
 
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: spacing.md, gap: spacing.sm, marginBottom: spacing.lg }} keyboardShouldPersistTaps="handled">
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: spacing.sm, gap: spacing.sm, marginBottom: spacing.lg }} keyboardShouldPersistTaps="handled">
               <Button label="Drafts" variant="outline" size="sm" onPress={() => router.push(ROUTES.RESULT_DRAFTS as any)} style={{ minWidth: 80 }} />
               <Button label="Search" variant="primary" size="sm" onPress={() => router.push(ROUTES.RESULT_SEARCH)} style={{ minWidth: 80 }} />
               <Button label="Collation" variant="outline" size="sm" onPress={() => router.push(ROUTES.RESULT_COLLATION)} style={{ minWidth: 80 }} />
