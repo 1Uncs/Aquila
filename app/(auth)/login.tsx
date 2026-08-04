@@ -5,7 +5,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText, Input, Button } from '@/core/components';
 import { spacing, radius, shadows, opacities } from '@/constants/tokens';
-import { login } from '@/features/auth/service';
+import { useLoginMutation } from '@/features/auth/hooks';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
 import Colors from '@/constants/colors';
 import { gradientPresets } from '@/constants/tokens';
@@ -18,27 +18,23 @@ export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const loginMutation = useLoginMutation();
 
   const handleLogin = async () => {
     if (!email.trim() || !password.trim()) {
       setError('Please enter both email and password');
       return;
     }
-    setLoading(true);
     setError('');
     try {
-      await login(email.trim(), password);
+      await loginMutation.mutateAsync({ email: email.trim(), password });
     } catch {
       setError('Invalid credentials. Please try again.');
-    } finally {
-      setLoading(false);
     }
   };
 
   const launchDemo = async (role: 'admin' | 'agent' | 'polling' | 'officer') => {
-    setLoading(true);
     setError('');
     try {
       let demoEmail: string;
@@ -48,11 +44,9 @@ export default function LoginScreen() {
         case 'polling': demoEmail = 'polling@aquila.ng'; break;
         case 'officer': demoEmail = 'officer@aquila.ng'; break;
       }
-      await login(demoEmail, 'demo');
+      await loginMutation.mutateAsync({ email: demoEmail, password: 'demo' });
     } catch {
       setError('Demo login failed. Please try again.');
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -132,17 +126,17 @@ export default function LoginScreen() {
           <Button
             label="Sign In"
             onPress={handleLogin}
-            loading={loading}
+            loading={loginMutation.isPending}
             fullWidth
             leftIcon="log-in-outline"
             style={{ marginBottom: spacing.md }}
           />
 
           <View style={{ flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.md, flexWrap: 'wrap' }}>
-            <Button label="Admin" variant="outline" onPress={() => launchDemo('admin')} loading={loading} style={{ flex: 1, minWidth: 80 }} />
-            <Button label="Field Agent" variant="ghost" onPress={() => launchDemo('agent')} loading={loading} style={{ flex: 1, minWidth: 80 }} />
-            <Button label="PU Agent" variant="outline" onPress={() => launchDemo('polling')} loading={loading} style={{ flex: 1, minWidth: 80 }} />
-            <Button label="Election Officer" variant="ghost" onPress={() => launchDemo('officer')} loading={loading} style={{ flex: 1, minWidth: 80 }} />
+            <Button label="Admin" variant="outline" onPress={() => launchDemo('admin')} loading={loginMutation.isPending} style={{ flex: 1, minWidth: 80 }} />
+            <Button label="Field Agent" variant="ghost" onPress={() => launchDemo('agent')} loading={loginMutation.isPending} style={{ flex: 1, minWidth: 80 }} />
+            <Button label="PU Agent" variant="outline" onPress={() => launchDemo('polling')} loading={loginMutation.isPending} style={{ flex: 1, minWidth: 80 }} />
+            <Button label="Election Officer" variant="ghost" onPress={() => launchDemo('officer')} loading={loginMutation.isPending} style={{ flex: 1, minWidth: 80 }} />
           </View>
 
           <ThemedText

@@ -48,7 +48,7 @@ export default function PUPickerScreen() {
   };
 
   return (
-    <ScreenView scrollable keyboardShouldPersistTaps="handled">
+    <ScreenView scrollable keyboardShouldPersistTaps="handled" skipAndroidTopPadding>
       <FlashList
         data={filtered}
         keyExtractor={(item) => item.id}

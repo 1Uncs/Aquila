@@ -13,6 +13,7 @@ type ScreenViewProps = {
   testID?: string;
   noScrollPadding?: boolean;
   refreshControl?: React.ReactElement;
+  skipAndroidTopPadding?: boolean;
 };
 
 export function ScreenView({
@@ -24,6 +25,7 @@ export function ScreenView({
   testID,
   noScrollPadding = false,
   refreshControl,
+  skipAndroidTopPadding = false,
 }: ScreenViewProps) {
   const insets = useSafeAreaInsets();
   const scheme = useColorScheme() ?? 'light';
@@ -32,7 +34,7 @@ export function ScreenView({
   const baseStyle: ViewStyle = {
     flex: 1,
     backgroundColor: colors.background,
-    paddingTop: Platform.OS === 'android' ? insets.top : 0,
+    paddingTop: Platform.OS === 'android' && !skipAndroidTopPadding ? insets.top : 0,
     paddingBottom: Platform.OS === 'android' ? insets.bottom : 0,
   };
 
@@ -66,7 +68,7 @@ export function ScreenView({
 
   return (
     <View style={[baseStyle, style]} testID={testID}>
-      <View style={noScrollPadding ? {} : { paddingHorizontal: spacing.md, paddingTop: spacing.md }}>
+      <View style={[noScrollPadding ? {} : { paddingHorizontal: spacing.md, paddingTop: spacing.md, flex: 1 }]}>
         {children}
       </View>
     </View>

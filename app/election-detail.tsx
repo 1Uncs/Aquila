@@ -45,7 +45,7 @@ export default function ElectionDetailScreen() {
   }
 
   return (
-    <ScreenView scrollable keyboardShouldPersistTaps="handled">
+      <ScreenView scrollable keyboardShouldPersistTaps="handled" skipAndroidTopPadding>
       <FlashList
         data={candidates}
         keyExtractor={(item) => item.id}

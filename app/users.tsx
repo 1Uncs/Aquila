@@ -23,7 +23,7 @@ const ROLES: RoleDef[] = [
 
 export default function UsersScreen() {
   return (
-    <ScreenView scrollable keyboardShouldPersistTaps="handled">
+    <ScreenView scrollable keyboardShouldPersistTaps="handled" skipAndroidTopPadding>
       <FlashList
         data={ROLES}
         keyExtractor={(item) => item.role}

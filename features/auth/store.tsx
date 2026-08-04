@@ -211,6 +211,7 @@ interface ResultsState {
   setSubmissions: (submissions: ResultSubmission[]) => void;
   addSubmission: (submission: ResultSubmission) => void;
   updateSubmission: (id: string, data: Partial<ResultSubmission>) => void;
+  removeSubmission: (id: string) => void;
 }
 
 export const useResultsStore = create<ResultsState>()(
@@ -223,6 +224,10 @@ export const useResultsStore = create<ResultsState>()(
       updateSubmission: (id, data) =>
         set((s) => ({
           submissions: s.submissions.map((r) => (r.id === id ? { ...r, ...data } : r)),
+        })),
+      removeSubmission: (id) =>
+        set((s) => ({
+          submissions: s.submissions.filter((r) => r.id !== id),
         })),
     }),
     {

@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
 import Colors from '@/constants/colors';
@@ -14,6 +14,17 @@ type ToastContextValue = {
   showToast: (text: string, type?: 'info' | 'error' | 'success') => void;
 };
 
+const pendingQueue: Array<{ text: string; type: 'info' | 'error' | 'success' }> = [];
+let mountedInstance: ((text: string, type?: 'info' | 'error' | 'success') => void) | null = null;
+
+export function requestToast(text: string, type: 'info' | 'error' | 'success' = 'info') {
+  if (mountedInstance) {
+    mountedInstance(text, type);
+  } else {
+    pendingQueue.push({ text, type });
+  }
+}
+
 export const ToastContext = React.createContext<ToastContextValue>({
   showToast: () => {},
 });
@@ -22,6 +33,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
   const scheme = useColorScheme() ?? 'light';
   const colors = Colors[scheme];
+  const drainingRef = useRef(false);
 
   const showToast = useCallback((text: string, type: 'info' | 'error' | 'success' = 'info') => {
     const id = `${Date.now()}-${Math.random()}`;
@@ -30,6 +42,20 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
       setToasts((prev) => prev.filter((t) => t.id !== id));
     }, 3000);
   }, []);
+
+  mountedInstance = showToast;
+
+  React.useEffect(() => {
+    if (drainingRef.current) return;
+    drainingRef.current = true;
+    while (pendingQueue.length > 0) {
+      const { text, type } = pendingQueue.shift()!;
+      showToast(text, type);
+    }
+    return () => {
+      mountedInstance = null;
+    };
+  }, [showToast]);
 
   return (
     <ToastContext.Provider value={{ showToast }}>

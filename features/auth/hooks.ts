@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { login as loginApi, logout as logoutApi } from '@/features/auth/service';
+import { InteractionManager } from 'react-native';
 
 type LoginInput = { email: string; password: string };
 
@@ -20,7 +21,9 @@ export function useLogoutMutation() {
       await logoutApi();
     },
     onSettled: () => {
-      queryClient.clear();
+      InteractionManager.runAfterInteractions(() => {
+        queryClient.clear();
+      });
     },
   });
 }

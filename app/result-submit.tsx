@@ -130,7 +130,7 @@ export default function SubmitResultScreen() {
 
   if (candidatesLoading) {
     return (
-      <ScreenView>
+      <ScreenView skipAndroidTopPadding>
         <ThemedText variant="body" color="textSecondary" style={{ textAlign: 'center', marginTop: spacing.xxl }}>
           Loading...
         </ThemedText>
@@ -139,7 +139,7 @@ export default function SubmitResultScreen() {
   }
 
   return (
-    <ScreenView>
+    <ScreenView skipAndroidTopPadding>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         enabled={Platform.OS === 'ios'}
@@ -149,6 +149,7 @@ export default function SubmitResultScreen() {
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
           contentInsetAdjustmentBehavior="automatic"
+          automaticallyAdjustKeyboardInsets={true}
           contentContainerStyle={{ paddingBottom: spacing.xxl }}
         >
           <ThemedText variant="h2" style={{ marginBottom: spacing.lg }}>

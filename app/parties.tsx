@@ -16,7 +16,7 @@ export default function PartiesScreen() {
   const colors = Colors[scheme];
 
   return (
-    <ScreenView scrollable keyboardShouldPersistTaps="handled">
+    <ScreenView scrollable keyboardShouldPersistTaps="handled" skipAndroidTopPadding>
       <FlashList
         data={parties}
         keyExtractor={(item) => item.id}

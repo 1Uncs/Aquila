@@ -23,7 +23,7 @@ export default function LocationsScreen() {
   ] as const;
 
   return (
-    <ScreenView scrollable keyboardShouldPersistTaps="handled">
+    <ScreenView scrollable keyboardShouldPersistTaps="handled" skipAndroidTopPadding>
       <FlashList
         data={SUB_UNITS}
         keyExtractor={(item) => item.label}

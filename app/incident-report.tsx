@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ScrollView, View, Platform, KeyboardAvoidingView, Alert } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
+import * as DocumentPicker from 'expo-document-picker';
 import { ScreenView } from '@/core/components/ScreenView';
 import { ThemedText, Input, Button, Card } from '@/core/components';
 import { IncidentReport } from '@/features/auth/store';
@@ -29,19 +30,12 @@ export default function ReportIncidentScreen() {
   const { addIncident } = useIncidentsStore();
   const { user } = useAuthStore();
 
-  const requestPermission = async (type: 'camera' | 'microphone' | 'mediaLibrary') => {
+  const requestPermission = async (type: 'camera' | 'mediaLibrary') => {
     if (Platform.OS !== 'web') {
       if (type === 'camera') {
         const { status } = await ImagePicker.requestCameraPermissionsAsync();
         if (status !== 'granted') {
           Alert.alert('Permission needed', 'Camera permission is required to take photos or videos.');
-          return false;
-        }
-      }
-      if (type === 'microphone') {
-        const { status } = await ImagePicker.requestCameraPermissionsAsync();
-        if (status !== 'granted') {
-          Alert.alert('Permission needed', 'Microphone permission is required for media capture.');
           return false;
         }
       }
@@ -54,6 +48,21 @@ export default function ReportIncidentScreen() {
       }
     }
     return true;
+  };
+
+  const handleAttachAudio = async () => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: 'audio/*',
+        copyToCacheDirectory: true,
+      });
+      if (!result.canceled && result.assets.length > 0) {
+        setMediaUris((prev) => [...prev, ...result.assets.map((a) => a.uri)]);
+      }
+    } catch (error) {
+      console.error('Error picking audio:', error);
+      Alert.alert('Error', 'Failed to attach audio file.');
+    }
   };
 
   const handleAddPhoto = async () => {
@@ -81,21 +90,10 @@ export default function ReportIncidentScreen() {
   const handleRecordVideo = async () => {
     const ok = await requestPermission('camera');
     if (!ok) return;
-    const result = await ImagePicker.launchImageLibraryAsync({
+    const result = await ImagePicker.launchCameraAsync({
       mediaTypes: ['videos'],
       videoMaxDuration: 60,
       quality: 0.8,
-    });
-    if (!result.canceled) {
-      setMediaUris((prev) => [...prev, ...result.assets.map((a) => a.uri)]);
-    }
-  };
-
-  const handleAttachAudio = async () => {
-    const ok = await requestPermission('mediaLibrary');
-    if (!ok) return;
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['audio' as any],
     });
     if (!result.canceled) {
       setMediaUris((prev) => [...prev, ...result.assets.map((a) => a.uri)]);
@@ -140,6 +138,7 @@ export default function ReportIncidentScreen() {
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
           contentInsetAdjustmentBehavior="automatic"
+          automaticallyAdjustKeyboardInsets={true}
           contentContainerStyle={{ paddingBottom: spacing.xxl }}
         >
           <ThemedText variant="h2" style={{ marginBottom: spacing.lg }}>
@@ -219,11 +218,11 @@ export default function ReportIncidentScreen() {
             Attach Media
           </ThemedText>
 
-          <View style={{ flexDirection: 'row', gap: spacing.sm, marginHorizontal: spacing.md, marginBottom: spacing.md }}>
-            <Button label="Photo" variant="outline" size="sm" onPress={handleTakePhoto} leftIcon="camera" style={{ flex: 1 }} />
-            <Button label="Gallery" variant="outline" size="sm" onPress={handleAddPhoto} leftIcon="image" style={{ flex: 1 }} />
-            <Button label="Video" variant="outline" size="sm" onPress={handleRecordVideo} leftIcon="videocam" style={{ flex: 1 }} />
-            <Button label="Audio" variant="outline" size="sm" onPress={handleAttachAudio} leftIcon="mic" style={{ flex: 1 }} />
+          <View style={{ flexDirection: 'row', gap: spacing.sm, marginHorizontal: spacing.md, marginBottom: spacing.md, flexWrap: 'wrap' }}>
+            <Button label="Photo" variant="outline" size="sm" onPress={handleTakePhoto} leftIcon="camera" style={{ flex: 1, minWidth: 80 }} />
+            <Button label="Gallery" variant="outline" size="sm" onPress={handleAddPhoto} leftIcon="image" style={{ flex: 1, minWidth: 80 }} />
+            <Button label="Video" variant="outline" size="sm" onPress={handleRecordVideo} leftIcon="videocam" style={{ flex: 1, minWidth: 80 }} />
+            <Button label="Audio" variant="outline" size="sm" onPress={handleAttachAudio} leftIcon="mic" style={{ flex: 1, minWidth: 80 }} />
           </View>
 
           {mediaUris.length > 0 && (

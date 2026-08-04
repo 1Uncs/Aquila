@@ -9,7 +9,9 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from '@/core/utils/queryClient';
 import { AuthProvider, useAuthStore, useElectionsStore, useResultsStore, useIncidentsStore, useLocationsStore } from '@/features/auth/store';
 import { ToastProvider } from '@/core/components/ToastProvider';
+import { RootErrorBoundary } from '@/core/components/ErrorBoundary';
 import { mockApi } from '@/features/elections/service';
+import { ResultSubmission } from '@/features/auth/store';
 
 enableScreens();
 
@@ -24,7 +26,9 @@ export default function RootLayout() {
         <QueryClientProvider client={queryClient}>
           <AuthProvider>
             <ToastProvider>
-              <RootLayoutNav />
+              <RootErrorBoundary>
+                <RootLayoutNav />
+              </RootErrorBoundary>
             </ToastProvider>
           </AuthProvider>
         </QueryClientProvider>
@@ -34,6 +38,21 @@ export default function RootLayout() {
 }
 
 function RootLayoutNav() {
+  useEffect(() => {
+    const handler = (event: { reason: unknown }) => {
+      const reason = event.reason;
+      const error = reason instanceof Error ? reason : new Error(String(reason));
+      console.error('[UnhandledRejection]', error);
+    };
+    if (typeof globalThis !== 'undefined' && 'addEventListener' in globalThis) {
+      (globalThis as unknown as { addEventListener: (type: string, fn: (e: { reason: unknown }) => void) => void }).addEventListener('unhandledrejection', handler);
+    }
+    return () => {
+      if (typeof globalThis !== 'undefined' && 'removeEventListener' in globalThis) {
+        (globalThis as unknown as { removeEventListener: (type: string, fn: (e: { reason: unknown }) => void) => void }).removeEventListener('unhandledrejection', handler);
+      }
+    };
+  }, []);
   const router = useRouter();
   const segments = useSegments();
   const navigationState = useRootNavigationState();
@@ -79,6 +98,39 @@ function RootLayoutNav() {
       queryClient.setQueryData(['locations', 'pollingUnits', undefined], pus.slice(0, 15));
       queryClient.setQueryData(['parties', 'list'], parties);
       queryClient.setQueryData(['elections', 'candidates', 'e1'], candidates);
+      const demoDrafts: ResultSubmission[] = [
+        {
+          id: 'draft-demo-1',
+          electionId: 'e1',
+          pollingUnitId: pus[0]?.id ?? 'pu-unknown',
+          pollingUnitName: pus[0]?.name ?? 'Unknown PU',
+          candidateVotes: { cand1: 120, cand2: 95, cand3: 60 },
+          candidateVotesInec: {},
+          rejectedVotes: 5,
+          rejectedVotesInec: 0,
+          totalAccreditedVoters: 300,
+          totalVotesCast: 275,
+          status: 'DRAFT',
+          submittedAt: new Date().toISOString(),
+          submittedBy: 'current-user',
+        },
+        {
+          id: 'draft-demo-2',
+          electionId: 'e1',
+          pollingUnitId: pus[1]?.id ?? 'pu-unknown',
+          pollingUnitName: pus[1]?.name ?? 'Unknown PU',
+          candidateVotes: { cand1: 0, cand2: 0, cand3: 0 },
+          candidateVotesInec: {},
+          rejectedVotes: 0,
+          rejectedVotesInec: 0,
+          totalAccreditedVoters: 0,
+          totalVotesCast: 0,
+          status: 'DRAFT',
+          submittedAt: new Date(Date.now() - 86400000).toISOString(),
+          submittedBy: 'current-user',
+        },
+      ];
+      useResultsStore.getState().setSubmissions([...results, ...demoDrafts]);
     })();
   }, [isNavigationReady, isAuthenticated]);
 

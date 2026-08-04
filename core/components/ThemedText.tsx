@@ -84,13 +84,15 @@ export function ThemedText({
   );
 
   const maxFontSizeMultiplier =
-    isDisplay || isHeading
-      ? 1.2
-      : isSubheading
+    isDisplay
+      ? 1.3
+      : isHeading
         ? 1.3
-        : variant === 'lg' || variant === 'body'
+        : isSubheading
           ? 1.4
-          : 1.5;
+          : variant === 'lg' || variant === 'body'
+            ? 1.4
+            : 1.5;
 
   const fontFamilyValue =
     fontFamily === 'bold'

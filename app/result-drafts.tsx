@@ -14,14 +14,14 @@ import Colors from '@/constants/colors';
 
 export default function ResultDraftsScreen() {
   const { data: _apiDrafts = [], isLoading: apiLoading } = useDraftsQuery();
-  const { submissions: storeSubmissions } = useResultsStore();
+  const { removeSubmission } = useResultsStore();
   const scheme = useColorScheme() ?? 'light';
   const colors = Colors[scheme];
 
-  const drafts = storeSubmissions.filter((s) => s.status === 'DRAFT');
+  const drafts = useResultsStore.getState().submissions.filter((s) => s.status === 'DRAFT');
 
   return (
-    <ScreenView scrollable keyboardShouldPersistTaps="handled">
+    <ScreenView scrollable keyboardShouldPersistTaps="handled" skipAndroidTopPadding>
       <FlashList
         data={drafts}
         keyExtractor={(item) => item.id}
@@ -86,9 +86,7 @@ export default function ResultDraftsScreen() {
                 variant="outline"
                 size="sm"
                 onPress={() => {
-                  const store = useResultsStore.getState();
-                  store.submissions = store.submissions.filter((s) => s.id !== draft.id);
-                  router.reload();
+                  removeSubmission(draft.id);
                 }}
                 style={{ flex: 1 }}
               />
