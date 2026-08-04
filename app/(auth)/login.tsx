@@ -132,11 +132,11 @@ export default function LoginScreen() {
             style={{ marginBottom: spacing.md }}
           />
 
-          <View style={{ flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.md, flexWrap: 'wrap' }}>
-            <Button label="Admin" variant="outline" onPress={() => launchDemo('admin')} loading={loginMutation.isPending} style={{ flex: 1, minWidth: 80 }} />
-            <Button label="Field Agent" variant="ghost" onPress={() => launchDemo('agent')} loading={loginMutation.isPending} style={{ flex: 1, minWidth: 80 }} />
-            <Button label="PU Agent" variant="outline" onPress={() => launchDemo('polling')} loading={loginMutation.isPending} style={{ flex: 1, minWidth: 80 }} />
-            <Button label="Election Officer" variant="ghost" onPress={() => launchDemo('officer')} loading={loginMutation.isPending} style={{ flex: 1, minWidth: 80 }} />
+          <View style={{ flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.md, flexWrap: 'wrap', alignItems: 'center' }}>
+            <Button label="Admin" variant="outline" onPress={() => launchDemo('admin')} loading={loginMutation.isPending} style={{ minWidth: 80 }} />
+            <Button label="Field Agent" variant="ghost" onPress={() => launchDemo('agent')} loading={loginMutation.isPending} style={{ minWidth: 80 }} />
+            <Button label="PU Agent" variant="outline" onPress={() => launchDemo('polling')} loading={loginMutation.isPending} style={{ minWidth: 80 }} />
+            <Button label="Election Officer" variant="ghost" onPress={() => launchDemo('officer')} loading={loginMutation.isPending} style={{ minWidth: 80 }} />
           </View>
 
           <ThemedText

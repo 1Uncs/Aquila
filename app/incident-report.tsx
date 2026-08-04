@@ -281,11 +281,11 @@ export default function ReportIncidentScreen() {
             Attach Media
           </ThemedText>
 
-          <View style={{ flexDirection: 'row', gap: spacing.sm, marginHorizontal: spacing.md, marginBottom: spacing.md, flexWrap: 'wrap' }}>
-            <Button label="Photo" variant="outline" size="sm" onPress={handleTakePhoto} leftIcon="camera" style={{ flex: 1, minWidth: 80 }} />
-            <Button label="Gallery" variant="outline" size="sm" onPress={handleAddPhoto} leftIcon="image" style={{ flex: 1, minWidth: 80 }} />
-            <Button label="Video" variant="outline" size="sm" onPress={handleRecordVideo} leftIcon="videocam" style={{ flex: 1, minWidth: 80 }} />
-            <Button label="Audio" variant="outline" size="sm" onPress={handleAttachAudio} leftIcon="musical-notes-outline" style={{ flex: 1, minWidth: 80 }} />
+          <View style={{ flexDirection: 'row', gap: spacing.sm, marginHorizontal: spacing.md, marginBottom: spacing.md, flexWrap: 'wrap', alignItems: 'center' }}>
+            <Button label="Photo" variant="outline" size="sm" onPress={handleTakePhoto} leftIcon="camera" style={{ minWidth: 80 }} />
+            <Button label="Gallery" variant="outline" size="sm" onPress={handleAddPhoto} leftIcon="image" style={{ minWidth: 80 }} />
+            <Button label="Video" variant="outline" size="sm" onPress={handleRecordVideo} leftIcon="videocam" style={{ minWidth: 80 }} />
+            <Button label="Audio" variant="outline" size="sm" onPress={handleAttachAudio} leftIcon="musical-notes-outline" style={{ minWidth: 80 }} />
           </View>
 
           <View style={{ flexDirection: 'row', gap: spacing.sm, marginHorizontal: spacing.md, marginBottom: spacing.md, flexWrap: 'wrap', alignItems: 'center' }}>
