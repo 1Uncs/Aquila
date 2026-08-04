@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { Platform, KeyboardAvoidingView, ScrollView, View } from 'react-native';
-import { ScreenView } from '@/core/components/ScreenView';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ThemedText, Input, Button } from '@/core/components';
 import { spacing } from '@/constants/tokens';
 import { login } from '@/features/auth/service';
 
 export default function LoginScreen() {
+  const insets = useSafeAreaInsets();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -42,17 +43,21 @@ export default function LoginScreen() {
   };
 
   return (
-    <ScreenView>
+    <View style={{ flex: 1 }}>
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         enabled={Platform.OS === 'ios'}
-        style={{ flex: 1, justifyContent: 'center' }}
+        behavior="padding"
+        style={{ flex: 1 }}
       >
         <ScrollView
+          contentContainerStyle={{
+            paddingTop: insets.top + spacing.xxl,
+            paddingBottom: Math.max(insets.bottom, spacing.md) + spacing.xxl,
+            paddingHorizontal: spacing.md,
+          }}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
-          contentInsetAdjustmentBehavior="automatic"
-          contentContainerStyle={{ paddingBottom: spacing.xxl, justifyContent: 'center', flexGrow: 1 }}
+          showsVerticalScrollIndicator={false}
         >
           <ThemedText variant="xxl" style={{ textAlign: 'center', marginBottom: spacing.sm }}>
             Aquila
@@ -65,7 +70,7 @@ export default function LoginScreen() {
             Trusted Election Intelligence
           </ThemedText>
 
-          <ThemedText variant="h3" style={{ marginBottom: spacing.lg, marginHorizontal: 16 }}>
+          <ThemedText variant="h3" style={{ marginBottom: spacing.lg }}>
             Sign In
           </ThemedText>
 
@@ -92,14 +97,14 @@ export default function LoginScreen() {
           />
 
           {error ? (
-            <ThemedText variant="caption" color="error" style={{ marginHorizontal: 16, marginBottom: spacing.md }}>
+            <ThemedText variant="caption" color="error" style={{ marginBottom: spacing.md }}>
               {error}
             </ThemedText>
           ) : null}
 
-          <Button label="Sign In" onPress={handleLogin} loading={loading} fullWidth style={{ marginHorizontal: 16 }} />
+          <Button label="Sign In" onPress={handleLogin} loading={loading} fullWidth style={{ marginBottom: spacing.md }} />
 
-          <View style={{ flexDirection: 'row', gap: spacing.sm, marginHorizontal: 16, marginTop: spacing.md }}>
+          <View style={{ flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.md }}>
             <Button
               label="Admin Demo"
               variant="outline"
@@ -125,6 +130,6 @@ export default function LoginScreen() {
           </ThemedText>
         </ScrollView>
       </KeyboardAvoidingView>
-    </ScreenView>
+    </View>
   );
 }
