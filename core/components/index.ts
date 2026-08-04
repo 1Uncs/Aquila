@@ -6,3 +6,4 @@ export * from './Input';
 export * from './Button';
 export * from './DebouncedPressable';
 export * from './FlashListItem';
+export * from './BottomSheet';

@@ -1,10 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { StyleSheet, ScrollView, View } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { ScreenView } from '@/core/components/ScreenView';
-import { ThemedText, FlashListItem, EmptyState, Button, Card } from '@/core/components';
+import { ThemedText, FlashListItem, EmptyState, Button, Card, BottomSheet } from '@/core/components';
 import { ROUTES } from '@/constants/routes';
 import { spacing, radius, shadows, sizes, gradientPresets } from '@/constants/tokens';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
@@ -44,6 +44,7 @@ function StatCard({ icon, label, value, gradient }: StatCardProps) {
 
 export default function ResultsScreen() {
   const { data: results = [], isLoading: loading } = useResultsQuery();
+  const [showMore, setShowMore] = useState(false);
   const scheme = useColorScheme() ?? 'light';
   const colors = Colors[scheme];
 
@@ -69,9 +70,18 @@ export default function ResultsScreen() {
             <View style={{ flexDirection: 'row', gap: spacing.sm, marginHorizontal: spacing.md, marginBottom: spacing.lg }}>
               <Button label="Drafts" variant="outline" size="sm" onPress={() => router.push(ROUTES.RESULT_DRAFTS as any)} style={styles.actionBtn} />
               <Button label="Search" variant="primary" size="sm" onPress={() => router.push(ROUTES.RESULT_SEARCH)} style={styles.actionBtn} />
-              <Button label="Collation" variant="outline" size="sm" onPress={() => router.push(ROUTES.RESULT_COLLATION)} style={styles.actionBtn} />
-              <Button label="Incident" variant="outline" size="sm" onPress={() => router.push(ROUTES.INCIDENT_REPORT)} style={styles.actionBtn} />
+              <Button label="More" variant="ghost" size="sm" onPress={() => setShowMore(true)} style={styles.actionBtn} leftIcon="ellipsis-horizontal" />
             </View>
+
+            <BottomSheet
+              visible={showMore}
+              title="More Actions"
+              onClose={() => setShowMore(false)}
+              options={[
+                { label: 'Collation', onPress: () => router.push(ROUTES.RESULT_COLLATION) },
+                { label: 'Report Incident', onPress: () => router.push(ROUTES.INCIDENT_REPORT) },
+              ]}
+            />
 
             <ThemedText variant="h3" style={{ marginHorizontal: spacing.md, marginBottom: spacing.sm }}>
               Recent Results
