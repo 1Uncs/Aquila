@@ -98,6 +98,92 @@ function RootLayoutNav() {
       queryClient.setQueryData(['locations', 'pollingUnits', undefined], pus.slice(0, 15));
       queryClient.setQueryData(['parties', 'list'], parties);
       queryClient.setQueryData(['elections', 'candidates', 'e1'], candidates);
+      const extraResults: import('@/features/auth/store').ResultSubmission[] = [
+        {
+          id: 'r-search-1',
+          electionId: 'e1',
+          pollingUnitId: pus[2]?.id ?? 'pu-search-1',
+          pollingUnitName: pus[2]?.name ?? 'PU Search Demo 1',
+          candidateVotes: { cand1: 150, cand2: 200, cand3: 80, cand4: 30 },
+          candidateVotesInec: { cand1: 148, cand2: 202, cand3: 79, cand4: 31 },
+          rejectedVotes: 6,
+          rejectedVotesInec: 6,
+          totalAccreditedVoters: 480,
+          totalVotesCast: 460,
+          status: 'PUBLISHED',
+          latitude: 6.55,
+          longitude: 3.38,
+          submittedAt: '2027-02-25T15:30:00Z',
+          submittedBy: 'u-demo',
+        },
+        {
+          id: 'r-search-2',
+          electionId: 'e1',
+          pollingUnitId: pus[3]?.id ?? 'pu-search-2',
+          pollingUnitName: pus[3]?.name ?? 'PU Search Demo 2',
+          candidateVotes: { cand1: 90, cand2: 110, cand3: 50, cand4: 20 },
+          candidateVotesInec: { cand1: 91, cand2: 109, cand3: 51, cand4: 19 },
+          rejectedVotes: 3,
+          rejectedVotesInec: 3,
+          totalAccreditedVoters: 280,
+          totalVotesCast: 273,
+          status: 'PUBLISHED',
+          latitude: 6.58,
+          longitude: 3.4,
+          submittedAt: '2027-02-25T16:00:00Z',
+          submittedBy: 'u-demo',
+        },
+      ];
+      const allResults = [...results, ...extraResults];
+      useResultsStore.getState().setSubmissions(allResults);
+      queryClient.setQueryData(['results', 'list'], allResults);
+      const extraIncidents: import('@/features/auth/store').IncidentReport[] = [
+        {
+          id: 'i-search-1',
+          electionId: 'e1',
+          electoralArea: 'Victoria Island',
+          category: 'VOTE_BUYING',
+          severity: 'MEDIUM',
+          status: 'UNDER_REVIEW',
+          description: 'Suspected vote buying near Victoria Island PU',
+          latitude: 6.428,
+          longitude: 3.421,
+          mediaUrls: [],
+          reportedBy: 'u-demo',
+          reportedAt: '2027-02-25T13:00:00Z',
+        },
+        {
+          id: 'i-search-2',
+          electionId: 'e1',
+          electoralArea: 'Lekki',
+          category: 'BVAS_FAILURE',
+          severity: 'HIGH',
+          status: 'RESOLVED',
+          description: 'BVAS device malfunction at 2 polling units in Lekki',
+          latitude: 6.445,
+          longitude: 3.45,
+          mediaUrls: [],
+          reportedBy: 'u-demo',
+          reportedAt: '2027-02-25T11:00:00Z',
+        },
+        {
+          id: 'i-search-3',
+          electionId: 'e1',
+          electoralArea: 'Ikeja',
+          category: 'PROTEST',
+          severity: 'LOW',
+          status: 'SUBMITTED',
+          description: 'Minor protest outside PU gate, resolved quickly',
+          latitude: 6.605,
+          longitude: 3.35,
+          mediaUrls: [],
+          reportedBy: 'u-demo',
+          reportedAt: '2027-02-25T09:30:00Z',
+        },
+      ];
+      const allIncidents = [...incidents, ...extraIncidents];
+      useIncidentsStore.getState().setIncidents(allIncidents);
+      queryClient.setQueryData(['incidents', 'list'], allIncidents);
       const demoDrafts: ResultSubmission[] = [
         {
           id: 'draft-demo-1',

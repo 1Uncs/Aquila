@@ -7,13 +7,16 @@ import { ThemedText, FlashListItem, EmptyState, Button } from '@/core/components
 import { router } from 'expo-router';
 import { spacing, shadows, radius, sizes, gradientPresets } from '@/constants/tokens';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
-import { useResultsQuery } from '@/features/elections/hooks';
+import { useResultsQuery, useCandidatesQuery } from '@/features/elections/hooks';
 import Colors from '@/constants/colors';
 
 export default function CollationScreen() {
   const { data: results = [] } = useResultsQuery();
+  const { data: candidates = [] } = useCandidatesQuery('e1');
   const scheme = useColorScheme() ?? 'light';
   const colors = Colors[scheme];
+
+  const candidateMap = new Map(candidates.map((c) => [c.id, c.fullName]));
 
   const totalVotesByCandidate: Record<string, number> = {};
   let totalVotes = 0;
@@ -30,6 +33,7 @@ export default function CollationScreen() {
     .sort((a, b) => b[1] - a[1])
     .map(([candId, votes]) => ({
       candId,
+      name: candidateMap.get(candId) ?? candId,
       votes,
       pct: totalVotes > 0 ? ((votes / totalVotes) * 100).toFixed(1) : '0.0',
     }));
@@ -91,7 +95,7 @@ export default function CollationScreen() {
                   </ThemedText>
                 </View>
                 <View style={{ flex: 1 }}>
-                  <ThemedText variant="body" style={{ fontWeight: '600' }}>{entry.candId}</ThemedText>
+                  <ThemedText variant="body" style={{ fontWeight: '600' }}>{entry.name}</ThemedText>
                   <ThemedText variant="caption" color="textSecondary">{entry.votes.toLocaleString()} votes</ThemedText>
                 </View>
                 <ThemedText variant="lg" style={{ fontWeight: '700' }}>{entry.pct}%</ThemedText>

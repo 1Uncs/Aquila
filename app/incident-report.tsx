@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { ScrollView, View, Platform, KeyboardAvoidingView, Alert } from 'react-native';
+import { Audio } from 'expo-av';
 import * as ImagePicker from 'expo-image-picker';
 import * as DocumentPicker from 'expo-document-picker';
 import { ScreenView } from '@/core/components/ScreenView';
@@ -27,6 +28,9 @@ export default function ReportIncidentScreen() {
   const [selectedPuName, setSelectedPuName] = useState(preselectedPuName ?? '');
   const [mediaUris, setMediaUris] = useState<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [recordingUri, setRecordingUri] = useState<string | null>(null);
+  const recordingRef = useRef<Audio.Recording | null>(null);
   const { addIncident } = useIncidentsStore();
   const { user } = useAuthStore();
 
@@ -62,6 +66,42 @@ export default function ReportIncidentScreen() {
     } catch (error) {
       console.error('Error picking audio:', error);
       Alert.alert('Error', 'Failed to attach audio file.');
+    }
+  };
+
+  const startRecording = async () => {
+    try {
+      const permission = await Audio.requestPermissionsAsync();
+      if (!permission.granted) {
+        Alert.alert('Permission needed', 'Microphone permission is required to record audio.');
+        return;
+      }
+      const { recording } = await Audio.Recording.createAsync(
+        Audio.RecordingOptionsPresets.HIGH_QUALITY
+      );
+      recordingRef.current = recording;
+      setIsRecording(true);
+      setRecordingUri(null);
+    } catch (error) {
+      console.error('Failed to start recording:', error);
+      Alert.alert('Error', 'Failed to start audio recording.');
+    }
+  };
+
+  const stopRecording = async () => {
+    try {
+      if (!recordingRef.current) return;
+      await recordingRef.current.stopAndUnloadAsync();
+      const uri = recordingRef.current.getURI();
+      setIsRecording(false);
+      if (uri) {
+        setRecordingUri(uri);
+        setMediaUris((prev) => [...prev, uri]);
+      }
+      recordingRef.current = null;
+    } catch (error) {
+      console.error('Failed to stop recording:', error);
+      setIsRecording(false);
     }
   };
 
@@ -222,7 +262,23 @@ export default function ReportIncidentScreen() {
             <Button label="Photo" variant="outline" size="sm" onPress={handleTakePhoto} leftIcon="camera" style={{ flex: 1, minWidth: 80 }} />
             <Button label="Gallery" variant="outline" size="sm" onPress={handleAddPhoto} leftIcon="image" style={{ flex: 1, minWidth: 80 }} />
             <Button label="Video" variant="outline" size="sm" onPress={handleRecordVideo} leftIcon="videocam" style={{ flex: 1, minWidth: 80 }} />
-            <Button label="Audio" variant="outline" size="sm" onPress={handleAttachAudio} leftIcon="mic" style={{ flex: 1, minWidth: 80 }} />
+            <Button label="Audio" variant="outline" size="sm" onPress={handleAttachAudio} leftIcon="musical-notes-outline" style={{ flex: 1, minWidth: 80 }} />
+          </View>
+
+          <View style={{ flexDirection: 'row', gap: spacing.sm, marginHorizontal: spacing.md, marginBottom: spacing.md, flexWrap: 'wrap' }}>
+            <Button
+              label={isRecording ? 'Stop Recording' : 'Record Memo'}
+              variant={isRecording ? 'primary' : 'outline'}
+              size="sm"
+              onPress={isRecording ? stopRecording : startRecording}
+              leftIcon={isRecording ? 'stop-circle' : 'mic'}
+              style={{ flex: 1, minWidth: 120 }}
+            />
+            {recordingUri ? (
+              <ThemedText variant="caption" color="success" style={{ alignSelf: 'center' }}>
+                Recording saved
+              </ThemedText>
+            ) : null}
           </View>
 
           {mediaUris.length > 0 && (
