@@ -26,6 +26,8 @@ type ButtonProps = {
   fullWidth?: boolean;
   leftIcon?: keyof typeof Ionicons.glyphMap;
   rightIcon?: keyof typeof Ionicons.glyphMap;
+  adjustsFontSizeToFit?: boolean;
+  minimumFontScale?: number;
 } & Omit<PressableProps, 'children'>;
 
 export function Button({
@@ -40,15 +42,17 @@ export function Button({
   fullWidth = false,
   leftIcon,
   rightIcon,
+  adjustsFontSizeToFit,
+  minimumFontScale,
   ...rest
 }: ButtonProps) {
   const scheme = useColorScheme() ?? 'light';
   const colors = Colors[scheme];
 
   const sizeStyles = {
-    sm: { paddingVertical: spacing.sm, paddingHorizontal: spacing.md, height: 40 },
-    md: { paddingVertical: spacing.md, paddingHorizontal: spacing.lg, height: 48 },
-    lg: { paddingVertical: spacing.lg, paddingHorizontal: spacing.xl, height: 56 },
+    sm: { paddingVertical: spacing.sm, paddingHorizontal: spacing.md, minHeight: 40 },
+    md: { paddingVertical: spacing.md, paddingHorizontal: spacing.lg, minHeight: 48 },
+    lg: { paddingVertical: spacing.lg, paddingHorizontal: spacing.xl, minHeight: 56 },
   };
 
   const variantStyles: Record<ButtonVariant, ViewStyle> = {
@@ -90,6 +94,10 @@ export function Button({
       {renderIcon(leftIcon, textColor)}
       <ThemedText
         variant="label"
+        numberOfLines={1}
+        ellipsizeMode="tail"
+        adjustsFontSizeToFit={adjustsFontSizeToFit ?? true}
+        minimumFontScale={minimumFontScale ?? 0.75}
         style={[
           styles.label,
           { color: textColor },

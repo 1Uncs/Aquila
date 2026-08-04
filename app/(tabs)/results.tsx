@@ -1,9 +1,10 @@
 import React from 'react';
 import { StyleSheet, ScrollView, View } from 'react-native';
+import { FlashList } from '@shopify/flash-list';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { ScreenView } from '@/core/components/ScreenView';
-import { ThemedText, Card, EmptyState, Button } from '@/core/components';
+import { ThemedText, FlashListItem, EmptyState, Button, Card } from '@/core/components';
 import { ROUTES } from '@/constants/routes';
 import { spacing, radius, shadows, sizes, gradientPresets } from '@/constants/tokens';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
@@ -50,54 +51,60 @@ export default function ResultsScreen() {
 
   return (
     <ScreenView scrollable keyboardShouldPersistTaps="handled">
-      <View style={{ paddingBottom: spacing.xxl }}>
-        <ThemedText variant="xl" style={{ marginHorizontal: 16, marginTop: spacing.md, marginBottom: spacing.sm }}>
-          Live Results
-        </ThemedText>
+      <FlashList
+        data={results}
+        keyExtractor={(item) => item.id}
+        ListHeaderComponent={
+          <View>
+            <ThemedText variant="xl" style={{ marginHorizontal: spacing.md, marginTop: spacing.md, marginBottom: spacing.sm }}>
+              Live Results
+            </ThemedText>
 
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, gap: spacing.md, marginBottom: spacing.lg }} keyboardShouldPersistTaps="handled">
-          <StatCard icon="📋" label="Reports" value={String(results.length)} gradient={gradientPresets.primary} />
-          <StatCard icon="👥" label="Total Votes" value={totalVotes.toLocaleString()} gradient={gradientPresets.success} />
-          <StatCard icon="✓" label="Published" value={String(results.filter((r) => r.status === 'PUBLISHED').length)} gradient={gradientPresets.accent} />
-        </ScrollView>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: spacing.md, gap: spacing.md, marginBottom: spacing.lg }} keyboardShouldPersistTaps="handled">
+              <StatCard icon="📋" label="Reports" value={String(results.length)} gradient={gradientPresets.primary} />
+              <StatCard icon="👥" label="Total Votes" value={totalVotes.toLocaleString()} gradient={gradientPresets.success} />
+              <StatCard icon="✓" label="Published" value={String(results.filter((r) => r.status === 'PUBLISHED').length)} gradient={gradientPresets.accent} />
+            </ScrollView>
 
-        <View style={{ flexDirection: 'row', gap: spacing.sm, marginHorizontal: 16, marginBottom: spacing.lg }}>
-          <Button label="Drafts" variant="outline" size="sm" onPress={() => router.push(ROUTES.RESULT_DRAFTS as any)} style={styles.actionBtn} />
-          <Button label="Search" variant="primary" size="sm" onPress={() => router.push(ROUTES.RESULT_SEARCH)} style={styles.actionBtn} />
-          <Button label="Collation" variant="outline" size="sm" onPress={() => router.push(ROUTES.RESULT_COLLATION)} style={styles.actionBtn} />
-          <Button label="Incident" variant="outline" size="sm" onPress={() => router.push(ROUTES.INCIDENT_REPORT)} style={styles.actionBtn} />
-        </View>
+            <View style={{ flexDirection: 'row', gap: spacing.sm, marginHorizontal: spacing.md, marginBottom: spacing.lg }}>
+              <Button label="Drafts" variant="outline" size="sm" onPress={() => router.push(ROUTES.RESULT_DRAFTS as any)} style={styles.actionBtn} />
+              <Button label="Search" variant="primary" size="sm" onPress={() => router.push(ROUTES.RESULT_SEARCH)} style={styles.actionBtn} />
+              <Button label="Collation" variant="outline" size="sm" onPress={() => router.push(ROUTES.RESULT_COLLATION)} style={styles.actionBtn} />
+              <Button label="Incident" variant="outline" size="sm" onPress={() => router.push(ROUTES.INCIDENT_REPORT)} style={styles.actionBtn} />
+            </View>
 
-        <ThemedText variant="h3" style={{ marginHorizontal: 16, marginBottom: spacing.sm }}>
-          Recent Results
-        </ThemedText>
-        {loading ? (
-          <ThemedText variant="body" color="textSecondary" style={{ textAlign: 'center', marginTop: spacing.xxl }}>
-            Loading results...
-          </ThemedText>
-        ) : results.length === 0 ? (
-          <EmptyState icon="analytics-outline" title="No Results" subtitle="No results submitted yet" />
-        ) : (
-          results.map((result) => (
-            <Card key={result.id}>
-              <ThemedText variant="body" style={{ fontWeight: '600' }}>
-                {result.pollingUnitName}
+            <ThemedText variant="h3" style={{ marginHorizontal: spacing.md, marginBottom: spacing.sm }}>
+              Recent Results
+            </ThemedText>
+            {loading ? (
+              <ThemedText variant="body" color="textSecondary" style={{ textAlign: 'center', marginTop: spacing.xxl }}>
+                Loading results...
               </ThemedText>
-              <ThemedText variant="caption" color="textSecondary" style={{ marginTop: 4 }}>
-                {result.totalVotesCast.toLocaleString()} votes · {result.status}
-              </ThemedText>
-              <View style={[styles.progressTrack, { backgroundColor: colors.border, marginTop: spacing.sm }]}>
-                <View
-                  style={[
-                    styles.progressFill,
-                    { width: `${Math.min((result.totalVotesCast / 800) * 100, 100)}%`, backgroundColor: colors.success },
-                  ]}
-                />
-              </View>
-            </Card>
-          ))
+            ) : results.length === 0 ? (
+              <EmptyState icon="analytics-outline" title="No Results" subtitle="No results submitted yet" />
+            ) : null}
+          </View>
+        }
+        renderItem={({ item: result }) => (
+          <FlashListItem id={result.id}>
+            <ThemedText variant="body" style={{ fontWeight: '600' }}>
+              {result.pollingUnitName}
+            </ThemedText>
+            <ThemedText variant="caption" color="textSecondary" style={{ marginTop: spacing.xs }}>
+              {result.totalVotesCast.toLocaleString()} votes · {result.status}
+            </ThemedText>
+            <View style={[styles.progressTrack, { backgroundColor: colors.border, marginTop: spacing.sm }]}>
+              <View
+                style={[
+                  styles.progressFill,
+                  { width: `${Math.min((result.totalVotesCast / 800) * 100, 100)}%`, backgroundColor: colors.success },
+                ]}
+              />
+            </View>
+          </FlashListItem>
         )}
-      </View>
+        contentContainerStyle={{ paddingHorizontal: spacing.md, paddingBottom: spacing.xxl }}
+      />
     </ScreenView>
   );
 }

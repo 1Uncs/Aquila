@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
+import { StyleSheet, View, ScrollView } from 'react-native';
+import { FlashList } from '@shopify/flash-list';
 import { router } from 'expo-router';
-import { ScrollView, View, StyleSheet } from 'react-native';
 import { ScreenView } from '@/core/components/ScreenView';
-import { ThemedText, Card, EmptyState, Button } from '@/core/components';
+import { ThemedText, FlashListItem, EmptyState, Button } from '@/core/components';
 import { useElectionsStore } from '@/features/auth/store';
 import { ROUTES } from '@/constants/routes';
 import { spacing, radius } from '@/constants/tokens';
@@ -39,80 +40,83 @@ export default function ElectionsScreen() {
 
   return (
     <ScreenView scrollable keyboardShouldPersistTaps="handled">
-      <View style={styles.content}>
-        <ThemedText variant="xl" style={{ marginHorizontal: 16, marginTop: spacing.md, marginBottom: spacing.sm }}>
-          Elections
-        </ThemedText>
+      <FlashList
+        data={filteredElections}
+        keyExtractor={(item) => item.id}
+        ListHeaderComponent={
+          <View>
+            <ThemedText variant="xl" style={{ marginHorizontal: spacing.md, marginTop: spacing.md, marginBottom: spacing.sm }}>
+              Elections
+            </ThemedText>
 
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipRow} keyboardShouldPersistTaps="handled">
-          {cycles.map((cycle) => (
-            <Button
-              key={cycle.id}
-              label={cycle.name}
-              size="sm"
-              variant={selectedCycle === cycle.id ? 'primary' : 'outline'}
-              onPress={() => setSelectedCycle(cycle.id === selectedCycle ? null : cycle.id)}
-              style={styles.chip}
-            />
-          ))}
-        </ScrollView>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipRow} keyboardShouldPersistTaps="handled">
+              {cycles.map((cycle) => (
+                <Button
+                  key={cycle.id}
+                  label={cycle.name}
+                  size="sm"
+                  variant={selectedCycle === cycle.id ? 'primary' : 'outline'}
+                  onPress={() => setSelectedCycle(cycle.id === selectedCycle ? null : cycle.id)}
+                  style={styles.chip}
+                />
+              ))}
+            </ScrollView>
 
-        {loading ? (
-          <ThemedText variant="body" color="textSecondary" style={{ textAlign: 'center', marginTop: spacing.xxl }}>
-            Loading elections...
-          </ThemedText>
-        ) : filteredElections.length === 0 ? (
-          <EmptyState
-            icon="document-text-outline"
-            title="No Elections Found"
-            subtitle="No elections in this cycle yet"
-          />
-        ) : (
-          filteredElections.map((election) => {
-            const statusColorKey = STATUS_COLORS[election.status] || 'textSecondary';
-            const statusColor = colors[statusColorKey as keyof typeof Colors.light] as string;
-            return (
-              <Card
-                key={election.id}
-                pressable
-                onPress={() => {
-                  useElectionsStore.getState().setSelectedElectionId(election.id);
-                  router.push({ pathname: ROUTES.ELECTION_DETAIL, params: { id: election.id } });
-                }}
-              >
-                <View style={styles.row}>
-                  <View style={styles.electionInfo}>
-                    <ThemedText variant="body" style={{ fontWeight: '600' }}>
-                      {election.position}
-                    </ThemedText>
-                    <ThemedText variant="caption" color="textSecondary" style={{ marginTop: 4 }}>
-                      {election.electoralArea} · {election.electoralAreaType}
-                    </ThemedText>
-                    <ThemedText variant="caption" color="textMuted">
-                      {election.electionDate} · {election.candidateCount} candidates
-                    </ThemedText>
-                  </View>
-                  <View style={[styles.statusBadge, { backgroundColor: statusColor + '20' }]}>
-                    <ThemedText variant="caption" style={{ color: statusColor, fontWeight: '600' }}>
-                      {election.status}
-                    </ThemedText>
-                  </View>
+            {loading ? (
+              <ThemedText variant="body" color="textSecondary" style={{ textAlign: 'center', marginTop: spacing.xxl }}>
+                Loading elections...
+              </ThemedText>
+            ) : filteredElections.length === 0 ? (
+              <EmptyState
+                icon="document-text-outline"
+                title="No Elections Found"
+                subtitle="No elections in this cycle yet"
+              />
+            ) : null}
+          </View>
+        }
+        renderItem={({ item: election }) => {
+          const statusColorKey = STATUS_COLORS[election.status] || 'textSecondary';
+          const statusColor = colors[statusColorKey as keyof typeof Colors.light] as string;
+          return (
+            <FlashListItem
+              id={election.id}
+              pressable
+              onPress={() => {
+                useElectionsStore.getState().setSelectedElectionId(election.id);
+                router.push({ pathname: ROUTES.ELECTION_DETAIL, params: { id: election.id } });
+              }}
+            >
+              <View style={styles.row}>
+                <View style={styles.electionInfo}>
+                  <ThemedText variant="body" style={{ fontWeight: '600' }}>
+                    {election.position}
+                  </ThemedText>
+                  <ThemedText variant="caption" color="textSecondary" style={{ marginTop: spacing.xs }}>
+                    {election.electoralArea} · {election.electoralAreaType}
+                  </ThemedText>
+                  <ThemedText variant="caption" color="textMuted">
+                    {election.electionDate} · {election.candidateCount} candidates
+                  </ThemedText>
                 </View>
-              </Card>
-            );
-          })
-        )}
-      </View>
+                <View style={[styles.statusBadge, { backgroundColor: statusColor + '20' }]}>
+                  <ThemedText variant="caption" style={{ color: statusColor, fontWeight: '600' }}>
+                    {election.status}
+                  </ThemedText>
+                </View>
+              </View>
+            </FlashListItem>
+          );
+        }}
+        contentContainerStyle={{ paddingHorizontal: spacing.md, paddingBottom: spacing.xxl }}
+      />
     </ScreenView>
   );
 }
 
 const styles = StyleSheet.create({
-  content: { paddingBottom: spacing.xxl },
-  chipRow: { paddingHorizontal: 16, gap: spacing.sm, marginBottom: spacing.lg },
+  chipRow: { paddingHorizontal: spacing.md, gap: spacing.sm, marginBottom: spacing.lg },
   chip: { marginRight: spacing.sm },
-  actionRow: { flexDirection: 'row', gap: spacing.sm, marginHorizontal: 16, marginBottom: spacing.lg },
-  actionBtn: { flex: 1 },
   row: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
   electionInfo: { flex: 1 },
   statusBadge: {

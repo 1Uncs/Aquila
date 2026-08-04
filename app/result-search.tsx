@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Platform, KeyboardAvoidingView, ScrollView } from 'react-native';
+import { StyleSheet, View, Platform, KeyboardAvoidingView } from 'react-native';
+import { FlashList } from '@shopify/flash-list';
 import { ScreenView } from '@/core/components/ScreenView';
-import { ThemedText, Card, EmptyState, Input } from '@/core/components';
+import { ThemedText, FlashListItem, EmptyState, Input } from '@/core/components';
 import { spacing, shadows, radius } from '@/constants/tokens';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
 import { useResultsQuery } from '@/features/elections/hooks';
@@ -18,55 +19,51 @@ export default function ResultSearchScreen() {
     : results;
 
   return (
-    <ScreenView>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        enabled={Platform.OS === 'ios'}
-        style={{ flex: 1 }}
-      >
-        <ScrollView
-          keyboardShouldPersistTaps="handled"
-          keyboardDismissMode="on-drag"
-          contentInsetAdjustmentBehavior="automatic"
-          contentContainerStyle={{ paddingBottom: spacing.xxl }}
-        >
+    <ScreenView scrollable keyboardShouldPersistTaps="handled">
+      <FlashList
+        data={filtered}
+        keyExtractor={(item) => item.id}
+        ListHeaderComponent={
+          <View>
             <ThemedText variant="h2" style={{ marginBottom: spacing.lg }}>
               Search Results
             </ThemedText>
 
-        <Input
-          label="Search by Polling Unit"
-          placeholder="Type to search..."
-          value={search}
-          onChangeText={setSearch}
-          leftIcon="search"
-        />
+            <Input
+              label="Search by Polling Unit"
+              placeholder="Type to search..."
+              value={search}
+              onChangeText={setSearch}
+              leftIcon="search"
+              containerStyle={{ marginBottom: spacing.lg }}
+            />
 
-        {filtered.length === 0 ? (
-          <EmptyState icon="search-outline" title="No Results" subtitle="No matching results found" />
-        ) : (
-          filtered.map((result) => (
-            <Card key={result.id} style={shadows.sm}>
-              <View style={styles.resultRow}>
-                <View style={{ flex: 1 }}>
-                  <ThemedText variant="body" style={{ fontWeight: '600' }}>
-                    {result.pollingUnitName}
-                  </ThemedText>
-                  <ThemedText variant="caption" color="textSecondary" style={{ marginTop: 2 }}>
-                    {result.totalVotesCast.toLocaleString()} votes · {result.status}
-                  </ThemedText>
-                  <ThemedText variant="caption" color="textMuted">
-                    {new Date(result.submittedAt).toLocaleString()}
-                  </ThemedText>
-                </View>
-                <View style={[styles.statusDot, { backgroundColor: colors.success }]} />
+            {filtered.length === 0 ? (
+              <EmptyState icon="search-outline" title="No Results" subtitle="No matching results found" />
+            ) : null}
+          </View>
+        }
+        renderItem={({ item: result }) => (
+          <FlashListItem id={result.id}>
+            <View style={styles.resultRow}>
+              <View style={{ flex: 1 }}>
+                <ThemedText variant="body" style={{ fontWeight: '600' }}>
+                  {result.pollingUnitName}
+                </ThemedText>
+                <ThemedText variant="caption" color="textSecondary" style={{ marginTop: spacing.xs }}>
+                  {result.totalVotesCast.toLocaleString()} votes · {result.status}
+                </ThemedText>
+                <ThemedText variant="caption" color="textMuted">
+                  {new Date(result.submittedAt).toLocaleString()}
+                </ThemedText>
               </View>
-            </Card>
-          ))
+              <View style={[styles.statusDot, { backgroundColor: colors.success }]} />
+            </View>
+          </FlashListItem>
         )}
-      </ScrollView>
-    </KeyboardAvoidingView>
-  </ScreenView>
+        contentContainerStyle={{ paddingHorizontal: spacing.md, paddingBottom: spacing.xxl }}
+      />
+    </ScreenView>
   );
 }
 

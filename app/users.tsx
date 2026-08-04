@@ -1,9 +1,10 @@
 import React from 'react';
-import { StyleSheet, View } from 'react-native';
+import { View, StyleSheet } from 'react-native';
+import { FlashList } from '@shopify/flash-list';
 import { ScreenView } from '@/core/components/ScreenView';
-import { ThemedText, Card } from '@/core/components';
+import { ThemedText, FlashListItem } from '@/core/components';
 import { Ionicons } from '@expo/vector-icons';
-import { spacing, shadows, radius, sizes, border } from '@/constants/tokens';
+import { spacing, radius, sizes, border } from '@/constants/tokens';
 
 type RoleDef = {
   role: string;
@@ -23,16 +24,21 @@ const ROLES: RoleDef[] = [
 export default function UsersScreen() {
   return (
     <ScreenView scrollable keyboardShouldPersistTaps="handled">
-      <View style={{ paddingBottom: spacing.xxl }}>
-        <ThemedText variant="h2" style={{ marginBottom: spacing.sm }}>
-          User Roles
-        </ThemedText>
-        <ThemedText variant="body" color="textSecondary" style={{ marginBottom: spacing.lg }}>
-          Aquila role definitions and permissions
-        </ThemedText>
-
-        {ROLES.map(({ role, label, icon, color }) => (
-          <Card key={role} style={shadows.sm}>
+      <FlashList
+        data={ROLES}
+        keyExtractor={(item) => item.role}
+        ListHeaderComponent={
+          <View>
+            <ThemedText variant="h2" style={{ marginBottom: spacing.sm }}>
+              User Roles
+            </ThemedText>
+            <ThemedText variant="body" color="textSecondary" style={{ marginBottom: spacing.lg }}>
+              Aquila role definitions and permissions
+            </ThemedText>
+          </View>
+        }
+        renderItem={({ item: { role, label, icon, color } }) => (
+          <FlashListItem id={role}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
               <View style={[styles.roleIcon, { backgroundColor: color + '20' }]}>
                 <Ionicons name={icon} size={24} color={color} />
@@ -49,9 +55,10 @@ export default function UsersScreen() {
                 </ThemedText>
               </View>
             </View>
-          </Card>
-        ))}
-      </View>
+          </FlashListItem>
+        )}
+        contentContainerStyle={{ paddingHorizontal: spacing.md, paddingBottom: spacing.xxl }}
+      />
     </ScreenView>
   );
 }

@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Platform, KeyboardAvoidingView, ScrollView } from 'react-native';
+import { StyleSheet, View, Platform, KeyboardAvoidingView } from 'react-native';
+import { FlashList } from '@shopify/flash-list';
 import { ScreenView } from '@/core/components/ScreenView';
-import { ThemedText, Card, EmptyState, Input } from '@/core/components';
+import { ThemedText, FlashListItem, EmptyState, Input } from '@/core/components';
 import { useIncidentsStore } from '@/features/auth/store';
 import { spacing, shadows, radius } from '@/constants/tokens';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
@@ -21,59 +22,55 @@ export default function IncidentSearchScreen() {
     : pool;
 
   return (
-    <ScreenView>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        enabled={Platform.OS === 'ios'}
-        style={{ flex: 1 }}
-      >
-        <ScrollView
-          keyboardShouldPersistTaps="handled"
-          keyboardDismissMode="on-drag"
-          contentInsetAdjustmentBehavior="automatic"
-          contentContainerStyle={{ paddingBottom: spacing.xxl }}
-        >
+    <ScreenView scrollable keyboardShouldPersistTaps="handled">
+      <FlashList
+        data={filtered}
+        keyExtractor={(item) => item.id}
+        ListHeaderComponent={
+          <View>
             <ThemedText variant="h2" style={{ marginBottom: spacing.lg }}>
               Search Incidents
             </ThemedText>
 
-        <Input
-          label="Search"
-          placeholder="Search by category or area..."
-          value={search}
-          onChangeText={setSearch}
-          leftIcon="search"
-        />
+            <Input
+              label="Search"
+              placeholder="Search by category or area..."
+              value={search}
+              onChangeText={setSearch}
+              leftIcon="search"
+              containerStyle={{ marginBottom: spacing.lg }}
+            />
 
-        {filtered.length === 0 ? (
-          <EmptyState icon="search-outline" title="No Incidents" subtitle="No incidents match your search" />
-        ) : (
-          filtered.map((incident) => {
-            const sevColors: Record<string, string> = { LOW: colors.success, MEDIUM: colors.accent, HIGH: colors.error, CRITICAL: colors.error };
-            const sevColor = sevColors[incident.severity] ?? colors.textMuted;
-            return (
-              <Card key={incident.id} style={shadows.sm}>
-                <View style={styles.incidentRow}>
-                  <View style={[styles.severityDot, { backgroundColor: sevColor }]} />
-                  <View style={{ flex: 1 }}>
-                    <ThemedText variant="body" style={{ fontWeight: '600' }}>
-                      {incident.category.replace(/_/g, ' ')}
-                    </ThemedText>
-                    <ThemedText variant="caption" color="textSecondary" style={{ marginTop: 2 }}>
-                      {incident.electoralArea}
-                    </ThemedText>
-                    <ThemedText variant="caption" color="textMuted">
-                      {new Date(incident.reportedAt).toLocaleString()} · {incident.status}
-                    </ThemedText>
-                  </View>
+            {filtered.length === 0 ? (
+              <EmptyState icon="search-outline" title="No Incidents" subtitle="No incidents match your search" />
+            ) : null}
+          </View>
+        }
+        renderItem={({ item: incident }) => {
+          const sevColors: Record<string, string> = { LOW: colors.success, MEDIUM: colors.accent, HIGH: colors.error, CRITICAL: colors.error };
+          const sevColor = sevColors[incident.severity] ?? colors.textMuted;
+          return (
+            <FlashListItem id={incident.id}>
+              <View style={styles.incidentRow}>
+                <View style={[styles.severityDot, { backgroundColor: sevColor }]} />
+                <View style={{ flex: 1 }}>
+                  <ThemedText variant="body" style={{ fontWeight: '600' }}>
+                    {incident.category.replace(/_/g, ' ')}
+                  </ThemedText>
+                  <ThemedText variant="caption" color="textSecondary" style={{ marginTop: spacing.xs }}>
+                    {incident.electoralArea}
+                  </ThemedText>
+                  <ThemedText variant="caption" color="textMuted">
+                    {new Date(incident.reportedAt).toLocaleString()} · {incident.status}
+                  </ThemedText>
                 </View>
-              </Card>
-            );
-          })
-        )}
-      </ScrollView>
-    </KeyboardAvoidingView>
-  </ScreenView>
+              </View>
+            </FlashListItem>
+          );
+        }}
+        contentContainerStyle={{ paddingHorizontal: spacing.md, paddingBottom: spacing.xxl }}
+      />
+    </ScreenView>
   );
 }
 

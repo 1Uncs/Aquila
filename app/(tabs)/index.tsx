@@ -5,7 +5,7 @@ import { ScreenView } from '@/core/components/ScreenView';
 import { ThemedText, Card, EmptyState, Button } from '@/core/components';
 import { useAuthStore } from '@/features/auth/store';
 import { ROUTES } from '@/constants/routes';
-import { spacing, radius, shadows, sizes, gradientPresets } from '@/constants/tokens';
+import { spacing, radius, shadows, sizes, gradientPresets, border } from '@/constants/tokens';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
 import { useElectionsQuery, useIncidentsQuery, useCandidatesQuery, useResultsQuery, usePollingUnitsQuery } from '@/features/elections/hooks';
 import Colors from '@/constants/colors';
@@ -54,10 +54,10 @@ const severityColors: Record<string, string> = {
 function QuickActions({ colors, electionId }: { colors: typeof Colors.light; electionId?: string }) {
   return (
     <View>
-      <ThemedText variant="h3" style={{ marginHorizontal: 16, marginTop: spacing.xl, marginBottom: spacing.sm }}>
+      <ThemedText variant="h3" style={{ marginHorizontal: spacing.md, marginTop: spacing.xl, marginBottom: spacing.sm }}>
         Quick Actions
       </ThemedText>
-      <View style={{ flexDirection: 'row', gap: spacing.sm, marginHorizontal: 16 }}>
+      <View style={{ flexDirection: 'row', gap: spacing.sm, marginHorizontal: spacing.md }}>
         <Card pressable style={styles.quickActionCard} onPress={() => router.push({ pathname: ROUTES.ELECTION_DETAIL, params: { id: electionId ?? 'e1' } })}>
           <ThemedText variant="label" style={{ color: colors.primary, fontWeight: '600' }}>View Election</ThemedText>
           <ThemedText variant="caption" color="textSecondary">Details & results</ThemedText>
@@ -109,7 +109,7 @@ function WinnerCard({ candidates, results, colors }: { candidates: Candidate[]; 
       </View>
 
       {ranked.slice(1).map((c) => (
-        <View key={c.id} style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginTop: spacing.sm, paddingTop: spacing.sm, borderTopWidth: 1, borderTopColor: colors.border }}>
+        <View key={c.id} style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginTop: spacing.sm, paddingTop: spacing.sm, borderTopWidth: border.thin, borderTopColor: colors.border }}>
           <ThemedText variant="body" style={{ flex: 1 }}>{c.fullName}</ThemedText>
           <ThemedText variant="caption" color="textSecondary">{c.partyAcronym}</ThemedText>
           <ThemedText variant="caption" color="textMuted">{c.total.toLocaleString()}</ThemedText>
@@ -246,14 +246,14 @@ export default function DashboardScreen() {
           </LinearGradient>
         </View>
 
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, gap: spacing.md, marginTop: spacing.lg }} keyboardShouldPersistTaps="handled">
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: spacing.md, gap: spacing.md, marginTop: spacing.lg }} keyboardShouldPersistTaps="handled">
           <StatCard icon="🗳" label="Total Elections" value={String(elections.length)} gradient={gradientPresets.primary} />
           <StatCard icon="✓" label="Active" value={String(activeElections)} gradient={gradientPresets.success} />
           <StatCard icon="⚠" label="Open Incidents" value={String(recentIncidents.length)} gradient={gradientPresets.accent} />
         </ScrollView>
 
         {(isFieldAgent || isPollingAgent) && (
-          <View style={{ marginHorizontal: 16, marginTop: spacing.lg }}>
+          <View style={{ marginHorizontal: spacing.md, marginTop: spacing.lg }}>
             <ThemedText variant="label" style={{ marginBottom: spacing.xs }}>
               {isPollingAgent ? 'Your Polling Unit' : 'Your Polling Unit'}
             </ThemedText>
@@ -296,7 +296,7 @@ export default function DashboardScreen() {
         )}
 
         {puDetails && (
-          <View style={{ marginHorizontal: 16, marginTop: spacing.lg }}>
+          <View style={{ marginHorizontal: spacing.md, marginTop: spacing.lg }}>
             <ThemedText variant="h3" style={{ marginBottom: spacing.sm }}>{puDetails.name}</ThemedText>
             <Card style={[shadows.md, { padding: spacing.md, marginBottom: spacing.sm }]}>
               <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginBottom: spacing.sm }}>
@@ -368,7 +368,7 @@ export default function DashboardScreen() {
         )}
 
         {!isFieldAgent && !isPollingAgent && (
-          <View style={{ marginHorizontal: 16, marginTop: spacing.lg }}>
+          <View style={{ marginHorizontal: spacing.md, marginTop: spacing.lg }}>
             <ThemedText variant="h3" style={{ marginBottom: spacing.sm }}>Reporting Progress</ThemedText>
             <Card style={[shadows.md]}>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: spacing.xs }}>
@@ -387,7 +387,7 @@ export default function DashboardScreen() {
         <WatchCandidateCard candidates={candidates} colors={colors} />
 
         {isFieldAgent && (
-          <View style={{ marginHorizontal: 16, marginTop: spacing.lg }}>
+          <View style={{ marginHorizontal: spacing.md, marginTop: spacing.lg }}>
             <ThemedText variant="h3" style={{ marginBottom: spacing.sm }}>Your Locations</ThemedText>
             <ThemedText variant="body" color="textSecondary" style={{ marginBottom: spacing.md }}>
               Results aggregated across all your assigned polling units
@@ -410,7 +410,7 @@ export default function DashboardScreen() {
           </View>
         )}
 
-        <ThemedText variant="h3" style={{ marginHorizontal: 16, marginTop: spacing.xl, marginBottom: spacing.sm }}>
+        <ThemedText variant="h3" style={{ marginHorizontal: spacing.md, marginTop: spacing.xl, marginBottom: spacing.sm }}>
           Upcoming Elections
         </ThemedText>
         {loading ? (
@@ -421,18 +421,18 @@ export default function DashboardScreen() {
           <EmptyState icon="calendar-outline" title="No Elections" subtitle="No elections configured yet" />
         ) : (
           elections.map((election) => (
-            <Card key={election.id} pressable onPress={() => router.push({ pathname: ROUTES.ELECTION_DETAIL, params: { id: election.id } })}>
+            <Card key={election.id} pressable onPress={() => router.push({ pathname: ROUTES.ELECTION_DETAIL, params: { id: election.id } })} style={[shadows.sm, { marginBottom: spacing.sm }]}>
               <ThemedText variant="body" style={{ fontWeight: '600' }}>
                 {election.position} - {election.electoralArea}
               </ThemedText>
-              <ThemedText variant="caption" color="textSecondary" style={{ marginTop: 4 }}>
+              <ThemedText variant="caption" color="textSecondary" style={{ marginTop: spacing.xs }}>
                 {election.electionDate} · {election.status}
               </ThemedText>
             </Card>
           ))
         )}
 
-        <ThemedText variant="h3" style={{ marginHorizontal: 16, marginTop: spacing.xl, marginBottom: spacing.sm }}>
+        <ThemedText variant="h3" style={{ marginHorizontal: spacing.md, marginTop: spacing.xl, marginBottom: spacing.sm }}>
           Recent Incidents
         </ThemedText>
         {recentIncidents.length === 0 ? (
@@ -441,7 +441,7 @@ export default function DashboardScreen() {
           recentIncidents.map((incident) => {
             const sevKey = incident.severity === 'CRITICAL' ? 'CRITICAL' : incident.severity;
             return (
-              <Card key={incident.id}>
+              <Card key={incident.id} style={[shadows.sm, { marginBottom: spacing.sm }]}>
                 <View style={styles.row}>
                   <View style={[styles.severityDot, { backgroundColor: colors[severityColors[sevKey] as keyof typeof Colors.light] as any }]} />
                   <View style={{ flex: 1 }}>
@@ -470,7 +470,7 @@ export default function DashboardScreen() {
 }
 
 const styles = StyleSheet.create({
-  welcomeWrap: { marginHorizontal: 16, marginTop: spacing.md, borderRadius: radius.lg, overflow: 'hidden' },
+  welcomeWrap: { marginHorizontal: spacing.md, marginTop: spacing.md, borderRadius: radius.lg, overflow: 'hidden' },
   welcomeGradient: { paddingVertical: spacing.lg, paddingHorizontal: spacing.lg },
   statCard: { width: sizes.statCard, padding: spacing.md, borderRadius: radius.lg },
   gradientIconWrap: { overflow: 'hidden' },

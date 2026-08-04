@@ -55,9 +55,9 @@ export default function ProfileTabScreen() {
           </ThemedText>
         </LinearGradient>
 
-        <ThemedText variant="h3" style={{ marginHorizontal: 16, marginTop: spacing.lg, marginBottom: spacing.sm }}>
-          Management
-        </ThemedText>
+         <ThemedText variant="h3" style={{ marginHorizontal: spacing.md, marginTop: spacing.lg, marginBottom: spacing.sm }}>
+           Management
+         </ThemedText>
         {menuItems.map((item) => (
           <Card key={item.label} pressable onPress={() => router.push(item.route)} style={styles.menuItem}>
             <View style={styles.menuItemRow}>
@@ -67,9 +67,9 @@ export default function ProfileTabScreen() {
           </Card>
         ))}
 
-        <ThemedText variant="h3" style={{ marginHorizontal: 16, marginTop: spacing.lg, marginBottom: spacing.sm }}>
-          Account
-        </ThemedText>
+         <ThemedText variant="h3" style={{ marginHorizontal: spacing.md, marginTop: spacing.lg, marginBottom: spacing.sm }}>
+           Account
+         </ThemedText>
         <Card style={[shadows.md]}>
           <View style={styles.statsRow}>
             <View style={styles.statItem}>
@@ -89,7 +89,7 @@ export default function ProfileTabScreen() {
             { text: 'Cancel', style: 'cancel' },
             { text: 'Sign Out', style: 'destructive', onPress: logout },
           ])
-        } style={{ marginHorizontal: 16, marginTop: spacing.xl }} fullWidth />
+        } style={{ marginHorizontal: spacing.md, marginTop: spacing.xl }} fullWidth />
       </View>
     </ScreenView>
   );
@@ -116,7 +116,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  menuItem: { marginHorizontal: 16, marginVertical: spacing.xs },
+  menuItem: { marginHorizontal: spacing.md, marginVertical: spacing.xs },
   menuItemRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   statsRow: { flexDirection: 'row', alignItems: 'center' },
   statItem: { flex: 1, paddingVertical: spacing.sm },

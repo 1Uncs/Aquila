@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { View, StyleSheet } from 'react-native';
+import { FlashList } from '@shopify/flash-list';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router, useLocalSearchParams } from 'expo-router';
 import { ScreenView } from '@/core/components/ScreenView';
-import { ThemedText, Card, Button, EmptyState } from '@/core/components';
+import { ThemedText, FlashListItem, EmptyState, Button } from '@/core/components';
 import { ROUTES } from '@/constants/routes';
 import { spacing, shadows, radius, sizes, gradientPresets } from '@/constants/tokens';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
@@ -45,60 +46,67 @@ export default function ElectionDetailScreen() {
 
   return (
     <ScreenView scrollable keyboardShouldPersistTaps="handled">
-      <View style={{ paddingBottom: spacing.xxl }}>
-        <LinearGradient
-          colors={gradientPresets.election}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={[styles.headerCard, shadows.lg]}
-        >
-          <ThemedText variant="xxl" style={{ color: '#fff', fontWeight: '700', marginBottom: spacing.xs }}>
-            {election.position}
-          </ThemedText>
-          <ThemedText variant="body" style={{ color: 'rgba(255,255,255,0.95)' }}>
-            {election.electoralArea}
-          </ThemedText>
-          <ThemedText variant="caption" style={{ color: 'rgba(255,255,255,0.7)', marginTop: spacing.sm }}>
-            {election.electionDate} · {election.electoralAreaType}
-          </ThemedText>
-        </LinearGradient>
+      <FlashList
+        data={candidates}
+        keyExtractor={(item) => item.id}
+        ListHeaderComponent={
+          <View>
+            <LinearGradient
+              colors={gradientPresets.election}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={[styles.headerCard, shadows.lg]}
+            >
+              <ThemedText variant="xxl" style={{ color: '#fff', fontWeight: '700', marginBottom: spacing.xs }}>
+                {election.position}
+              </ThemedText>
+              <ThemedText variant="body" style={{ color: 'rgba(255,255,255,0.95)' }}>
+                {election.electoralArea}
+              </ThemedText>
+              <ThemedText variant="caption" style={{ color: 'rgba(255,255,255,0.7)', marginTop: spacing.sm }}>
+                {election.electionDate} · {election.electoralAreaType}
+              </ThemedText>
+            </LinearGradient>
 
-        <ThemedText variant="h3" style={{ marginHorizontal: 16, marginTop: spacing.lg, marginBottom: spacing.sm }}>
-          Candidates ({candidates.length})
-        </ThemedText>
-        {candidates.length === 0 ? (
-          <EmptyState icon="people-outline" title="No Candidates" subtitle="No candidates added yet" />
-        ) : (
-          candidates.map((c) => (
-            <Card key={c.id} style={shadows.sm}>
-              <View style={styles.row}>
-                <View style={[styles.avatar, { backgroundColor: colors.accent }]}>
-                  <Ionicons name="person" size={24} color="#fff" />
-                </View>
-                <View style={{ flex: 1 }}>
-                  <ThemedText variant="body" style={{ fontWeight: '600' }}>{c.fullName}</ThemedText>
-                  <ThemedText variant="caption" color="textSecondary">
-                    {c.partyName} ({c.partyAcronym})
-                  </ThemedText>
-                </View>
-                <View style={[
-                  styles.statusBadge,
-                  { backgroundColor: c.status === 'ACTIVE' ? colors.success + '20' : colors.border }
-                ]}>
-                  <ThemedText variant="caption" style={{ color: c.status === 'ACTIVE' ? colors.success : colors.textMuted, fontWeight: '600' }}>
-                    {c.status}
-                  </ThemedText>
-                </View>
+            <ThemedText variant="h3" style={{ marginHorizontal: spacing.md, marginTop: spacing.lg, marginBottom: spacing.sm }}>
+              Candidates ({candidates.length})
+            </ThemedText>
+            {candidates.length === 0 ? (
+              <EmptyState icon="people-outline" title="No Candidates" subtitle="No candidates added yet" />
+            ) : null}
+          </View>
+        }
+        renderItem={({ item: c }) => (
+          <FlashListItem id={c.id}>
+            <View style={styles.row}>
+              <View style={[styles.avatar, { backgroundColor: colors.accent }]}>
+                <Ionicons name="person" size={24} color="#fff" />
               </View>
-            </Card>
-          ))
+              <View style={{ flex: 1 }}>
+                <ThemedText variant="body" style={{ fontWeight: '600' }}>{c.fullName}</ThemedText>
+                <ThemedText variant="caption" color="textSecondary">
+                  {c.partyName} ({c.partyAcronym})
+                </ThemedText>
+              </View>
+              <View style={[
+                styles.statusBadge,
+                { backgroundColor: c.status === 'ACTIVE' ? colors.success + '20' : colors.border }
+              ]}>
+                <ThemedText variant="caption" style={{ color: c.status === 'ACTIVE' ? colors.success : colors.textMuted, fontWeight: '600' }}>
+                  {c.status}
+                </ThemedText>
+              </View>
+            </View>
+          </FlashListItem>
         )}
-
-        <View style={{ flexDirection: 'row', gap: spacing.md, marginHorizontal: spacing.md, marginTop: spacing.lg }}>
-          <Button label="Submit Result" onPress={() => router.push({ pathname: ROUTES.RESULT_SUBMIT, params: { electionId: id } })} fullWidth />
-          <Button label="Report Incident" variant="outline" onPress={() => router.push({ pathname: ROUTES.INCIDENT_REPORT, params: { electionId: id } })} fullWidth />
-        </View>
-      </View>
+        ListFooterComponent={
+          <View style={{ flexDirection: 'row', gap: spacing.md, marginHorizontal: spacing.md, marginTop: spacing.lg }}>
+            <Button label="Submit Result" onPress={() => router.push({ pathname: ROUTES.RESULT_SUBMIT, params: { electionId: id } })} fullWidth />
+            <Button label="Report Incident" variant="outline" onPress={() => router.push({ pathname: ROUTES.INCIDENT_REPORT, params: { electionId: id } })} fullWidth />
+          </View>
+        }
+        contentContainerStyle={{ paddingHorizontal: spacing.md, paddingBottom: spacing.xxl }}
+      />
     </ScreenView>
   );
 }

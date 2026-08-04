@@ -23,7 +23,8 @@ export default function SubmitResultScreen() {
     pollingUnitId?: string;
     pollingUnitName?: string;
   }>();
-  const { data: candidates = [], isLoading: candidatesLoading } = useCandidatesQuery(electionId ?? '');
+  const resolvedElectionId = electionId ?? 'e1';
+  const { data: candidates = [], isLoading: candidatesLoading } = useCandidatesQuery(resolvedElectionId);
   const { data: allPollingUnits = [] } = usePollingUnitsQuery();
   const { user } = useAuthStore();
   const [selectedPuId, setSelectedPuId] = useState(preselectedPuId ?? '');

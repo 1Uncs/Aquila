@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { View, StyleSheet } from 'react-native';
+import { FlashList } from '@shopify/flash-list';
 import { ScreenView } from '@/core/components/ScreenView';
-import { ThemedText, Card, Button, EmptyState, Input } from '@/core/components';
+import { ThemedText, FlashListItem, EmptyState, Input, Button } from '@/core/components';
 import { router, useLocalSearchParams } from 'expo-router';
 import { spacing, radius, shadows } from '@/constants/tokens';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
@@ -48,80 +49,81 @@ export default function PUPickerScreen() {
 
   return (
     <ScreenView scrollable keyboardShouldPersistTaps="handled">
-      <View style={{ paddingBottom: spacing.xxl }}>
-        <ThemedText variant="h2" style={{ marginBottom: spacing.sm }}>
-          Select Polling Unit
-        </ThemedText>
-        <ThemedText variant="body" color="textSecondary" style={{ marginBottom: spacing.lg }}>
-          {mode === 'incident' ? 'Choose location for this incident' : 'Choose polling unit to submit results for'}
-        </ThemedText>
+      <FlashList
+        data={filtered}
+        keyExtractor={(item) => item.id}
+        ListHeaderComponent={
+          <View>
+            <ThemedText variant="h2" style={{ marginBottom: spacing.sm }}>
+              Select Polling Unit
+            </ThemedText>
+            <ThemedText variant="body" color="textSecondary" style={{ marginBottom: spacing.lg }}>
+              {mode === 'incident' ? 'Choose location for this incident' : 'Choose polling unit to submit results for'}
+            </ThemedText>
 
-        <Input
-          label="Search"
-          placeholder="Search by name or code..."
-          value={search}
-          onChangeText={setSearch}
-          leftIcon="search"
-          containerStyle={{ marginBottom: spacing.md }}
-        />
-
-        <ThemedText variant="label" style={{ marginHorizontal: spacing.md, marginBottom: spacing.sm }}>
-          Filter by LGA
-        </ThemedText>
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.xs, marginHorizontal: spacing.md, marginBottom: spacing.lg }}>
-          <Button
-            label="All"
-            size="sm"
-            variant={selectedLga === null ? 'primary' : 'outline'}
-            onPress={() => setSelectedLga(null)}
-            style={{ marginBottom: spacing.sm }}
-          />
-          {lgas.slice(0, 20).map((lga) => (
-            <Button
-              key={lga.id}
-              label={lga.name}
-              size="sm"
-              variant={selectedLga === lga.id ? 'primary' : 'outline'}
-              onPress={() => setSelectedLga(lga.id === selectedLga ? null : lga.id)}
-              style={{ marginBottom: spacing.sm }}
+            <Input
+              label="Search"
+              placeholder="Search by name or code..."
+              value={search}
+              onChangeText={setSearch}
+              leftIcon="search"
+              containerStyle={{ marginBottom: spacing.md }}
             />
-          ))}
-        </View>
 
-        {pusLoading ? (
-          <ThemedText variant="body" color="textSecondary" style={{ textAlign: 'center', marginTop: spacing.xl }}>
-            Loading polling units...
-          </ThemedText>
-        ) : filtered.length === 0 ? (
-          <EmptyState icon="location-outline" title="No Polling Units" subtitle="Try adjusting your search" />
-        ) : (
-          filtered.map((pu) => {
-            const lga = lgaMap.get(pu.lgaId);
-            const state = stateMap.get(pu.stateId);
-            return (
-              <Card
-                key={pu.id}
-                pressable
-                style={[shadows.sm, { marginBottom: spacing.sm }]}
-                onPress={() => handleSelect(pu)}
-              >
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
-                  <View style={[styles.puIcon, { backgroundColor: colors.accent + '20' }]}>
-                    <Ionicons name="location" size={20} color={colors.accent} />
-                  </View>
-                  <View style={{ flex: 1 }}>
-                    <ThemedText variant="body" style={{ fontWeight: '600' }}>{pu.name}</ThemedText>
-                    <ThemedText variant="caption" color="textSecondary">
-                      {pu.code} · {lga?.name ?? pu.lgaName} · {state?.name ?? pu.stateName}
-                    </ThemedText>
-                  </View>
-                  <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
+            <ThemedText variant="label" style={{ marginHorizontal: spacing.md, marginBottom: spacing.sm }}>
+              Filter by LGA
+            </ThemedText>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.xs, marginHorizontal: spacing.md, marginBottom: spacing.lg }}>
+              <Button
+                label="All"
+                size="sm"
+                variant={selectedLga === null ? 'primary' : 'outline'}
+                onPress={() => setSelectedLga(null)}
+                style={{ marginBottom: spacing.sm }}
+              />
+              {lgas.slice(0, 20).map((lga) => (
+                <Button
+                  key={lga.id}
+                  label={lga.name}
+                  size="sm"
+                  variant={selectedLga === lga.id ? 'primary' : 'outline'}
+                  onPress={() => setSelectedLga(lga.id === selectedLga ? null : lga.id)}
+                  style={{ marginBottom: spacing.sm }}
+                />
+              ))}
+            </View>
+
+            {pusLoading ? (
+              <ThemedText variant="body" color="textSecondary" style={{ textAlign: 'center', marginTop: spacing.xl }}>
+                Loading polling units...
+              </ThemedText>
+            ) : filtered.length === 0 ? (
+              <EmptyState icon="location-outline" title="No Polling Units" subtitle="Try adjusting your search" />
+            ) : null}
+          </View>
+        }
+        renderItem={({ item: pu }) => {
+          const lga = lgaMap.get(pu.lgaId);
+          const state = stateMap.get(pu.stateId);
+          return (
+            <FlashListItem id={pu.id} pressable onPress={() => handleSelect(pu)}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
+                <View style={[styles.puIcon, { backgroundColor: colors.accent + '20' }]}>
+                  <Ionicons name="location" size={20} color={colors.accent} />
                 </View>
-              </Card>
-            );
-          })
-        )}
-      </View>
+                <View style={{ flex: 1 }}>
+                  <ThemedText variant="body" style={{ fontWeight: '600' }}>{pu.name}</ThemedText>
+                  <ThemedText variant="caption" color="textSecondary">
+                    {pu.code} · {lga?.name ?? pu.lgaName} · {state?.name ?? pu.stateName}
+                  </ThemedText>
+                </View>
+                <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
+              </View>
+            </FlashListItem>
+          );
+        }}
+        contentContainerStyle={{ paddingHorizontal: spacing.md, paddingBottom: spacing.xxl }}
+      />
     </ScreenView>
   );
 }
