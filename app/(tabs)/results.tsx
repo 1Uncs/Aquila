@@ -62,8 +62,10 @@ export default function ResultsScreen() {
         </ScrollView>
 
         <View style={{ flexDirection: 'row', gap: spacing.sm, marginHorizontal: 16, marginBottom: spacing.lg }}>
+          <Button label="Drafts" variant="outline" size="sm" onPress={() => router.push(ROUTES.RESULT_DRAFTS as any)} style={styles.actionBtn} />
           <Button label="Search" variant="primary" size="sm" onPress={() => router.push(ROUTES.RESULT_SEARCH)} style={styles.actionBtn} />
           <Button label="Collation" variant="outline" size="sm" onPress={() => router.push(ROUTES.RESULT_COLLATION)} style={styles.actionBtn} />
+          <Button label="Incident" variant="outline" size="sm" onPress={() => router.push(ROUTES.INCIDENT_REPORT)} style={styles.actionBtn} />
         </View>
 
         <ThemedText variant="h3" style={{ marginHorizontal: 16, marginBottom: spacing.sm }}>

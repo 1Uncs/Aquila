@@ -38,6 +38,13 @@ export function useResultsQuery() {
   });
 }
 
+export function useDraftsQuery() {
+  return useQuery({
+    queryKey: ['results', 'drafts'],
+    queryFn: () => mockApi.getDrafts(),
+  });
+}
+
 export function useIncidentsQuery() {
   return useQuery({
     queryKey: ['incidents', 'list'],

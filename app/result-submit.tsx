@@ -1,43 +1,126 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Platform, KeyboardAvoidingView, ScrollView } from 'react-native';
 import { ScreenView } from '@/core/components/ScreenView';
-import { ThemedText, Button, Input } from '@/core/components';
-import { useResultsStore } from '@/features/auth/store';
+import { ThemedText, Button, Input, Card } from '@/core/components';
+import { useResultsStore, useAuthStore } from '@/features/auth/store';
 import { router, useLocalSearchParams } from 'expo-router';
-import { spacing } from '@/constants/tokens';
+import { spacing, shadows } from '@/constants/tokens';
+import { useColorScheme } from '@/core/hooks/useColorScheme';
 import { useCandidatesQuery, usePollingUnitsQuery } from '@/features/elections/hooks';
+import { ROUTES } from '@/constants/routes';
+import Colors from '@/constants/colors';
+
+type VoteInput = {
+  inec: string;
+  observed: string;
+};
 
 export default function SubmitResultScreen() {
-  const { electionId } = useLocalSearchParams<{ electionId: string }>();
+  const scheme = useColorScheme() ?? 'light';
+  const themeColors = Colors[scheme];
+  const { electionId, pollingUnitId: preselectedPuId, pollingUnitName: preselectedPuName } = useLocalSearchParams<{
+    electionId?: string;
+    pollingUnitId?: string;
+    pollingUnitName?: string;
+  }>();
   const { data: candidates = [], isLoading: candidatesLoading } = useCandidatesQuery(electionId ?? '');
-  const { data: pollingUnits = [] } = usePollingUnitsQuery();
-  const [selectedPU, setSelectedPU] = useState('');
-  const [votes, setVotes] = useState<Record<string, string>>({});
-  const [rejected, setRejected] = useState('');
+  const { data: allPollingUnits = [] } = usePollingUnitsQuery();
+  const { user } = useAuthStore();
+  const [selectedPuId, setSelectedPuId] = useState(preselectedPuId ?? '');
+  const [votes, setVotes] = useState<Record<string, VoteInput>>({});
+  const [rejectedInec, setRejectedInec] = useState('');
+  const [rejectedObs, setRejectedObs] = useState('');
   const [accredited, setAccredited] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const { addSubmission } = useResultsStore();
 
-  const handleSubmit = async () => {
-    if (!selectedPU) return;
-    setSubmitting(true);
-    const votesObj: Record<string, number> = {};
+  useEffect(() => {
+    if (preselectedPuId) {
+      setSelectedPuId(preselectedPuId);
+    } else if (user?.role === 'POLLING_AGENT' && user.assignedLocations && user.assignedLocations.length > 0 && !selectedPuId) {
+      setSelectedPuId(user.assignedLocations[0]!);
+    }
+  }, [preselectedPuId, user?.role, user?.assignedLocations, selectedPuId]);
+
+  const isFieldAgent = user?.role === 'FIELD_AGENT';
+  const showPuPicker = isFieldAgent && !preselectedPuId && !selectedPuId;
+
+  const handleVoteChange = (candidateId: string, field: 'inec' | 'observed', value: string) => {
+    setVotes((prev) => ({
+      ...prev,
+      [candidateId]: {
+        ...(prev[candidateId] ?? { inec: '', observed: '' }),
+        [field]: value,
+      },
+    }));
+  };
+
+  const computeTotal = () => {
+    let total = 0;
     candidates.forEach((c) => {
-      const v = parseInt(votes[c.id] ?? '0', 10);
-      votesObj[c.id] = isNaN(v) ? 0 : v;
+      const observed = parseInt(votes[c.id]?.observed ?? '0', 10);
+      if (!isNaN(observed)) total += observed;
+    });
+    total += parseInt(rejectedObs ?? '0', 10) || 0;
+    return total;
+  };
+
+  const handleSaveDraft = async () => {
+    if (!selectedPuId) return;
+    setSubmitting(true);
+    const candidateVotes: Record<string, number> = {};
+    const candidateVotesInec: Record<string, number> = {};
+    candidates.forEach((c) => {
+      const vObs = parseInt(votes[c.id]?.observed ?? '0', 10);
+      const vInec = parseInt(votes[c.id]?.inec ?? '0', 10);
+      candidateVotes[c.id] = isNaN(vObs) ? 0 : vObs;
+      candidateVotesInec[c.id] = isNaN(vInec) ? 0 : vInec;
+    });
+    const submission = {
+      id: `draft-${Date.now()}`,
+      electionId: electionId ?? 'e1',
+      pollingUnitId: selectedPuId,
+      pollingUnitName: allPollingUnits.find((p) => p.id === selectedPuId)?.name ?? preselectedPuName ?? 'Unknown PU',
+      candidateVotes,
+      candidateVotesInec,
+      rejectedVotes: parseInt(rejectedObs ?? '0', 10) || 0,
+      rejectedVotesInec: parseInt(rejectedInec ?? '0', 10) || 0,
+      totalAccreditedVoters: parseInt(accredited ?? '0', 10) || 0,
+      totalVotesCast: computeTotal(),
+      status: 'DRAFT' as const,
+      submittedAt: new Date().toISOString(),
+      submittedBy: user?.id ?? 'current-user',
+    };
+    addSubmission(submission);
+    setSubmitting(false);
+    router.replace(ROUTES.RESULT_DRAFTS as any);
+  };
+
+  const handlePublish = async () => {
+    if (!selectedPuId) return;
+    setSubmitting(true);
+    const candidateVotes: Record<string, number> = {};
+    const candidateVotesInec: Record<string, number> = {};
+    candidates.forEach((c) => {
+      const vObs = parseInt(votes[c.id]?.observed ?? '0', 10);
+      const vInec = parseInt(votes[c.id]?.inec ?? '0', 10);
+      candidateVotes[c.id] = isNaN(vObs) ? 0 : vObs;
+      candidateVotesInec[c.id] = isNaN(vInec) ? 0 : vInec;
     });
     const submission = {
       id: `r-${Date.now()}`,
       electionId: electionId ?? 'e1',
-      pollingUnitId: selectedPU,
-      pollingUnitName: pollingUnits.find((p) => p.id === selectedPU)?.name ?? 'Unknown PU',
-      candidateVotes: votesObj,
-      rejectedVotes: parseInt(rejected ?? '0', 10) || 0,
+      pollingUnitId: selectedPuId,
+      pollingUnitName: allPollingUnits.find((p) => p.id === selectedPuId)?.name ?? preselectedPuName ?? 'Unknown PU',
+      candidateVotes,
+      candidateVotesInec,
+      rejectedVotes: parseInt(rejectedObs ?? '0', 10) || 0,
+      rejectedVotesInec: parseInt(rejectedInec ?? '0', 10) || 0,
       totalAccreditedVoters: parseInt(accredited ?? '0', 10) || 0,
-      totalVotesCast: Object.values(votesObj).reduce((a, b) => a + b, 0) + (parseInt(rejected ?? '0', 10) || 0),
+      totalVotesCast: computeTotal(),
       status: 'SUBMITTED' as const,
       submittedAt: new Date().toISOString(),
-      submittedBy: 'current-user',
+      submittedBy: user?.id ?? 'current-user',
     };
     addSubmission(submission);
     setSubmitting(false);
@@ -67,60 +150,124 @@ export default function SubmitResultScreen() {
           contentInsetAdjustmentBehavior="automatic"
           contentContainerStyle={{ paddingBottom: spacing.xxl }}
         >
-            <ThemedText variant="h2" style={{ marginBottom: spacing.lg }}>
-              Submit Result
-            </ThemedText>
+          <ThemedText variant="h2" style={{ marginBottom: spacing.lg }}>
+            Submit Result
+          </ThemedText>
 
-        <Input
-          label="Polling Unit"
-          placeholder="Select Polling Unit"
-          value={selectedPU}
-          onChangeText={setSelectedPU}
-          leftIcon="location"
-        />
-
-        <ThemedText variant="h3" style={{ marginHorizontal: spacing.md, marginTop: spacing.lg, marginBottom: spacing.sm }}>
-          Candidate Votes
-        </ThemedText>
-        {candidates.map((c) => (
-          <View key={c.id} style={{ flexDirection: 'row', alignItems: 'center', marginBottom: spacing.sm, gap: spacing.md, paddingHorizontal: spacing.md }}>
-            <View style={{ flex: 1 }}>
-              <ThemedText variant="body">{c.fullName}</ThemedText>
-              <ThemedText variant="caption" color="textSecondary">{c.partyAcronym}</ThemedText>
-            </View>
-            <Input
-              placeholder="Votes"
-              value={votes[c.id] ?? ''}
-              onChangeText={(text) => setVotes({ ...votes, [c.id]: text })}
-              keyboardType="numeric"
-              style={{ width: 80, marginBottom: 0, marginHorizontal: 0 }}
-              containerStyle={{ marginBottom: 0 }}
+          {showPuPicker ? (
+            <Button
+              label="Select Polling Unit"
+              variant="outline"
+              onPress={() => router.push({ pathname: '/pu-picker' as any, params: { mode: 'result', ...(electionId ? { electionId } : {}) } })}
+              style={{ marginBottom: spacing.md }}
+              leftIcon="location-outline"
             />
+          ) : (
+            <View style={{ marginBottom: spacing.md }}>
+              <ThemedText variant="label" style={{ marginBottom: spacing.xs }}>Polling Unit</ThemedText>
+              <Card style={[shadows.sm, { padding: spacing.md }]}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
+                  <ThemedText variant="body" style={{ fontWeight: '600', flex: 1 }}>
+                    {allPollingUnits.find((p) => p.id === selectedPuId)?.name ?? preselectedPuName ?? 'Unknown PU'}
+                  </ThemedText>
+                  {isFieldAgent && (
+                    <Button
+                      label="Change"
+                      size="sm"
+                      variant="ghost"
+                      onPress={() => router.push({ pathname: '/pu-picker' as any, params: { mode: 'result', ...(electionId ? { electionId } : {}) } })}
+                    />
+                  )}
+                </View>
+              </Card>
+            </View>
+          )}
+
+          <ThemedText variant="h3" style={{ marginHorizontal: spacing.md, marginTop: spacing.lg, marginBottom: spacing.sm }}>
+            Candidate Votes
+          </ThemedText>
+
+          <View style={{ flexDirection: 'row', marginHorizontal: spacing.md, marginBottom: spacing.sm, gap: spacing.sm }}>
+            <ThemedText variant="caption" style={{ flex: 1, fontWeight: '600', color: themeColors.textSecondary }}>Candidate</ThemedText>
+            <ThemedText variant="caption" style={{ width: 80, fontWeight: '600', color: themeColors.textSecondary, textAlign: 'center' }}>INEC</ThemedText>
+            <ThemedText variant="caption" style={{ width: 80, fontWeight: '600', color: themeColors.primary, textAlign: 'center' }}>Observed</ThemedText>
           </View>
-        ))}
 
-        <Input
-          label="Rejected Votes"
-          value={rejected}
-          onChangeText={setRejected}
-          keyboardType="numeric"
-          leftIcon="close-circle-outline"
-        />
+          {candidates.map((c) => {
+            const current = votes[c.id] ?? { inec: '', observed: '' };
+            return (
+              <View key={c.id} style={{ flexDirection: 'row', alignItems: 'center', marginBottom: spacing.sm, gap: spacing.sm, paddingHorizontal: spacing.md }}>
+                <View style={{ flex: 1 }}>
+                  <ThemedText variant="body" style={{ fontWeight: '600' }}>{c.fullName}</ThemedText>
+                  <ThemedText variant="caption" color="textSecondary">{c.partyAcronym}</ThemedText>
+                </View>
+                <Input
+                  placeholder="INEC"
+                  value={current.inec}
+                  onChangeText={(text) => handleVoteChange(c.id, 'inec', text)}
+                  keyboardType="numeric"
+                  style={{ width: 80, marginBottom: 0 }}
+                  containerStyle={{ marginBottom: 0, marginHorizontal: 0 }}
+                  editable={false}
+                />
+                <Input
+                  placeholder="Observed"
+                  value={current.observed}
+                  onChangeText={(text) => handleVoteChange(c.id, 'observed', text)}
+                  keyboardType="numeric"
+                  style={{ width: 80, marginBottom: 0 }}
+                  containerStyle={{ marginBottom: 0, marginHorizontal: 0 }}
+                />
+              </View>
+            );
+          })}
 
-        <Input
-          label="Total Accredited Voters"
-          value={accredited}
-          onChangeText={setAccredited}
-          keyboardType="numeric"
-          leftIcon="people-outline"
-        />
+          <ThemedText variant="h3" style={{ marginHorizontal: spacing.md, marginTop: spacing.lg, marginBottom: spacing.sm }}>
+            Other Counts
+          </ThemedText>
 
-        <View style={{ flexDirection: 'row', gap: spacing.md, marginHorizontal: spacing.md, marginTop: spacing.lg }}>
-          <Button label="Save Draft" variant="outline" onPress={() => router.back()} fullWidth />
-          <Button label="Publish" onPress={handleSubmit} loading={submitting} fullWidth />
-        </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
-  </ScreenView>
+          <View style={{ flexDirection: 'row', gap: spacing.md, marginHorizontal: spacing.md, marginBottom: spacing.sm }}>
+            <View style={{ flex: 1 }}>
+              <ThemedText variant="label" style={{ marginBottom: spacing.xs }}>Rejected (INEC)</ThemedText>
+              <Input
+                value={rejectedInec}
+                onChangeText={setRejectedInec}
+                keyboardType="numeric"
+                leftIcon="close-circle-outline"
+                editable={false}
+              />
+            </View>
+            <View style={{ flex: 1 }}>
+              <ThemedText variant="label" style={{ marginBottom: spacing.xs }}>Rejected (Observed)</ThemedText>
+              <Input
+                value={rejectedObs}
+                onChangeText={setRejectedObs}
+                keyboardType="numeric"
+                leftIcon="close-circle-outline"
+              />
+            </View>
+          </View>
+
+          <Input
+            label="Total Accredited Voters"
+            value={accredited}
+            onChangeText={setAccredited}
+            keyboardType="numeric"
+            leftIcon="people-outline"
+          />
+
+          {computeTotal() > 0 && (
+            <ThemedText variant="caption" color="textSecondary" style={{ marginHorizontal: spacing.md, marginBottom: spacing.sm }}>
+              Total votes cast (observed): {computeTotal().toLocaleString()}
+            </ThemedText>
+          )}
+
+          <View style={{ flexDirection: 'row', gap: spacing.md, marginHorizontal: spacing.md, marginTop: spacing.lg }}>
+            <Button label="Save Draft" variant="outline" onPress={handleSaveDraft} loading={submitting} fullWidth />
+            <Button label="Publish" onPress={handlePublish} loading={submitting} fullWidth />
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </ScreenView>
   );
 }

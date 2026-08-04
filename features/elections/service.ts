@@ -92,12 +92,23 @@ function delay(ms: number) {
 export const mockApi = {
   login: async (email: string, _password: string): Promise<User> => {
     await delay(600);
+    const lower = email.toLowerCase();
+    let role: User['role'] = 'FIELD_AGENT';
+    if (lower.includes('officer')) role = 'ELECTION_OFFICER';
+    else if (lower.includes('polling') || lower.includes('pu_agent')) role = 'POLLING_AGENT';
+    else if (lower.includes('admin')) role = 'ADMIN';
+    else if (lower.includes('super')) role = 'SUPER_ADMIN';
+    const assignedLocations = role === 'FIELD_AGENT'
+      ? ['pu-s25-lga-1-1', 'pu-s25-lga-1-2']
+      : role === 'POLLING_AGENT'
+        ? ['pu-s25-lga-1-1']
+        : undefined;
     return {
-      id: 'u1',
+      id: `u-${Date.now()}`,
       email,
       name: email.split('@')[0] ?? email,
-      role: email.includes('admin') ? 'ADMIN' : 'FIELD_AGENT',
-      assignedLocations: ['s25'],
+      role,
+      assignedLocations,
       token: `mock-token-${email}-${Date.now()}`,
     };
   },
@@ -179,7 +190,9 @@ export const mockApi = {
         pollingUnitId: 'pu-s25-lga-1-1',
         pollingUnitName: 'PU Ikeja LGA 1',
         candidateVotes: { cand1: 234, cand2: 189, cand3: 98, cand4: 45 },
+        candidateVotesInec: { cand1: 230, cand2: 190, cand3: 100, cand4: 44 },
         rejectedVotes: 12,
+        rejectedVotesInec: 10,
         totalAccreditedVoters: 600,
         totalVotesCast: 578,
         status: 'PUBLISHED',
@@ -194,7 +207,9 @@ export const mockApi = {
         pollingUnitId: 'pu-s25-lga-1-2',
         pollingUnitName: 'PU Ikeja LGA 2',
         candidateVotes: { cand1: 312, cand2: 256, cand3: 120, cand4: 67 },
+        candidateVotesInec: { cand1: 310, cand2: 255, cand3: 122, cand4: 68 },
         rejectedVotes: 8,
+        rejectedVotesInec: 7,
         totalAccreditedVoters: 780,
         totalVotesCast: 763,
         status: 'PUBLISHED',
@@ -209,7 +224,9 @@ export const mockApi = {
         pollingUnitId: 'pu-s25-lga-2-1',
         pollingUnitName: 'PU Lagos Mainland 1',
         candidateVotes: { cand1: 189, cand2: 345, cand3: 56, cand4: 23 },
+        candidateVotesInec: { cand1: 188, cand2: 346, cand3: 57, cand4: 22 },
         rejectedVotes: 5,
+        rejectedVotesInec: 5,
         totalAccreditedVoters: 650,
         totalVotesCast: 613,
         status: 'PUBLISHED',
@@ -221,6 +238,11 @@ export const mockApi = {
     ];
     if (electionId) return bases.filter((r) => r.electionId === electionId);
     return bases;
+  },
+
+  getDrafts: async (): Promise<ResultSubmission[]> => {
+    await delay(400);
+    return [];
   },
 
   getIncidents: async (electionId?: string): Promise<IncidentReport[]> => {

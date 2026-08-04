@@ -57,11 +57,6 @@ export default function ElectionsScreen() {
           ))}
         </ScrollView>
 
-        <View style={styles.actionRow}>
-          <Button label="New Election" variant="primary" size="sm" onPress={() => {}} style={styles.actionBtn} />
-          <Button label="Search" variant="outline" size="sm" onPress={() => {}} style={styles.actionBtn} />
-        </View>
-
         {loading ? (
           <ThemedText variant="body" color="textSecondary" style={{ textAlign: 'center', marginTop: spacing.xxl }}>
             Loading elections...

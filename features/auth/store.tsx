@@ -38,6 +38,9 @@ export interface User {
   assignedLocations?: string[];
   avatarUrl?: string;
   token?: string;
+  watchCandidateId?: string;
+  selectedPollingUnitId?: string;
+  selectedPollingUnitName?: string;
 }
 
 export interface Election {
@@ -78,7 +81,9 @@ export interface ResultSubmission {
   pollingUnitId: string;
   pollingUnitName: string;
   candidateVotes: Record<string, number>;
+  candidateVotesInec: Record<string, number>;
   rejectedVotes: number;
+  rejectedVotesInec: number;
   totalAccreditedVoters: number;
   totalVotesCast: number;
   status: ResultStatus;
@@ -135,17 +140,27 @@ interface AuthState {
   login: (user: User) => void;
   logout: () => void;
   setOnboarded: (val: boolean) => void;
+  setWatchCandidate: (candidateId: string | undefined) => void;
+  setSelectedPollingUnit: (id: string | undefined, name: string | undefined) => void;
+  selectedPollingUnitId: string | undefined;
+  selectedPollingUnitName: string | undefined;
 }
 
 export const useAuthStore = create<AuthState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       user: null,
       isAuthenticated: false,
       isOnboarded: false,
       login: (user) => set({ user, isAuthenticated: true }),
       logout: () => set({ user: null, isAuthenticated: false }),
       setOnboarded: (val) => set({ isOnboarded: val }),
+      setWatchCandidate: (watchCandidateId) =>
+        set((s) => ({ user: s.user ? { ...s.user, watchCandidateId } : null })),
+      setSelectedPollingUnit: (selectedPollingUnitId, selectedPollingUnitName) =>
+        set((s) => ({ user: s.user ? { ...s.user, selectedPollingUnitId, selectedPollingUnitName } : null })),
+      get selectedPollingUnitId() { return get().user?.selectedPollingUnitId; },
+      get selectedPollingUnitName() { return get().user?.selectedPollingUnitName; },
     }),
     {
       name: 'aquila-auth',
@@ -167,21 +182,29 @@ interface ElectionsState {
   updateElection: (id: string, data: Partial<Election>) => void;
 }
 
-export const useElectionsStore = create<ElectionsState>((set) => ({
-  cycles: [],
-  elections: [],
-  selectedCycleId: null,
-  selectedElectionId: null,
-  setCycles: (cycles) => set({ cycles }),
-  setElections: (elections) => set({ elections }),
-  setSelectedCycleId: (selectedCycleId) => set({ selectedCycleId }),
-  setSelectedElectionId: (selectedElectionId) => set({ selectedElectionId }),
-  addElection: (election) => set((s) => ({ elections: [...s.elections, election] })),
-  updateElection: (id, data) =>
-    set((s) => ({
-      elections: s.elections.map((e) => (e.id === id ? { ...e, ...data } : e)),
-    })),
-}));
+export const useElectionsStore = create<ElectionsState>()(
+  persist(
+    (set) => ({
+      cycles: [],
+      elections: [],
+      selectedCycleId: null,
+      selectedElectionId: null,
+      setCycles: (cycles) => set({ cycles }),
+      setElections: (elections) => set({ elections }),
+      setSelectedCycleId: (selectedCycleId) => set({ selectedCycleId }),
+      setSelectedElectionId: (selectedElectionId) => set({ selectedElectionId }),
+      addElection: (election) => set((s) => ({ elections: [...s.elections, election] })),
+      updateElection: (id, data) =>
+        set((s) => ({
+          elections: s.elections.map((e) => (e.id === id ? { ...e, ...data } : e)),
+        })),
+    }),
+    {
+      name: 'aquila-elections',
+      storage: createJSONStorage(() => createMMKVStorage()),
+    }
+  )
+);
 
 interface ResultsState {
   submissions: ResultSubmission[];
@@ -190,16 +213,24 @@ interface ResultsState {
   updateSubmission: (id: string, data: Partial<ResultSubmission>) => void;
 }
 
-export const useResultsStore = create<ResultsState>((set) => ({
-  submissions: [],
-  setSubmissions: (submissions) => set({ submissions }),
-  addSubmission: (submission) =>
-    set((s) => ({ submissions: [...s.submissions, submission] })),
-  updateSubmission: (id, data) =>
-    set((s) => ({
-      submissions: s.submissions.map((r) => (r.id === id ? { ...r, ...data } : r)),
-    })),
-}));
+export const useResultsStore = create<ResultsState>()(
+  persist(
+    (set) => ({
+      submissions: [],
+      setSubmissions: (submissions) => set({ submissions }),
+      addSubmission: (submission) =>
+        set((s) => ({ submissions: [...s.submissions, submission] })),
+      updateSubmission: (id, data) =>
+        set((s) => ({
+          submissions: s.submissions.map((r) => (r.id === id ? { ...r, ...data } : r)),
+        })),
+    }),
+    {
+      name: 'aquila-results',
+      storage: createJSONStorage(() => createMMKVStorage()),
+    }
+  )
+);
 
 interface IncidentsState {
   incidents: IncidentReport[];
@@ -208,16 +239,24 @@ interface IncidentsState {
   updateIncident: (id: string, data: Partial<IncidentReport>) => void;
 }
 
-export const useIncidentsStore = create<IncidentsState>((set) => ({
-  incidents: [],
-  setIncidents: (incidents) => set({ incidents }),
-  addIncident: (incident) =>
-    set((s) => ({ incidents: [...s.incidents, incident] })),
-  updateIncident: (id, data) =>
-    set((s) => ({
-      incidents: s.incidents.map((i) => (i.id === id ? { ...i, ...data } : i)),
-    })),
-}));
+export const useIncidentsStore = create<IncidentsState>()(
+  persist(
+    (set) => ({
+      incidents: [],
+      setIncidents: (incidents) => set({ incidents }),
+      addIncident: (incident) =>
+        set((s) => ({ incidents: [...s.incidents, incident] })),
+      updateIncident: (id, data) =>
+        set((s) => ({
+          incidents: s.incidents.map((i) => (i.id === id ? { ...i, ...data } : i)),
+        })),
+    }),
+    {
+      name: 'aquila-incidents',
+      storage: createJSONStorage(() => createMMKVStorage()),
+    }
+  )
+);
 
 interface LocationsState {
   states: Array<{ id: string; name: string; code: string }>;
@@ -234,17 +273,25 @@ interface LocationsState {
   setSelectedLgaId: (id: string | null) => void;
 }
 
-export const useLocationsStore = create<LocationsState>((set) => ({
-  states: [],
-  lgas: [],
-  wards: [],
-  pollingUnits: [],
-  selectedStateId: null,
-  selectedLgaId: null,
-  setStates: (states) => set({ states }),
-  setLgas: (lgas) => set({ lgas }),
-  setWards: (wards) => set({ wards }),
-  setPollingUnits: (units) => set({ pollingUnits: units }),
-  setSelectedStateId: (selectedStateId) => set({ selectedStateId }),
-  setSelectedLgaId: (selectedLgaId) => set({ selectedLgaId }),
-}));
+export const useLocationsStore = create<LocationsState>()(
+  persist(
+    (set) => ({
+      states: [],
+      lgas: [],
+      wards: [],
+      pollingUnits: [],
+      selectedStateId: null,
+      selectedLgaId: null,
+      setStates: (states) => set({ states }),
+      setLgas: (lgas) => set({ lgas }),
+      setWards: (wards) => set({ wards }),
+      setPollingUnits: (units) => set({ pollingUnits: units }),
+      setSelectedStateId: (selectedStateId) => set({ selectedStateId }),
+      setSelectedLgaId: (selectedLgaId) => set({ selectedLgaId }),
+    }),
+    {
+      name: 'aquila-locations',
+      storage: createJSONStorage(() => createMMKVStorage()),
+    }
+  )
+);

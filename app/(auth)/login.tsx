@@ -37,11 +37,17 @@ export default function LoginScreen() {
     }
   };
 
-  const launchDemo = async (role: 'admin' | 'agent') => {
+  const launchDemo = async (role: 'admin' | 'agent' | 'polling' | 'officer') => {
     setLoading(true);
     setError('');
     try {
-      const demoEmail = role === 'admin' ? 'admin@aquila.ng' : 'agent@aquila.ng';
+      let demoEmail: string;
+      switch (role) {
+        case 'admin': demoEmail = 'admin@aquila.ng'; break;
+        case 'agent': demoEmail = 'agent@aquila.ng'; break;
+        case 'polling': demoEmail = 'polling@aquila.ng'; break;
+        case 'officer': demoEmail = 'officer@aquila.ng'; break;
+      }
       await login(demoEmail, 'demo');
     } catch {
       setError('Demo login failed. Please try again.');
@@ -132,21 +138,11 @@ export default function LoginScreen() {
             style={{ marginBottom: spacing.md }}
           />
 
-          <View style={{ flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.md }}>
-            <Button
-              label="Admin Demo"
-              variant="outline"
-              onPress={() => launchDemo('admin')}
-              loading={loading}
-              style={{ flex: 1 }}
-            />
-            <Button
-              label="Agent Demo"
-              variant="ghost"
-              onPress={() => launchDemo('agent')}
-              loading={loading}
-              style={{ flex: 1 }}
-            />
+          <View style={{ flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.md, flexWrap: 'wrap' }}>
+            <Button label="Admin" variant="outline" onPress={() => launchDemo('admin')} loading={loading} style={{ flex: 1, minWidth: 80 }} />
+            <Button label="Field Agent" variant="ghost" onPress={() => launchDemo('agent')} loading={loading} style={{ flex: 1, minWidth: 80 }} />
+            <Button label="PU Agent" variant="outline" onPress={() => launchDemo('polling')} loading={loading} style={{ flex: 1, minWidth: 80 }} />
+            <Button label="Election Officer" variant="ghost" onPress={() => launchDemo('officer')} loading={loading} style={{ flex: 1, minWidth: 80 }} />
           </View>
 
           <ThemedText

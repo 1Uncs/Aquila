@@ -76,6 +76,8 @@ function RootLayoutNav() {
       <Stack.Screen name="result-search" options={pushOptions('Search Results')} />
       <Stack.Screen name="incident-report" options={pushOptions('Report Incident')} />
       <Stack.Screen name="incident-search" options={pushOptions('Search Incidents')} />
+      <Stack.Screen name="result-drafts" options={pushOptions('Drafts')} />
+      <Stack.Screen name="pu-picker" options={pushOptions('Select Polling Unit')} />
       <Stack.Screen name="locations" options={pushOptions('Locations')} />
       <Stack.Screen name="parties" options={pushOptions('Political Parties')} />
       <Stack.Screen name="users" options={pushOptions('User Management')} />
