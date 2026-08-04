@@ -79,7 +79,7 @@ export default function ResultDraftsScreen() {
                 variant="primary"
                 size="sm"
                 onPress={() => router.replace({ pathname: ROUTES.RESULT_SUBMIT, params: { electionId: draft.electionId, pollingUnitId: draft.pollingUnitId, pollingUnitName: draft.pollingUnitName } })}
-                style={{ flex: 1 }}
+                style={{ minWidth: 80 }}
               />
               <Button
                 label="Discard"
@@ -88,7 +88,7 @@ export default function ResultDraftsScreen() {
                 onPress={() => {
                   removeSubmission(draft.id);
                 }}
-                style={{ flex: 1 }}
+                style={{ minWidth: 80 }}
               />
             </View>
           </FlashListItem>

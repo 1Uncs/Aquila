@@ -295,7 +295,7 @@ export default function ReportIncidentScreen() {
               size="sm"
               onPress={isRecording ? stopRecording : startRecording}
               leftIcon={isRecording ? 'stop-circle' : 'mic'}
-              style={{ flex: 1, minWidth: 120 }}
+               style={{ minWidth: 120 }}
             />
             {isRecording ? (
               <ThemedText variant="caption" color="error" style={{ minWidth: 60, textAlign: 'center' }}>
