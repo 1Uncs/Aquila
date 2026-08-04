@@ -58,10 +58,10 @@ export default function IncidentsScreen() {
               ))}
             </ScrollView>
 
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: spacing.sm, gap: spacing.sm, marginBottom: spacing.lg }} keyboardShouldPersistTaps="handled">
-              <Button label="Report" variant="primary" size="sm" onPress={() => router.push(ROUTES.INCIDENT_REPORT)} style={{ minWidth: 80 }} />
-              <Button label="Search" variant="outline" size="sm" onPress={() => router.push(ROUTES.INCIDENT_SEARCH)} style={{ minWidth: 80 }} />
-            </ScrollView>
+            <View style={styles.actionRow}>
+              <Button label="Report" variant="primary" size="sm" onPress={() => router.push(ROUTES.INCIDENT_REPORT)} style={styles.actionBtn} />
+              <Button label="Search" variant="outline" size="sm" onPress={() => router.push(ROUTES.INCIDENT_SEARCH)} style={styles.actionBtn} />
+            </View>
 
             {loading ? (
               <ThemedText variant="body" color="textSecondary" style={{ textAlign: 'center', marginTop: spacing.xxl }}>
@@ -106,6 +106,8 @@ export default function IncidentsScreen() {
 const styles = StyleSheet.create({
   chipRow: { paddingHorizontal: spacing.md, gap: spacing.sm, marginBottom: spacing.lg },
   chip: { marginRight: spacing.sm },
+  actionRow: { flexDirection: 'row', gap: spacing.sm, marginHorizontal: spacing.md, marginBottom: spacing.lg },
+  actionBtn: { flex: 1 },
   row: { flexDirection: 'row', alignItems: 'flex-start', gap: spacing.sm },
   incidentInfo: { flex: 1 },
   severityDot: { width: spacing.sm, height: spacing.sm, borderRadius: radius.sm, marginTop: spacing.xs },
