@@ -99,7 +99,7 @@ export default function ProfileTabScreen() {
               { text: 'Sign Out', style: 'destructive', onPress: logout },
             ])
           }
-          style={{ marginHorizontal: 16, marginTop: spacing.xl }}
+          style={{ marginTop: spacing.xl }}
           fullWidth
         />
       </View>
