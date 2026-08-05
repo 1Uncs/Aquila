@@ -195,7 +195,6 @@ export default function DashboardScreen() {
 
   const loading = electionsLoading || incidentsLoading;
   const recentIncidents = incidents.slice(0, 3);
-  const activeElections = elections.filter((e) => e.status === 'ACTIVE' || e.status === 'SCHEDULED').length;
   const totalReportingPUs = allResults.length;
   const totalPUs = 2500;
   const reportingPct = Math.min(Math.round((totalReportingPUs / totalPUs) * 100), 100);
@@ -248,7 +247,6 @@ export default function DashboardScreen() {
 
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: spacing.md, gap: spacing.md, marginTop: spacing.lg }} keyboardShouldPersistTaps="handled">
           <StatCard icon="🗳" label="Total Elections" value={String(elections.length)} gradient={gradientPresets.primary} />
-          <StatCard icon="✓" label="Active" value={String(activeElections)} gradient={gradientPresets.success} />
           <StatCard icon="⚠" label="Open Incidents" value={String(recentIncidents.length)} gradient={gradientPresets.accent} />
         </ScrollView>
 

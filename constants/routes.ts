@@ -3,8 +3,6 @@ export const ROUTES = {
   DASHBOARD: '/(tabs)/index',
   ELECTIONS: '/(tabs)/elections',
   ELECTION_DETAIL: '/election-detail',
-  ELECTION_NEW: '/election-new',
-  CANDIDATES: '/election-candidates',
   RESULTS: '/(tabs)/results',
   RESULT_SUBMIT: '/result-submit',
   RESULT_COLLATION: '/result-collation',
@@ -13,11 +11,9 @@ export const ROUTES = {
   INCIDENTS: '/(tabs)/incidents',
   INCIDENT_REPORT: '/incident-report',
   INCIDENT_SEARCH: '/incident-search',
-  INCIDENT_DETAIL: '/incident-detail',
   PROFILE: '/(tabs)/profile',
   LOCATIONS: '/locations',
   PARTIES: '/parties',
-  USERS: '/users',
   PU_PICKER: '/pu-picker',
 } as const;
 

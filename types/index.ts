@@ -1,8 +1,6 @@
 import { z } from 'zod';
 
 export const UserRoleSchema = z.enum([
-  'SUPER_ADMIN',
-  'ADMIN',
   'ELECTION_OFFICER',
   'POLLING_AGENT',
   'FIELD_AGENT',

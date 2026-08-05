@@ -126,8 +126,6 @@ export const mockApi = {
     let role: User['role'] = 'FIELD_AGENT';
     if (lower.includes('officer')) role = 'ELECTION_OFFICER';
     else if (lower.includes('polling') || lower.includes('pu_agent')) role = 'POLLING_AGENT';
-    else if (lower.includes('admin')) role = 'ADMIN';
-    else if (lower.includes('super')) role = 'SUPER_ADMIN';
     const assignedLocations = role === 'FIELD_AGENT'
       ? ['pu-s25-lga-1-1', 'pu-s25-lga-1-2']
       : role === 'POLLING_AGENT'

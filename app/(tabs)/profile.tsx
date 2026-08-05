@@ -20,8 +20,6 @@ export default function ProfileTabScreen() {
   const colors = Colors[scheme];
 
   const roleLabels: Record<UserRole, string> = {
-    SUPER_ADMIN: 'Super Administrator',
-    ADMIN: 'Administrator',
     ELECTION_OFFICER: 'Election Officer',
     POLLING_AGENT: 'Polling Unit Agent',
     FIELD_AGENT: 'Field Agent',
@@ -30,7 +28,6 @@ export default function ProfileTabScreen() {
   const menuItems = [
     { label: 'Locations', icon: '📍', route: ROUTES.LOCATIONS },
     { label: 'Political Parties', icon: '👥', route: ROUTES.PARTIES },
-    { label: 'Users', icon: '👤', route: ROUTES.USERS },
   ];
 
   return (

@@ -254,7 +254,6 @@ function RootLayoutNav() {
       <Stack.Screen name="pu-picker" options={pushOptions('Select Polling Unit')} />
       <Stack.Screen name="locations" options={pushOptions('Locations')} />
       <Stack.Screen name="parties" options={pushOptions('Political Parties')} />
-      <Stack.Screen name="users" options={pushOptions('User Management')} />
     </Stack>
   );
 }

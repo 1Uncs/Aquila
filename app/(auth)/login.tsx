@@ -34,12 +34,11 @@ export default function LoginScreen() {
     }
   };
 
-  const launchDemo = async (role: 'admin' | 'agent' | 'polling' | 'officer') => {
+  const launchDemo = async (role: 'agent' | 'polling' | 'officer') => {
     setError('');
     try {
       let demoEmail: string;
       switch (role) {
-        case 'admin': demoEmail = 'admin@aquila.ng'; break;
         case 'agent': demoEmail = 'agent@aquila.ng'; break;
         case 'polling': demoEmail = 'polling@aquila.ng'; break;
         case 'officer': demoEmail = 'officer@aquila.ng'; break;
@@ -133,7 +132,6 @@ export default function LoginScreen() {
           />
 
           <View style={{ flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.md, flexWrap: 'wrap', alignItems: 'center' }}>
-            <Button label="Admin" variant="outline" onPress={() => launchDemo('admin')} loading={loginMutation.isPending} style={{ minWidth: 80 }} />
             <Button label="Field Agent" variant="ghost" onPress={() => launchDemo('agent')} loading={loginMutation.isPending} style={{ minWidth: 80 }} />
             <Button label="PU Agent" variant="outline" onPress={() => launchDemo('polling')} loading={loginMutation.isPending} style={{ minWidth: 80 }} />
             <Button label="Election Officer" variant="ghost" onPress={() => launchDemo('officer')} loading={loginMutation.isPending} style={{ minWidth: 80 }} />
