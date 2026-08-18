@@ -1,7 +1,9 @@
 import { useColorScheme } from '@/core/hooks/useColorScheme';
 import Colors, { ColorScheme } from '@/constants/colors';
-import { Platform, PixelRatio, Text as RNText, StyleSheet, TextStyle } from 'react-native';
+import { Platform, PixelRatio, Text as RNText, StyleSheet, TextStyle, useWindowDimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { ms } from '@/core/utils/ms';
+import { FONT_FAMILY } from '@/constants/fonts';
 
 const useScheme = (): ColorScheme => {
   return useColorScheme() ?? 'light';
@@ -21,6 +23,8 @@ type ThemedTextProps = {
   tracking?: number;
   gradientColors?: readonly [string, string, ...string[]];
   fontFamily?: 'regular' | 'medium' | 'bold';
+  minFontSize?: number;
+  maxFontSize?: number;
 };
 
 const SIZE_MAP: Record<string, number> = {
@@ -61,9 +65,12 @@ export function ThemedText({
   tracking,
   gradientColors,
   fontFamily = 'regular',
+  minFontSize,
+  maxFontSize,
 }: ThemedTextProps) {
   const scheme = useScheme();
   const colors = Colors[scheme];
+  const { width } = useWindowDimensions();
 
   const textColor = color
     ? typeof color === 'string' && color in colors
@@ -77,7 +84,9 @@ export function ThemedText({
   const isSubheading = variant === 'xl';
   const isDisplay = variant === 'xxl';
 
-  const fontSize = SIZE_MAP[variant] ?? SIZE_MAP.body;
+  const baseFontSize: number = (SIZE_MAP[variant] ?? SIZE_MAP.body)!;
+  const responsiveSize = ms(baseFontSize, width);
+  const fontSize = Math.max(minFontSize ?? 0, Math.min(maxFontSize ?? Infinity, responsiveSize));
   const rawLineHeight = (LINE_HEIGHT_MAP[variant] ?? LINE_HEIGHT_MAP.body)!;
   const scaledLineHeight = PixelRatio.roundToNearestPixel(
     Platform.OS === 'android' ? rawLineHeight * PixelRatio.getFontScale() : rawLineHeight
@@ -96,10 +105,10 @@ export function ThemedText({
 
   const fontFamilyValue =
     fontFamily === 'bold'
-      ? 'Inter-Bold'
+      ? FONT_FAMILY.bold
       : fontFamily === 'medium'
-        ? 'Inter-Medium'
-        : 'Inter-Regular';
+        ? FONT_FAMILY.medium
+        : FONT_FAMILY.regular;
 
   const baseStyle: TextStyle = {
     color: textColor,

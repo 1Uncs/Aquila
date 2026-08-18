@@ -1,5 +1,5 @@
 import { useRef, useCallback } from 'react';
-import { Pressable, PressableProps } from 'react-native';
+import { Pressable, PressableProps, GestureResponderEvent } from 'react-native';
 
 const DEBOUNCE_MS = 300;
 
@@ -10,7 +10,9 @@ type DebouncedPressableProps = {
   style?: PressableProps['style'];
   testID?: string;
   children: React.ReactNode;
-} & Omit<PressableProps, 'onPress' | 'style' | 'children'>;
+  onPressIn?: ((_event: GestureResponderEvent) => void) | null | undefined;
+  onPressOut?: ((_event: GestureResponderEvent) => void) | null | undefined;
+} & Omit<PressableProps, 'onPress' | 'style' | 'children' | 'onPressIn' | 'onPressOut'>;
 
 export function DebouncedPressable({
   onPress,
@@ -19,6 +21,8 @@ export function DebouncedPressable({
   style,
   testID,
   children,
+  onPressIn,
+  onPressOut,
   ...rest
 }: DebouncedPressableProps) {
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -37,6 +41,8 @@ export function DebouncedPressable({
   return (
     <Pressable
       onPress={handlePress}
+      onPressIn={onPressIn}
+      onPressOut={onPressOut}
       disabled={disabled}
       style={style}
       testID={testID}

@@ -2,15 +2,17 @@ import React, { useState, useMemo } from 'react';
 import { ScrollView, View, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ScreenView } from '@/core/components/ScreenView';
-import { ThemedText, Card, EmptyState, Button } from '@/core/components';
+import { ThemedText, Card, EmptyState, Button, SkeletonCard } from '@/core/components';
 import { useAuthStore } from '@/features/auth/store';
 import { ROUTES } from '@/constants/routes';
 import { spacing, radius, shadows, sizes, gradientPresets, border } from '@/constants/tokens';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
 import { useElectionsQuery, useIncidentsQuery, useCandidatesQuery, useResultsQuery, usePollingUnitsQuery } from '@/features/elections/hooks';
+import { useRefreshControl, useHaptics } from '@/core/hooks';
 import Colors from '@/constants/colors';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 import { Candidate, ResultSubmission } from '@/features/auth/store';
 
 function GradientIcon({ name, gradient }: { name: string; gradient: readonly [string, string] }) {
@@ -31,10 +33,17 @@ type StatCardProps = {
 };
 
 function StatCard({ icon, label, value, gradient }: StatCardProps) {
+  const { impact } = useHaptics();
+
   return (
-    <Card style={[styles.statCard, shadows.md]}>
+    <Card
+      pressable
+      style={[styles.statCard, shadows.md]}
+      onPress={() => impact(Haptics.ImpactFeedbackStyle.Light)}
+      accessibilityLabel={`${label}: ${value}`}
+    >
       <GradientIcon name={icon} gradient={gradient} />
-      <ThemedText variant="xxl" style={{ marginTop: spacing.sm, fontWeight: '700' }}>
+      <ThemedText variant="xxl" style={{ marginTop: spacing.sm, fontWeight: '700' }} minFontSize={24} maxFontSize={40}>
         {value}
       </ThemedText>
       <ThemedText variant="caption" color="textSecondary">
@@ -54,7 +63,7 @@ const severityColors: Record<string, string> = {
 function QuickActions({ colors, electionId }: { colors: typeof Colors.light; electionId?: string }) {
   return (
     <View>
-      <ThemedText variant="h3" style={{ marginHorizontal: spacing.md, marginTop: spacing.xl, marginBottom: spacing.sm }}>
+      <ThemedText variant="h3" style={{ marginHorizontal: spacing.md, marginTop: spacing.xl, marginBottom: spacing.sm }} minFontSize={16} maxFontSize={24}>
         Quick Actions
       </ThemedText>
       <View style={{ flexDirection: 'row', gap: spacing.sm, marginHorizontal: spacing.md }}>
@@ -182,16 +191,20 @@ function WatchCandidateCard({ candidates, colors }: { candidates: Candidate[]; c
 }
 
 export default function DashboardScreen() {
-  const { data: elections = [], isLoading: electionsLoading } = useElectionsQuery();
-  const { data: incidents = [], isLoading: incidentsLoading } = useIncidentsQuery();
+  const { data: elections = [], isLoading: electionsLoading, refetch: refetchElections } = useElectionsQuery();
+  const { data: incidents = [], isLoading: incidentsLoading, refetch: refetchIncidents } = useIncidentsQuery();
   const { data: candidates = [] } = useCandidatesQuery('e1');
-  const { data: allResults = [] } = useResultsQuery();
+  const { data: allResults = [], refetch: refetchResults } = useResultsQuery();
   const { user, setSelectedPollingUnit: _setSelectedPollingUnit } = useAuthStore();
   const selectedPollingUnitId = useAuthStore((s) => s.user?.selectedPollingUnitId);
   const selectedPollingUnitName = useAuthStore((s) => s.user?.selectedPollingUnitName);
   const { data: allPollingUnits = [] } = usePollingUnitsQuery();
   const scheme = useColorScheme() ?? 'light';
   const colors = Colors[scheme];
+  const { refreshControl } = useRefreshControl(
+    electionsLoading || incidentsLoading,
+    () => Promise.all([refetchElections(), refetchIncidents(), refetchResults()])
+  );
 
   const loading = electionsLoading || incidentsLoading;
   const recentIncidents = incidents.slice(0, 3);
@@ -232,11 +245,11 @@ export default function DashboardScreen() {
   };
 
   return (
-    <ScreenView scrollable keyboardShouldPersistTaps="handled">
+    <ScreenView scrollable keyboardShouldPersistTaps="handled" refreshControl={refreshControl}>
       <View style={{ paddingBottom: spacing.xxl }}>
         <View style={styles.welcomeWrap}>
           <LinearGradient colors={[...gradientPresets.primary]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.welcomeGradient}>
-            <ThemedText variant="xl" style={{ color: '#fff', fontWeight: '700', marginBottom: spacing.xs }}>
+            <ThemedText variant="xl" style={{ color: '#fff', fontWeight: '700', marginBottom: spacing.xs }} minFontSize={18} maxFontSize={26}>
               Welcome back, {user?.name ?? 'User'}
             </ThemedText>
             <ThemedText variant="body" style={{ color: 'rgba(255,255,255,0.8)' }}>
@@ -295,7 +308,7 @@ export default function DashboardScreen() {
 
         {puDetails && (
           <View style={{ marginHorizontal: spacing.md, marginTop: spacing.lg }}>
-            <ThemedText variant="h3" style={{ marginBottom: spacing.sm }}>{puDetails.name}</ThemedText>
+            <ThemedText variant="h3" style={{ marginBottom: spacing.sm }} minFontSize={16} maxFontSize={22}>{puDetails.name}</ThemedText>
             <Card style={[shadows.md, { padding: spacing.md, marginBottom: spacing.sm }]}>
               <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginBottom: spacing.sm }}>
                 <View style={{ backgroundColor: colors.accent + '18', paddingHorizontal: spacing.sm, paddingVertical: spacing.xs, borderRadius: radius.full }}>
@@ -323,7 +336,7 @@ export default function DashboardScreen() {
             {puDetails.result && (
               <Card style={[shadows.md, { padding: spacing.md, marginBottom: spacing.sm }]}>
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: spacing.sm }}>
-                  <ThemedText variant="h3" style={{ marginBottom: 0 }}>Results</ThemedText>
+                  <ThemedText variant="h3" style={{ marginBottom: 0 }} minFontSize={16} maxFontSize={22}>Results</ThemedText>
                   <View style={{ flexDirection: 'row', gap: spacing.sm, alignItems: 'center' }}>
                     <ThemedText variant="caption" color="textSecondary">{puDetails.totalVotes.toLocaleString()} votes</ThemedText>
                     <Button label="Add Incident" size="sm" variant="outline" onPress={() => router.push({ pathname: ROUTES.INCIDENT_REPORT, params: { pollingUnitId: selectedPollingUnitId, pollingUnitName: selectedPollingUnitName, electionId: 'e1' } } as any)} />
@@ -347,7 +360,7 @@ export default function DashboardScreen() {
 
             {puDetails.incidents.length > 0 && (
               <Card style={[shadows.md, { padding: spacing.md, marginBottom: spacing.sm }]}>
-                <ThemedText variant="h3" style={{ marginBottom: spacing.sm }}>Incidents at this PU</ThemedText>
+                <ThemedText variant="h3" style={{ marginBottom: spacing.sm }} minFontSize={16} maxFontSize={22}>Incidents at this PU</ThemedText>
                 {puDetails.incidents.map((inc) => (
                   <View key={inc.id} style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.xs }}>
                     <View style={[styles.severityDot, { backgroundColor: colors[severityColors[inc.severity] as keyof typeof Colors.light] as any }]} />
@@ -367,7 +380,7 @@ export default function DashboardScreen() {
 
         {!isFieldAgent && !isPollingAgent && (
           <View style={{ marginHorizontal: spacing.md, marginTop: spacing.lg }}>
-            <ThemedText variant="h3" style={{ marginBottom: spacing.sm }}>Reporting Progress</ThemedText>
+            <ThemedText variant="h3" style={{ marginBottom: spacing.sm }} minFontSize={16} maxFontSize={22}>Reporting Progress</ThemedText>
             <Card style={[shadows.md]}>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: spacing.xs }}>
                 <ThemedText variant="body">{totalReportingPUs.toLocaleString()} / {totalPUs.toLocaleString()} Polling Units</ThemedText>
@@ -386,7 +399,7 @@ export default function DashboardScreen() {
 
         {isFieldAgent && (
           <View style={{ marginHorizontal: spacing.md, marginTop: spacing.lg }}>
-            <ThemedText variant="h3" style={{ marginBottom: spacing.sm }}>Your Locations</ThemedText>
+            <ThemedText variant="h3" style={{ marginBottom: spacing.sm }} minFontSize={16} maxFontSize={22}>Your Locations</ThemedText>
             <ThemedText variant="body" color="textSecondary" style={{ marginBottom: spacing.md }}>
               Results aggregated across all your assigned polling units
             </ThemedText>
@@ -408,13 +421,15 @@ export default function DashboardScreen() {
           </View>
         )}
 
-        <ThemedText variant="h3" style={{ marginHorizontal: spacing.md, marginTop: spacing.xl, marginBottom: spacing.sm }}>
+        <ThemedText variant="h3" style={{ marginHorizontal: spacing.md, marginTop: spacing.xl, marginBottom: spacing.sm }} minFontSize={16} maxFontSize={22}>
           Upcoming Elections
         </ThemedText>
         {loading ? (
-          <ThemedText variant="body" color="textSecondary" style={{ textAlign: 'center', marginVertical: spacing.xl }}>
-            Loading elections...
-          </ThemedText>
+          <View style={{ paddingHorizontal: spacing.md }}>
+            <SkeletonCard />
+            <SkeletonCard />
+            <SkeletonCard />
+          </View>
         ) : elections.length === 0 ? (
           <EmptyState icon="calendar-outline" title="No Elections" subtitle="No elections configured yet" />
         ) : (
@@ -430,7 +445,7 @@ export default function DashboardScreen() {
           ))
         )}
 
-        <ThemedText variant="h3" style={{ marginHorizontal: spacing.md, marginTop: spacing.xl, marginBottom: spacing.sm }}>
+        <ThemedText variant="h3" style={{ marginHorizontal: spacing.md, marginTop: spacing.xl, marginBottom: spacing.sm }} minFontSize={16} maxFontSize={22}>
           Recent Incidents
         </ThemedText>
         {recentIncidents.length === 0 ? (

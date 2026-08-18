@@ -3,12 +3,13 @@ import { StyleSheet, View, ScrollView } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import { router } from 'expo-router';
 import { ScreenView } from '@/core/components/ScreenView';
-import { ThemedText, FlashListItem, EmptyState, Button } from '@/core/components';
+import { ThemedText, FlashListItem, EmptyState, Button, SkeletonCard } from '@/core/components';
 import { useElectionsStore } from '@/features/auth/store';
 import { ROUTES } from '@/constants/routes';
 import { spacing, radius } from '@/constants/tokens';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
 import { useElectionsQuery, useElectionCyclesQuery } from '@/features/elections/hooks';
+import { useRefreshControl } from '@/core/hooks';
 import Colors from '@/constants/colors';
 
 const STATUS_COLORS: Record<string, string> = {
@@ -21,10 +22,14 @@ const STATUS_COLORS: Record<string, string> = {
 
 export default function ElectionsScreen() {
   const { data: cycles = [], isLoading: cyclesLoading } = useElectionCyclesQuery();
-  const { data: elections = [], isLoading: electionsLoading } = useElectionsQuery();
+  const { data: elections = [], isLoading: electionsLoading, refetch: refetchElections } = useElectionsQuery();
   const [selectedCycle, setSelectedCycle] = useState<string | null>(null);
   const scheme = useColorScheme() ?? 'light';
   const colors = Colors[scheme];
+  const { refreshControl } = useRefreshControl(
+    cyclesLoading || electionsLoading,
+    refetchElections
+  );
 
   const loading = cyclesLoading || electionsLoading;
 
@@ -39,13 +44,13 @@ export default function ElectionsScreen() {
     : elections;
 
   return (
-    <ScreenView scrollable keyboardShouldPersistTaps="handled">
+    <ScreenView scrollable keyboardShouldPersistTaps="handled" refreshControl={refreshControl}>
       <FlashList
         data={filteredElections}
         keyExtractor={(item) => item.id}
         ListHeaderComponent={
           <View>
-            <ThemedText variant="xl" style={{ marginHorizontal: spacing.md, marginTop: spacing.md, marginBottom: spacing.sm }}>
+            <ThemedText variant="xl" style={{ marginHorizontal: spacing.md, marginTop: spacing.md, marginBottom: spacing.sm }} minFontSize={18} maxFontSize={26}>
               Elections
             </ThemedText>
 
@@ -63,9 +68,10 @@ export default function ElectionsScreen() {
             </ScrollView>
 
             {loading ? (
-              <ThemedText variant="body" color="textSecondary" style={{ textAlign: 'center', marginTop: spacing.xxl }}>
-                Loading elections...
-              </ThemedText>
+              <View style={{ paddingHorizontal: spacing.md }}>
+                <SkeletonCard />
+                <SkeletonCard />
+              </View>
             ) : filteredElections.length === 0 ? (
               <EmptyState
                 icon="document-text-outline"

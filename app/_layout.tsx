@@ -2,6 +2,8 @@ import { enableScreens } from 'react-native-screens';
 import React, { useEffect, useRef, useState } from 'react';
 import { StyleSheet, Platform } from 'react-native';
 import { InteractionManager } from 'react-native';
+import * as SplashScreen from 'expo-splash-screen';
+import { useFonts } from 'expo-font';
 import { Stack, useRouter, useSegments, useRootNavigationState } from 'expo-router';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -12,7 +14,9 @@ import { ToastProvider } from '@/core/components/ToastProvider';
 import { RootErrorBoundary } from '@/core/components/ErrorBoundary';
 import { mockApi } from '@/features/elections/service';
 import { ResultSubmission } from '@/features/auth/store';
+import { fontMap } from '@/constants/fonts';
 
+SplashScreen.preventAutoHideAsync();
 enableScreens();
 
 export const unstable_settings = {
@@ -20,6 +24,18 @@ export const unstable_settings = {
 };
 
 export default function RootLayout() {
+  const [fontsLoaded, fontError] = useFonts(fontMap);
+
+  useEffect(() => {
+    if (fontsLoaded || fontError) {
+      SplashScreen.hideAsync();
+    }
+  }, [fontsLoaded, fontError]);
+
+  if (!fontsLoaded && !fontError) {
+    return null;
+  }
+
   return (
     <GestureHandlerRootView style={styles.root}>
       <SafeAreaProvider>

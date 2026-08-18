@@ -4,6 +4,8 @@ import {
   StyleSheet,
   ViewStyle,
   PressableProps,
+  Platform,
+  FlexAlignType,
 } from 'react-native';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
 import { DebouncedPressable } from './DebouncedPressable';
@@ -22,6 +24,7 @@ type ButtonProps = {
   loading?: boolean;
   style?: ViewStyle;
   testID?: string;
+  accessibilityLabel?: string;
   size?: 'sm' | 'md' | 'lg';
   fullWidth?: boolean;
   leftIcon?: keyof typeof Ionicons.glyphMap;
@@ -36,6 +39,7 @@ export function Button({
   loading = false,
   style,
   testID,
+  accessibilityLabel,
   size = 'md',
   fullWidth = false,
   leftIcon,
@@ -46,7 +50,7 @@ export function Button({
   const colors = Colors[scheme];
 
   const sizeStyles = {
-    sm: { paddingVertical: spacing.sm, paddingHorizontal: spacing.md, minHeight: 40 },
+    sm: { paddingVertical: spacing.sm, paddingHorizontal: spacing.md, minHeight: 48 },
     md: { paddingVertical: spacing.md, paddingHorizontal: spacing.lg, minHeight: 48 },
     lg: { paddingVertical: spacing.lg, paddingHorizontal: spacing.xl, minHeight: 56 },
   };
@@ -66,25 +70,36 @@ export function Button({
     return <Ionicons name={iconName} size={20} color={iconColor} style={styles.icon} />;
   };
 
+  const pressableStyle = ({ pressed }: PressableStateCallbackType) => [
+    styles.button,
+    { borderRadius: radius.md },
+    sizeStyles[size],
+    variantStyles[variant],
+    fullWidth && { alignSelf: 'stretch' as FlexAlignType },
+    pressed && {
+      opacity: opacities.press,
+      transform: [{ scale: 0.97 }],
+      ...(size === 'lg' && { transform: [{ scale: 0.97 }, { translateY: 1 }] }),
+    },
+    disabled && { opacity: opacities.disabled },
+    Platform.OS === 'android' && styles.androidRippleContainer,
+    style,
+  ];
+
   return (
     <DebouncedPressable
       onPress={onPress}
       disabled={disabled || loading}
-      style={({ pressed }: PressableStateCallbackType) => [
-        styles.button,
-        { borderRadius: radius.md },
-        sizeStyles[size],
-        variantStyles[variant],
-        fullWidth && { alignSelf: 'stretch' },
-        pressed && {
-          opacity: opacities.press,
-          transform: [{ scale: 0.97 }],
-          ...(size === 'lg' && { transform: [{ scale: 0.97 }, { translateY: 1 }] }),
-        },
-        disabled && { opacity: opacities.disabled },
-        style,
-      ]}
+      style={pressableStyle}
       testID={testID}
+      accessible
+      accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel || label}
+      android_ripple={{
+        color: variant === 'primary' || variant === 'secondary' ? 'rgba(255,255,255,0.25)' : colors.press,
+        borderless: false,
+        radius: radius.md,
+      }}
       {...rest}
     >
       {renderIcon(leftIcon, textColor)}
@@ -112,4 +127,8 @@ const styles = StyleSheet.create({
   },
   label: { fontWeight: '600', letterSpacing: 0.3 },
   icon: { lineHeight: 20 },
+  androidRippleContainer: {
+    borderRadius: radius.md,
+    overflow: 'hidden',
+  },
 });

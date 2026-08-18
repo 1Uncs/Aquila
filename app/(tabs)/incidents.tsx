@@ -3,12 +3,13 @@ import { StyleSheet, ScrollView, View } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import { router } from 'expo-router';
 import { ScreenView } from '@/core/components/ScreenView';
-import { ThemedText, FlashListItem, EmptyState, Button } from '@/core/components';
+import { ThemedText, FlashListItem, EmptyState, Button, SkeletonCard } from '@/core/components';
 import { useIncidentsStore } from '@/features/auth/store';
 import { ROUTES } from '@/constants/routes';
 import { spacing, radius } from '@/constants/tokens';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
 import { useIncidentsQuery } from '@/features/elections/hooks';
+import { useRefreshControl } from '@/core/hooks';
 import Colors from '@/constants/colors';
 import { IncidentSeverity } from '@/types';
 
@@ -22,11 +23,12 @@ const SEVERITY_COLORS: Record<IncidentSeverity, string> = {
 };
 
 export default function IncidentsScreen() {
-  const { data: incidents = [], isLoading: loading } = useIncidentsQuery();
+  const { data: incidents = [], isLoading: loading, refetch: refetchIncidents } = useIncidentsQuery();
   const { setIncidents: storeSetIncidents } = useIncidentsStore();
   const [filter, setFilter] = useState<IncidentSeverity | 'ALL'>('ALL');
   const scheme = useColorScheme() ?? 'light';
   const colors = Colors[scheme];
+  const { refreshControl } = useRefreshControl(loading, refetchIncidents);
 
   useEffect(() => {
     storeSetIncidents(incidents);
@@ -35,13 +37,13 @@ export default function IncidentsScreen() {
   const filtered = filter === 'ALL' ? incidents : incidents.filter((i) => i.severity === filter);
 
   return (
-    <ScreenView scrollable keyboardShouldPersistTaps="handled">
+    <ScreenView scrollable keyboardShouldPersistTaps="handled" refreshControl={refreshControl}>
       <FlashList
         data={filtered}
         keyExtractor={(item) => item.id}
         ListHeaderComponent={
           <View>
-            <ThemedText variant="xl" style={{ marginHorizontal: spacing.md, marginTop: spacing.md, marginBottom: spacing.sm }}>
+            <ThemedText variant="xl" style={{ marginHorizontal: spacing.md, marginTop: spacing.md, marginBottom: spacing.sm }} minFontSize={18} maxFontSize={26}>
               Incidents
             </ThemedText>
 
@@ -64,9 +66,11 @@ export default function IncidentsScreen() {
             </View>
 
             {loading ? (
-              <ThemedText variant="body" color="textSecondary" style={{ textAlign: 'center', marginTop: spacing.xxl }}>
-                Loading incidents...
-              </ThemedText>
+              <View style={{ paddingHorizontal: spacing.md }}>
+                <SkeletonCard />
+                <SkeletonCard />
+                <SkeletonCard />
+              </View>
             ) : filtered.length === 0 ? (
               <EmptyState icon="shield-checkmark-outline" title="No Incidents" subtitle="All quiet — no incidents reported" />
             ) : null}

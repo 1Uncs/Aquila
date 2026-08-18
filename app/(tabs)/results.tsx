@@ -1,15 +1,17 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { StyleSheet, ScrollView, View, Platform, Alert } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ActionSheetIOS } from 'react-native';
 import { router } from 'expo-router';
 import { ScreenView } from '@/core/components/ScreenView';
-import { ThemedText, FlashListItem, EmptyState, Button, Card } from '@/core/components';
+import { ThemedText, FlashListItem, EmptyState, Button, Card, SkeletonCard } from '@/core/components';
 import { ROUTES } from '@/constants/routes';
 import { spacing, radius, shadows, sizes, gradientPresets } from '@/constants/tokens';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
 import { useResultsQuery } from '@/features/elections/hooks';
+import * as Haptics from 'expo-haptics';
+import { useRefreshControl, useHaptics } from '@/core/hooks';
 import Colors from '@/constants/colors';
 
 function GradientIcon({ name, gradient }: { name: string; gradient: readonly [string, string] }) {
@@ -30,10 +32,17 @@ type StatCardProps = {
 };
 
 function StatCard({ icon, label, value, gradient }: StatCardProps) {
+  const { impact } = useHaptics();
+
   return (
-    <Card style={[styles.statCard, shadows.md]}>
+    <Card
+      pressable
+      style={[styles.statCard, shadows.md]}
+      onPress={() => impact(Haptics.ImpactFeedbackStyle.Light)}
+      accessibilityLabel={`${label}: ${value}`}
+    >
       <GradientIcon name={icon} gradient={gradient} />
-      <ThemedText variant="xxl" style={{ marginTop: spacing.sm, fontWeight: '700' }}>
+      <ThemedText variant="xxl" style={{ marginTop: spacing.sm, fontWeight: '700' }} minFontSize={24} maxFontSize={40}>
         {value}
       </ThemedText>
       <ThemedText variant="caption" color="textSecondary">
@@ -44,9 +53,12 @@ function StatCard({ icon, label, value, gradient }: StatCardProps) {
 }
 
 export default function ResultsScreen() {
-  const { data: results = [], isLoading: loading } = useResultsQuery();
+  const { data: results = [], isLoading: loading, refetch: refetchResults } = useResultsQuery();
+  const { refreshControl } = useRefreshControl(loading, refetchResults);
+  const scheme = useColorScheme() ?? 'light';
+  const colors = Colors[scheme];
 
-  const openMoreActions = () => {
+  const openMoreActions = useCallback(() => {
     const canUseActionSheet = Platform.OS === 'ios' && !!ActionSheetIOS;
     if (canUseActionSheet) {
       ActionSheetIOS.showActionSheetWithOptions(
@@ -66,14 +78,12 @@ export default function ResultsScreen() {
         { text: 'Cancel', style: 'cancel' },
       ]);
     }
-  };
-  const scheme = useColorScheme() ?? 'light';
-  const colors = Colors[scheme];
+  }, []);
 
   const totalVotes = results.reduce((sum, r) => sum + r.totalVotesCast, 0);
 
   return (
-    <ScreenView scrollable keyboardShouldPersistTaps="handled">
+    <ScreenView scrollable keyboardShouldPersistTaps="handled" refreshControl={refreshControl}>
       <FlashList
         data={results}
         keyExtractor={(item) => item.id}
@@ -99,9 +109,11 @@ export default function ResultsScreen() {
               Recent Results
             </ThemedText>
             {loading ? (
-              <ThemedText variant="body" color="textSecondary" style={{ textAlign: 'center', marginTop: spacing.xxl }}>
-                Loading results...
-              </ThemedText>
+              <View style={{ paddingHorizontal: spacing.md }}>
+                <SkeletonCard />
+                <SkeletonCard />
+                <SkeletonCard />
+              </View>
             ) : results.length === 0 ? (
               <EmptyState icon="analytics-outline" title="No Results" subtitle="No results submitted yet" />
             ) : null}
