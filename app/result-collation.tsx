@@ -7,6 +7,7 @@ import { ThemedText, FlashListItem, EmptyState, Button } from '@/core/components
 import { router } from 'expo-router';
 import { spacing, shadows, radius, sizes, gradientPresets } from '@/constants/tokens';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
+import { useStatusBar } from '@/core/hooks/useStatusBar';
 import { useResultsQuery, useCandidatesQuery } from '@/features/elections/hooks';
 import Colors from '@/constants/colors';
 
@@ -15,6 +16,7 @@ export default function CollationScreen() {
   const { data: candidates = [] } = useCandidatesQuery('e1');
   const scheme = useColorScheme() ?? 'light';
   const colors = Colors[scheme];
+  useStatusBar({ barStyle: scheme === 'dark' ? 'light' : 'dark' });
 
   const candidateMap = new Map(candidates.map((c) => [c.id, c.fullName]));
 
@@ -43,11 +45,13 @@ export default function CollationScreen() {
       <FlashList
         data={ranked}
         keyExtractor={(item) => item.candId}
+        removeClippedSubviews
         ListHeaderComponent={
           <View>
-            <ThemedText variant="h2" style={{ marginHorizontal: spacing.md, marginTop: spacing.md, marginBottom: spacing.lg }}>
-              Result Collation
-            </ThemedText>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.sm, marginHorizontal: spacing.md, marginTop: spacing.md }}>
+              <View style={[styles.titleIndicator, { backgroundColor: colors.primary }]} />
+              <ThemedText variant="h2" style={{ flex: 1 }} minFontSize={20} maxFontSize={28}>Result Collation</ThemedText>
+            </View>
 
             <LinearGradient colors={gradientPresets.primary} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={[styles.statCard, shadows.lg]}>
               <ThemedText variant="caption" style={{ color: 'rgba(255,255,255,0.8)' }}>
@@ -121,4 +125,5 @@ const styles = StyleSheet.create({
   progressTrack: { height: spacing.sm, borderRadius: radius.sm, marginTop: spacing.sm, overflow: 'hidden' },
   progressFill: { height: '100%', borderRadius: radius.sm },
   statCard: { borderRadius: radius.lg, padding: spacing.lg },
+  titleIndicator: { width: 4, height: 16, borderRadius: radius.full },
 });

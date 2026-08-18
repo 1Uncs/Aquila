@@ -6,6 +6,7 @@ import { ThemedText, FlashListItem, EmptyState, Input } from '@/core/components'
 import { useIncidentsStore } from '@/features/auth/store';
 import { spacing, radius } from '@/constants/tokens';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
+import { useStatusBar } from '@/core/hooks/useStatusBar';
 import { useIncidentsQuery } from '@/features/elections/hooks';
 import Colors from '@/constants/colors';
 
@@ -15,6 +16,7 @@ export default function IncidentSearchScreen() {
   const { incidents: storeIncidents } = useIncidentsStore();
   const scheme = useColorScheme() ?? 'light';
   const colors = Colors[scheme];
+  useStatusBar({ barStyle: scheme === 'dark' ? 'light' : 'dark' });
 
   const pool = incidents.length > 0 ? incidents : storeIncidents;
   const filtered = search
@@ -26,11 +28,13 @@ export default function IncidentSearchScreen() {
       <FlashList
         data={filtered}
         keyExtractor={(item) => item.id}
+        removeClippedSubviews
         ListHeaderComponent={
           <View>
-            <ThemedText variant="h2" style={{ marginBottom: spacing.lg }}>
-              Search Incidents
-            </ThemedText>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.sm }}>
+              <View style={[styles.titleIndicator, { backgroundColor: colors.critical }]} />
+              <ThemedText variant="h2" style={{ flex: 1 }} minFontSize={20} maxFontSize={28}>Search Incidents</ThemedText>
+            </View>
 
             <Input
               label="Search"
@@ -77,4 +81,5 @@ export default function IncidentSearchScreen() {
 const styles = StyleSheet.create({
   incidentRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
   severityDot: { width: spacing.sm, height: spacing.sm, borderRadius: radius.full },
+  titleIndicator: { width: 4, height: 16, borderRadius: radius.full },
 });

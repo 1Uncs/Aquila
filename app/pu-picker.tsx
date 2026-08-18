@@ -6,6 +6,7 @@ import { ThemedText, FlashListItem, EmptyState, Input, Button } from '@/core/com
 import { router, useLocalSearchParams } from 'expo-router';
 import { spacing, radius } from '@/constants/tokens';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
+import { useStatusBar } from '@/core/hooks/useStatusBar';
 import { usePollingUnitsQuery, useLgasQuery, useStatesQuery } from '@/features/elections/hooks';
 import { useAuthStore } from '@/features/auth/store';
 import Colors from '@/constants/colors';
@@ -21,6 +22,7 @@ export default function PUPickerScreen() {
   const [selectedLga, setSelectedLga] = useState<string | null>(null);
   const scheme = useColorScheme() ?? 'light';
   const colors = Colors[scheme];
+  useStatusBar({ barStyle: scheme === 'dark' ? 'light' : 'dark' });
 
   const lgaMap = new Map(lgas.map((l) => [l.id, l]));
   const stateMap = new Map(states.map((s) => [s.id, s]));
@@ -52,11 +54,13 @@ export default function PUPickerScreen() {
       <FlashList
         data={filtered}
         keyExtractor={(item) => item.id}
+        removeClippedSubviews
         ListHeaderComponent={
           <View>
-            <ThemedText variant="h2" style={{ marginBottom: spacing.sm }}>
-              Select Polling Unit
-            </ThemedText>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.xs }}>
+              <View style={[styles.titleIndicator, { backgroundColor: colors.primary }]} />
+              <ThemedText variant="h2" style={{ flex: 1 }}>Select Polling Unit</ThemedText>
+            </View>
             <ThemedText variant="body" color="textSecondary" style={{ marginBottom: spacing.lg }}>
               {mode === 'incident' ? 'Choose location for this incident' : 'Choose polling unit to submit results for'}
             </ThemedText>
@@ -136,4 +140,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  titleIndicator: { width: 4, height: 20, borderRadius: radius.full },
 });

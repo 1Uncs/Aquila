@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, View, ScrollView } from 'react-native';
+import { StyleSheet, View, ScrollView, LayoutAnimation } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import { router } from 'expo-router';
 import { ScreenView } from '@/core/components/ScreenView';
@@ -7,9 +7,10 @@ import { ThemedText, FlashListItem, EmptyState, Button, SkeletonCard } from '@/c
 import { useElectionsStore } from '@/features/auth/store';
 import { ROUTES } from '@/constants/routes';
 import { spacing, radius } from '@/constants/tokens';
+import { useRefreshControl, useForegroundRefresh } from '@/core/hooks';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
+import { useStatusBar } from '@/core/hooks/useStatusBar';
 import { useElectionsQuery, useElectionCyclesQuery } from '@/features/elections/hooks';
-import { useRefreshControl } from '@/core/hooks';
 import Colors from '@/constants/colors';
 
 const STATUS_COLORS: Record<string, string> = {
@@ -26,10 +27,12 @@ export default function ElectionsScreen() {
   const [selectedCycle, setSelectedCycle] = useState<string | null>(null);
   const scheme = useColorScheme() ?? 'light';
   const colors = Colors[scheme];
+  useStatusBar({ barStyle: scheme === 'dark' ? 'light' : 'dark' });
   const { refreshControl } = useRefreshControl(
     cyclesLoading || electionsLoading,
     refetchElections
   );
+  useForegroundRefresh([['elections', 'list'], ['elections', 'cycles']], 5 * 60 * 1000);
 
   const loading = cyclesLoading || electionsLoading;
 
@@ -43,16 +46,20 @@ export default function ElectionsScreen() {
     ? elections.filter((e) => e.cycleId === selectedCycle)
     : elections;
 
+  LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+
   return (
     <ScreenView scrollable keyboardShouldPersistTaps="handled" refreshControl={refreshControl}>
       <FlashList
         data={filteredElections}
         keyExtractor={(item) => item.id}
+        removeClippedSubviews
         ListHeaderComponent={
           <View>
-            <ThemedText variant="xl" style={{ marginHorizontal: spacing.md, marginTop: spacing.md, marginBottom: spacing.sm }} minFontSize={18} maxFontSize={26}>
-              Elections
-            </ThemedText>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.sm }}>
+              <View style={[styles.titleIndicator, { backgroundColor: colors.primary }]} />
+              <ThemedText variant="xl" style={{ flex: 1 }} minFontSize={20} maxFontSize={26}>Elections</ThemedText>
+            </View>
 
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipRow} keyboardShouldPersistTaps="handled">
               {cycles.map((cycle) => (
@@ -130,4 +137,5 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.xs,
     borderRadius: radius.full,
   },
+  titleIndicator: { width: 4, height: 16, borderRadius: radius.full, marginHorizontal: spacing.md },
 });

@@ -43,7 +43,9 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     }, 3000);
   }, []);
 
-  mountedInstance = showToast;
+  React.useEffect(() => {
+    mountedInstance = showToast;
+  }, [showToast]);
 
   React.useEffect(() => {
     if (drainingRef.current) return;

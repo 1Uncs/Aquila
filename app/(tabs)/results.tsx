@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react';
-import { StyleSheet, ScrollView, View, Platform, Alert } from 'react-native';
+import { StyleSheet, ScrollView, View, Platform, Alert, LayoutAnimation } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ActionSheetIOS } from 'react-native';
@@ -9,9 +9,10 @@ import { ThemedText, FlashListItem, EmptyState, Button, Card, SkeletonCard } fro
 import { ROUTES } from '@/constants/routes';
 import { spacing, radius, shadows, sizes, gradientPresets } from '@/constants/tokens';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
+import { useStatusBar } from '@/core/hooks/useStatusBar';
 import { useResultsQuery } from '@/features/elections/hooks';
 import * as Haptics from 'expo-haptics';
-import { useRefreshControl, useHaptics } from '@/core/hooks';
+import { useRefreshControl, useForegroundRefresh, useHaptics } from '@/core/hooks';
 import Colors from '@/constants/colors';
 
 function GradientIcon({ name, gradient }: { name: string; gradient: readonly [string, string] }) {
@@ -29,9 +30,10 @@ type StatCardProps = {
   label: string;
   value: string;
   gradient: readonly [string, string];
+  colors: typeof Colors.light;
 };
 
-function StatCard({ icon, label, value, gradient }: StatCardProps) {
+function StatCard({ icon, label, value, gradient, colors }: StatCardProps) {
   const { impact } = useHaptics();
 
   return (
@@ -42,10 +44,10 @@ function StatCard({ icon, label, value, gradient }: StatCardProps) {
       accessibilityLabel={`${label}: ${value}`}
     >
       <GradientIcon name={icon} gradient={gradient} />
-      <ThemedText variant="xxl" style={{ marginTop: spacing.sm, fontWeight: '700' }} minFontSize={24} maxFontSize={40}>
+      <ThemedText variant="xxl" style={{ marginTop: spacing.sm, fontWeight: '700', color: colors.primary }} minFontSize={28} maxFontSize={44}>
         {value}
       </ThemedText>
-      <ThemedText variant="caption" color="textSecondary">
+      <ThemedText variant="caption" color="textSecondary" style={{ marginTop: spacing.xs }}>
         {label}
       </ThemedText>
     </Card>
@@ -57,6 +59,8 @@ export default function ResultsScreen() {
   const { refreshControl } = useRefreshControl(loading, refetchResults);
   const scheme = useColorScheme() ?? 'light';
   const colors = Colors[scheme];
+  useStatusBar({ barStyle: scheme === 'dark' ? 'light' : 'dark' });
+  useForegroundRefresh([['results', 'list']], 5 * 60 * 1000);
 
   const openMoreActions = useCallback(() => {
     const canUseActionSheet = Platform.OS === 'ios' && !!ActionSheetIOS;
@@ -82,21 +86,25 @@ export default function ResultsScreen() {
 
   const totalVotes = results.reduce((sum, r) => sum + r.totalVotesCast, 0);
 
+  LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+
   return (
     <ScreenView scrollable keyboardShouldPersistTaps="handled" refreshControl={refreshControl}>
       <FlashList
         data={results}
         keyExtractor={(item) => item.id}
+        removeClippedSubviews
         ListHeaderComponent={
           <View>
-            <ThemedText variant="xl" style={{ marginHorizontal: spacing.md, marginTop: spacing.md, marginBottom: spacing.sm }}>
-              Live Results
-            </ThemedText>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.sm }}>
+              <View style={[styles.sectionIndicator, { backgroundColor: colors.primary }]} />
+              <ThemedText variant="xl" style={{ flex: 1 }} minFontSize={20} maxFontSize={28}>Live Results</ThemedText>
+            </View>
 
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: spacing.md, gap: spacing.md, marginBottom: spacing.lg }} keyboardShouldPersistTaps="handled">
-              <StatCard icon="📋" label="Reports" value={String(results.length)} gradient={gradientPresets.primary} />
-              <StatCard icon="👥" label="Total Votes" value={totalVotes.toLocaleString()} gradient={gradientPresets.success} />
-              <StatCard icon="✓" label="Published" value={String(results.filter((r) => r.status === 'PUBLISHED').length)} gradient={gradientPresets.accent} />
+              <StatCard icon="📋" label="Reports" value={String(results.length)} gradient={gradientPresets.primary} colors={colors} />
+              <StatCard icon="👥" label="Total Votes" value={totalVotes.toLocaleString()} gradient={gradientPresets.success} colors={colors} />
+              <StatCard icon="✓" label="Published" value={String(results.filter((r) => r.status === 'PUBLISHED').length)} gradient={gradientPresets.accent} colors={colors} />
             </ScrollView>
 
             <View style={{ flexDirection: 'row', gap: spacing.sm, marginHorizontal: spacing.md, marginBottom: spacing.lg }}>
@@ -105,9 +113,10 @@ export default function ResultsScreen() {
               <Button label="More" variant="ghost" size="sm" onPress={openMoreActions} style={styles.actionBtn} leftIcon="ellipsis-horizontal" />
             </View>
 
-            <ThemedText variant="h3" style={{ marginHorizontal: spacing.md, marginBottom: spacing.sm }}>
-              Recent Results
-            </ThemedText>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.sm }}>
+              <View style={[styles.sectionIndicator, { backgroundColor: colors.accent }]} />
+              <ThemedText variant="h3" style={{ flex: 1 }} minFontSize={16} maxFontSize={22}>Recent Results</ThemedText>
+            </View>
             {loading ? (
               <View style={{ paddingHorizontal: spacing.md }}>
                 <SkeletonCard />
@@ -144,10 +153,11 @@ export default function ResultsScreen() {
 }
 
 const styles = StyleSheet.create({
-  statCard: { width: sizes.statCard, padding: spacing.md, borderRadius: radius.lg },
+  statCard: { width: sizes.statCard, padding: spacing.lg, borderRadius: radius.lg },
   gradientIconWrap: { overflow: 'hidden', alignSelf: 'flex-start' },
   gradientIconBg: { width: 48, height: 48, borderRadius: radius.md, alignItems: 'center', justifyContent: 'center' },
   actionBtn: { flex: 1 },
   progressTrack: { height: spacing.sm, borderRadius: radius.sm, overflow: 'hidden' },
   progressFill: { height: '100%', borderRadius: radius.sm },
+  sectionIndicator: { width: 4, height: 16, borderRadius: radius.full },
 });

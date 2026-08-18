@@ -8,9 +8,12 @@ import { useAuthStore } from '@/features/auth/store';
 import { ROUTES } from '@/constants/routes';
 import { spacing, radius, shadows, sizes, gradientPresets, border } from '@/constants/tokens';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
+import { useStatusBar } from '@/core/hooks/useStatusBar';
 import { useElectionsQuery } from '@/features/elections/hooks';
 import Colors from '@/constants/colors';
 import { UserRole } from '@/types';
+import { Ionicons } from '@expo/vector-icons';
+import { useForegroundRefresh } from '@/core/hooks';
 
 export default function ProfileTabScreen() {
   const { user, logout } = useAuthStore();
@@ -18,6 +21,8 @@ export default function ProfileTabScreen() {
   const electionCount = elections.length;
   const scheme = useColorScheme() ?? 'light';
   const colors = Colors[scheme];
+  useStatusBar({ barStyle: scheme === 'dark' ? 'light' : 'dark' });
+  useForegroundRefresh([['elections', 'list']], 5 * 60 * 1000);
 
   const roleLabels: Record<UserRole, string> = {
     ELECTION_OFFICER: 'Election Officer',
@@ -44,29 +49,31 @@ export default function ProfileTabScreen() {
           <ThemedText variant="lg" style={{ color: '#fff', marginTop: spacing.sm, fontWeight: '700' }}>
             {user?.name ?? 'User'}
           </ThemedText>
-          <ThemedText variant="caption" style={{ color: 'rgba(255,255,255,0.8)' }}>
+          <ThemedText variant="caption" style={{ color: 'rgba(255,255,255,0.85)', marginTop: spacing.xs }}>
             {user?.role ? roleLabels[user.role] : 'User'}
           </ThemedText>
-          <ThemedText variant="caption" style={{ color: 'rgba(255,255,255,0.6)' }}>
+          <ThemedText variant="caption" style={{ color: 'rgba(255,255,255,0.6)', marginTop: spacing.xs }}>
             {user?.email}
           </ThemedText>
         </LinearGradient>
 
-         <ThemedText variant="h3" style={{ marginHorizontal: spacing.md, marginTop: spacing.lg, marginBottom: spacing.sm }}>
-           Management
-         </ThemedText>
+         <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginHorizontal: spacing.md, marginTop: spacing.xl, marginBottom: spacing.sm }}>
+           <View style={[styles.sectionIndicator, { backgroundColor: colors.primary }]} />
+           <ThemedText variant="h3" style={{ flex: 1 }} minFontSize={16} maxFontSize={22}>Management</ThemedText>
+         </View>
         {menuItems.map((item) => (
           <Card key={item.label} pressable onPress={() => router.push(item.route)} style={styles.menuItem}>
             <View style={styles.menuItemRow}>
-              <ThemedText variant="body">{item.icon} {item.label}</ThemedText>
-              <ThemedText variant="caption" color="textMuted">›</ThemedText>
+              <ThemedText variant="body" style={{ fontWeight: '500' }}>{item.icon} {item.label}</ThemedText>
+              <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
             </View>
           </Card>
         ))}
 
-         <ThemedText variant="h3" style={{ marginHorizontal: spacing.md, marginTop: spacing.lg, marginBottom: spacing.sm }}>
-           Account
-         </ThemedText>
+         <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginHorizontal: spacing.md, marginTop: spacing.xl, marginBottom: spacing.sm }}>
+           <View style={[styles.sectionIndicator, { backgroundColor: colors.accent }]} />
+           <ThemedText variant="h3" style={{ flex: 1 }} minFontSize={16} maxFontSize={22}>Account</ThemedText>
+         </View>
         <Card style={[shadows.md]}>
           <View style={styles.statsRow}>
             <View style={styles.statItem}>
@@ -118,4 +125,5 @@ const styles = StyleSheet.create({
   statsRow: { flexDirection: 'row', alignItems: 'center' },
   statItem: { flex: 1, paddingVertical: spacing.sm },
   statDivider: { width: border.thin, height: 40, marginHorizontal: spacing.md },
+  sectionIndicator: { width: 4, height: 16, borderRadius: radius.full },
 });

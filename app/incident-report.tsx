@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { ScrollView, View, Platform, KeyboardAvoidingView, Alert } from 'react-native';
+import { ScrollView, View, Platform, KeyboardAvoidingView, Alert, StyleSheet } from 'react-native';
 import { Audio } from 'expo-av';
 import * as ImagePicker from 'expo-image-picker';
 import * as DocumentPicker from 'expo-document-picker';
@@ -8,8 +8,11 @@ import { ThemedText, Input, Button, Card } from '@/core/components';
 import { IncidentReport } from '@/features/auth/store';
 import { useIncidentsStore, useAuthStore } from '@/features/auth/store';
 import { router, useLocalSearchParams } from 'expo-router';
-import { spacing, shadows } from '@/constants/tokens';
+import { spacing, shadows, radius } from '@/constants/tokens';
 import { IncidentCategory, IncidentSeverity } from '@/types';
+import { useColorScheme } from '@/core/hooks/useColorScheme';
+import { useStatusBar } from '@/core/hooks/useStatusBar';
+import Colors from '@/constants/colors';
 
 const CATEGORIES = [
   'VIOLENCE', 'BALLOT_SNATCHING', 'VOTE_BUYING', 'VOTER_INTIMIDATION',
@@ -35,6 +38,9 @@ export default function ReportIncidentScreen() {
   const durationIntervalRef = useRef<ReturnType<typeof globalThis.setInterval> | null>(null);
   const { addIncident } = useIncidentsStore();
   const { user } = useAuthStore();
+  const scheme = useColorScheme() ?? 'light';
+  const colors = Colors[scheme];
+  useStatusBar({ barStyle: scheme === 'dark' ? 'light' : 'dark' });
 
   const requestPermission = async (type: 'camera' | 'mediaLibrary') => {
     if (Platform.OS !== 'web') {
@@ -204,9 +210,10 @@ export default function ReportIncidentScreen() {
           automaticallyAdjustKeyboardInsets={true}
           contentContainerStyle={{ paddingBottom: spacing.xxl }}
         >
-          <ThemedText variant="h2" style={{ marginBottom: spacing.lg }}>
-            Report Incident
-          </ThemedText>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.lg }}>
+            <View style={[styles.titleIndicator, { backgroundColor: colors.critical }]} />
+            <ThemedText variant="h2" style={{ flex: 1 }}>Report Incident</ThemedText>
+          </View>
 
           <Input
             label="Electoral Area"
@@ -216,7 +223,7 @@ export default function ReportIncidentScreen() {
             leftIcon="location-outline"
           />
 
-          <ThemedText variant="label" style={{ marginHorizontal: spacing.md, marginBottom: spacing.xs }}>
+          <ThemedText variant="label" style={{ marginHorizontal: spacing.md, marginBottom: spacing.xs, marginTop: spacing.md }}>
             Tie to Polling Unit (optional)
           </ThemedText>
           {selectedPuId ? (
@@ -335,3 +342,7 @@ export default function ReportIncidentScreen() {
     </ScreenView>
   );
 }
+
+const styles = StyleSheet.create({
+  titleIndicator: { width: 4, height: 20, borderRadius: radius.full },
+});

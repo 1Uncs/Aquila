@@ -9,8 +9,10 @@ import { ThemedText, FlashListItem, EmptyState, Button } from '@/core/components
 import { ROUTES } from '@/constants/routes';
 import { spacing, shadows, radius, sizes, gradientPresets } from '@/constants/tokens';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
+import { useStatusBar } from '@/core/hooks/useStatusBar';
 import { useElectionDetailQuery, useCandidatesQuery } from '@/features/elections/hooks';
 import Colors from '@/constants/colors';
+import { useForegroundRefresh } from '@/core/hooks';
 
 export default function ElectionDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -19,6 +21,8 @@ export default function ElectionDetailScreen() {
   const [loading, setLoading] = useState(true);
   const scheme = useColorScheme() ?? 'light';
   const colors = Colors[scheme];
+  useStatusBar({ barStyle: 'light', hidden: false, translucent: true });
+  useForegroundRefresh([['elections', 'detail', id], ['elections', 'candidates', id]], 5 * 60 * 1000);
 
   useEffect(() => {
     if (!electionLoading && !candidatesLoading) {
@@ -49,6 +53,7 @@ export default function ElectionDetailScreen() {
       <FlashList
         data={candidates}
         keyExtractor={(item) => item.id}
+        removeClippedSubviews
         ListHeaderComponent={
           <View>
             <LinearGradient
@@ -58,19 +63,20 @@ export default function ElectionDetailScreen() {
               style={[styles.headerCard, shadows.lg]}
             >
                <ThemedText variant="xxl" style={{ color: '#fff', fontWeight: '700', marginBottom: spacing.xs }}>
-                {election.position}
-              </ThemedText>
-              <ThemedText variant="body" style={{ color: 'rgba(255,255,255,0.95)' }}>
-                {election.electoralArea}
-              </ThemedText>
-              <ThemedText variant="caption" style={{ color: 'rgba(255,255,255,0.7)', marginTop: spacing.sm }}>
-                {election.electionDate} · {election.electoralAreaType}
-              </ThemedText>
+                 {election.position}
+               </ThemedText>
+               <ThemedText variant="body" style={{ color: 'rgba(255,255,255,0.95)' }}>
+                 {election.electoralArea}
+               </ThemedText>
+               <ThemedText variant="caption" style={{ color: 'rgba(255,255,255,0.7)', marginTop: spacing.sm }}>
+                 {election.electionDate} · {election.electoralAreaType}
+               </ThemedText>
             </LinearGradient>
 
-            <ThemedText variant="h3" style={{ marginHorizontal: spacing.md, marginTop: spacing.lg, marginBottom: spacing.sm }}>
-              Candidates ({candidates.length})
-            </ThemedText>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginHorizontal: spacing.md, marginTop: spacing.lg, marginBottom: spacing.sm }}>
+              <View style={[styles.titleIndicator, { backgroundColor: colors.primary }]} />
+              <ThemedText variant="h3" style={{ flex: 1 }} minFontSize={16} maxFontSize={22}>Candidates ({candidates.length})</ThemedText>
+            </View>
             {candidates.length === 0 ? (
               <EmptyState icon="people-outline" title="No Candidates" subtitle="No candidates added yet" />
             ) : null}
@@ -116,4 +122,5 @@ const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
   avatar: { width: sizes.icon, height: sizes.icon, borderRadius: radius.full, alignItems: 'center', justifyContent: 'center' },
   statusBadge: { paddingHorizontal: spacing.sm, paddingVertical: spacing.xs, borderRadius: radius.sm },
+  titleIndicator: { width: 4, height: 16, borderRadius: radius.full },
 });

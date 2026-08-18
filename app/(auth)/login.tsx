@@ -7,6 +7,7 @@ import { ThemedText, Input, Button, Card } from '@/core/components';
 import { spacing, radius, shadows, opacities } from '@/constants/tokens';
 import { useLoginMutation } from '@/features/auth/hooks';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
+import { useStatusBar } from '@/core/hooks/useStatusBar';
 import Colors from '@/constants/colors';
 import { gradientPresets } from '@/constants/tokens';
 
@@ -14,6 +15,7 @@ export default function LoginScreen() {
   const insets = useSafeAreaInsets();
   const scheme = useColorScheme() ?? 'light';
   const colors = Colors[scheme];
+  useStatusBar({ barStyle: scheme === 'dark' ? 'light' : 'dark', hidden: false, translucent: false });
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');

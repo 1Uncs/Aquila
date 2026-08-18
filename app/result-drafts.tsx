@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, LayoutAnimation } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
@@ -8,25 +8,33 @@ import { ThemedText, FlashListItem, EmptyState, Button } from '@/core/components
 import { ROUTES } from '@/constants/routes';
 import { spacing, radius, shadows, gradientPresets } from '@/constants/tokens';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
+import { useStatusBar } from '@/core/hooks/useStatusBar';
 import { useDraftsQuery } from '@/features/elections/hooks';
 import { useResultsStore } from '@/features/auth/store';
 import Colors from '@/constants/colors';
 
 export default function ResultDraftsScreen() {
   const { data: _apiDrafts = [], isLoading: apiLoading } = useDraftsQuery();
-  const { removeSubmission } = useResultsStore();
+  const { removeSubmission, submissions } = useResultsStore();
   const scheme = useColorScheme() ?? 'light';
   const colors = Colors[scheme];
+  useStatusBar({ barStyle: scheme === 'dark' ? 'light' : 'dark' });
 
-  const drafts = useResultsStore.getState().submissions.filter((s) => s.status === 'DRAFT');
+  const drafts = submissions.filter((s) => s.status === 'DRAFT');
 
   return (
     <ScreenView scrollable keyboardShouldPersistTaps="handled" skipAndroidTopPadding>
       <FlashList
         data={drafts}
         keyExtractor={(item) => item.id}
+        removeClippedSubviews
         ListHeaderComponent={
           <View>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.sm, marginHorizontal: spacing.md, marginTop: spacing.md }}>
+              <View style={[styles.titleIndicator, { backgroundColor: colors.accent }]} />
+              <ThemedText variant="h2" style={{ flex: 1 }} minFontSize={20} maxFontSize={28}>Draft Results</ThemedText>
+            </View>
+
             <LinearGradient colors={gradientPresets.accent} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={[styles.headerCard, shadows.md]}>
               <ThemedText variant="lg" style={{ color: '#fff', fontWeight: '700' }}>
                 Draft Results
@@ -86,6 +94,7 @@ export default function ResultDraftsScreen() {
                 variant="outline"
                 size="sm"
                 onPress={() => {
+                  LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
                   removeSubmission(draft.id);
                 }}
                 style={{ minWidth: 80 }}
@@ -114,4 +123,5 @@ const styles = StyleSheet.create({
     height: '100%',
     borderRadius: radius.sm,
   },
+  titleIndicator: { width: 4, height: 16, borderRadius: radius.full, marginHorizontal: spacing.md },
 });

@@ -26,7 +26,8 @@
         "backgroundColor": "#0D47A1"
       },
       "package": "com.alabiansolutions.aquila",
-      "softwareKeyboardLayoutMode": "pan"
+      "softwareKeyboardLayoutMode": "pan",
+      "edgeToEdgeEnabled": true
     },
     "web": {
       "bundler": "metro",

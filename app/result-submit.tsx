@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { View, Platform, KeyboardAvoidingView, ScrollView } from 'react-native';
+import { View, Platform, KeyboardAvoidingView, ScrollView, StyleSheet } from 'react-native';
 import { ScreenView } from '@/core/components/ScreenView';
 import { ThemedText, Button, Input, Card } from '@/core/components';
 import { useResultsStore, useAuthStore } from '@/features/auth/store';
 import { router, useLocalSearchParams } from 'expo-router';
-import { spacing, shadows } from '@/constants/tokens';
+import { spacing, shadows, radius } from '@/constants/tokens';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
+import { useStatusBar } from '@/core/hooks/useStatusBar';
 import { useCandidatesQuery, usePollingUnitsQuery } from '@/features/elections/hooks';
 import { ROUTES } from '@/constants/routes';
 import Colors from '@/constants/colors';
@@ -18,6 +19,7 @@ type VoteInput = {
 export default function SubmitResultScreen() {
   const scheme = useColorScheme() ?? 'light';
   const themeColors = Colors[scheme];
+  useStatusBar({ barStyle: scheme === 'dark' ? 'light' : 'dark' });
   const { electionId, pollingUnitId: preselectedPuId, pollingUnitName: preselectedPuName } = useLocalSearchParams<{
     electionId?: string;
     pollingUnitId?: string;
@@ -152,9 +154,10 @@ export default function SubmitResultScreen() {
           automaticallyAdjustKeyboardInsets={true}
           contentContainerStyle={{ paddingBottom: spacing.xxl }}
         >
-          <ThemedText variant="h2" style={{ marginBottom: spacing.lg }}>
-            Submit Result
-          </ThemedText>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.lg }}>
+            <View style={[styles.titleIndicator, { backgroundColor: themeColors.primary }]} />
+            <ThemedText variant="h2" style={{ flex: 1 }}>Submit Result</ThemedText>
+          </View>
 
           {showPuPicker ? (
             <Button
@@ -264,12 +267,16 @@ export default function SubmitResultScreen() {
             </ThemedText>
           )}
 
-          <View style={{ flexDirection: 'row', gap: spacing.md, marginHorizontal: spacing.md, marginTop: spacing.lg }}>
-            <Button label="Save Draft" variant="outline" onPress={handleSaveDraft} loading={submitting} fullWidth />
-            <Button label="Publish" onPress={handlePublish} loading={submitting} fullWidth />
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </ScreenView>
-  );
+            <View style={{ flexDirection: 'row', gap: spacing.md, marginHorizontal: spacing.md, marginTop: spacing.lg }}>
+              <Button label="Save Draft" variant="outline" onPress={handleSaveDraft} loading={submitting} fullWidth />
+              <Button label="Publish" onPress={handlePublish} loading={submitting} fullWidth />
+            </View>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </ScreenView>
+    );
 }
+
+const styles = StyleSheet.create({
+  titleIndicator: { width: 4, height: 20, borderRadius: radius.full },
+});

@@ -7,8 +7,9 @@ import { useAuthStore } from '@/features/auth/store';
 import { ROUTES } from '@/constants/routes';
 import { spacing, radius, shadows, sizes, gradientPresets, border } from '@/constants/tokens';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
+import { useStatusBar } from '@/core/hooks/useStatusBar';
 import { useElectionsQuery, useIncidentsQuery, useCandidatesQuery, useResultsQuery, usePollingUnitsQuery } from '@/features/elections/hooks';
-import { useRefreshControl, useHaptics } from '@/core/hooks';
+import { useRefreshControl, useHaptics, useForegroundRefresh } from '@/core/hooks';
 import Colors from '@/constants/colors';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -219,10 +220,12 @@ export default function DashboardScreen() {
   const { data: allPollingUnits = [] } = usePollingUnitsQuery();
   const scheme = useColorScheme() ?? 'light';
   const colors = Colors[scheme];
+  useStatusBar({ barStyle: scheme === 'dark' ? 'light' : 'dark' });
   const { refreshControl } = useRefreshControl(
     electionsLoading || incidentsLoading,
     () => Promise.all([refetchElections(), refetchIncidents(), refetchResults()])
   );
+  useForegroundRefresh([['elections', 'list'], ['incidents', 'list'], ['results', 'list']], 5 * 60 * 1000);
 
   const loading = electionsLoading || incidentsLoading;
   const recentIncidents = incidents.slice(0, 3);

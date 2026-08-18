@@ -5,6 +5,7 @@ import { ScreenView } from '@/core/components/ScreenView';
 import { ThemedText, FlashListItem, EmptyState, Input } from '@/core/components';
 import { spacing, radius } from '@/constants/tokens';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
+import { useStatusBar } from '@/core/hooks/useStatusBar';
 import { useResultsQuery } from '@/features/elections/hooks';
 import Colors from '@/constants/colors';
 
@@ -13,6 +14,7 @@ export default function ResultSearchScreen() {
   const [search, setSearch] = useState('');
   const scheme = useColorScheme() ?? 'light';
   const colors = Colors[scheme];
+  useStatusBar({ barStyle: scheme === 'dark' ? 'light' : 'dark' });
 
   const filtered = search
     ? results.filter((r) => r.pollingUnitName.toLowerCase().includes(search.toLowerCase()))
@@ -23,11 +25,13 @@ export default function ResultSearchScreen() {
       <FlashList
         data={filtered}
         keyExtractor={(item) => item.id}
+        removeClippedSubviews
         ListHeaderComponent={
           <View>
-            <ThemedText variant="h2" style={{ marginBottom: spacing.lg }}>
-              Search Results
-            </ThemedText>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.sm }}>
+              <View style={[styles.titleIndicator, { backgroundColor: colors.primary }]} />
+              <ThemedText variant="h2" style={{ flex: 1 }} minFontSize={20} maxFontSize={28}>Search Results</ThemedText>
+            </View>
 
             <Input
               label="Search by Polling Unit"
@@ -70,4 +74,5 @@ export default function ResultSearchScreen() {
 const styles = StyleSheet.create({
   resultRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
   statusDot: { width: spacing.sm, height: spacing.sm, borderRadius: radius.full },
+  titleIndicator: { width: 4, height: 16, borderRadius: radius.full },
 });

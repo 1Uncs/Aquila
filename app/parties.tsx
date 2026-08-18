@@ -8,23 +8,27 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { usePartiesQuery } from '@/features/elections/hooks';
 import { spacing, radius, sizes, gradientPresets } from '@/constants/tokens';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
+import { useStatusBar } from '@/core/hooks/useStatusBar';
 import Colors from '@/constants/colors';
 
 export default function PartiesScreen() {
   const { data: parties = [] } = usePartiesQuery();
   const scheme = useColorScheme() ?? 'light';
   const colors = Colors[scheme];
+  useStatusBar({ barStyle: scheme === 'dark' ? 'light' : 'dark' });
 
   return (
     <ScreenView scrollable keyboardShouldPersistTaps="handled" skipAndroidTopPadding>
       <FlashList
         data={parties}
         keyExtractor={(item) => item.id}
+        removeClippedSubviews
         ListHeaderComponent={
           <View>
-            <ThemedText variant="h2" style={{ marginBottom: spacing.sm }}>
-              Political Parties
-            </ThemedText>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.sm }}>
+              <View style={[styles.titleIndicator, { backgroundColor: colors.accent }]} />
+              <ThemedText variant="h2" style={{ flex: 1 }} minFontSize={20} maxFontSize={28}>Political Parties</ThemedText>
+            </View>
             <ThemedText variant="body" color="textSecondary" style={{ marginBottom: spacing.lg }}>
               Registered parties participating in elections
             </ThemedText>
@@ -72,4 +76,5 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     overflow: 'hidden',
   },
+  titleIndicator: { width: 4, height: 16, borderRadius: radius.full },
 });

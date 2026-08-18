@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, ScrollView, View } from 'react-native';
+import { StyleSheet, ScrollView, View, LayoutAnimation } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import { router } from 'expo-router';
 import { ScreenView } from '@/core/components/ScreenView';
@@ -8,8 +8,9 @@ import { useIncidentsStore } from '@/features/auth/store';
 import { ROUTES } from '@/constants/routes';
 import { spacing, radius } from '@/constants/tokens';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
+import { useStatusBar } from '@/core/hooks/useStatusBar';
 import { useIncidentsQuery } from '@/features/elections/hooks';
-import { useRefreshControl } from '@/core/hooks';
+import { useRefreshControl, useForegroundRefresh } from '@/core/hooks';
 import Colors from '@/constants/colors';
 import { IncidentSeverity } from '@/types';
 
@@ -28,7 +29,9 @@ export default function IncidentsScreen() {
   const [filter, setFilter] = useState<IncidentSeverity | 'ALL'>('ALL');
   const scheme = useColorScheme() ?? 'light';
   const colors = Colors[scheme];
+  useStatusBar({ barStyle: scheme === 'dark' ? 'light' : 'dark' });
   const { refreshControl } = useRefreshControl(loading, refetchIncidents);
+  useForegroundRefresh([['incidents', 'list']], 5 * 60 * 1000);
 
   useEffect(() => {
     storeSetIncidents(incidents);
@@ -36,16 +39,20 @@ export default function IncidentsScreen() {
 
   const filtered = filter === 'ALL' ? incidents : incidents.filter((i) => i.severity === filter);
 
+  LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+
   return (
     <ScreenView scrollable keyboardShouldPersistTaps="handled" refreshControl={refreshControl}>
       <FlashList
         data={filtered}
         keyExtractor={(item) => item.id}
+        removeClippedSubviews
         ListHeaderComponent={
           <View>
-            <ThemedText variant="xl" style={{ marginHorizontal: spacing.md, marginTop: spacing.md, marginBottom: spacing.sm }} minFontSize={18} maxFontSize={26}>
-              Incidents
-            </ThemedText>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.sm }}>
+              <View style={[styles.sectionIndicator, { backgroundColor: colors.primary }]} />
+              <ThemedText variant="xl" style={{ flex: 1 }} minFontSize={20} maxFontSize={26}>Incidents</ThemedText>
+            </View>
 
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipRow} keyboardShouldPersistTaps="handled">
               {SEVERITY_FILTERS.map((f) => (
@@ -115,4 +122,5 @@ const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'flex-start', gap: spacing.sm },
   incidentInfo: { flex: 1 },
   severityDot: { width: spacing.sm, height: spacing.sm, borderRadius: radius.sm, marginTop: spacing.xs },
+  sectionIndicator: { width: 4, height: 16, borderRadius: radius.full, marginHorizontal: spacing.md },
 });

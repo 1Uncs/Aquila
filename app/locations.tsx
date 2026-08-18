@@ -6,6 +6,7 @@ import { ThemedText, FlashListItem, EmptyState, Card, Button } from '@/core/comp
 import { Ionicons } from '@expo/vector-icons';
 import { spacing, radius, shadows, sizes } from '@/constants/tokens';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
+import { useStatusBar } from '@/core/hooks/useStatusBar';
 import { useStatesQuery, useLgasQuery, usePollingUnitsQuery, useWardsQuery, useSenatorialDistrictsQuery, useConstituenciesQuery } from '@/features/elections/hooks';
 import { useLocationsStore } from '@/features/auth/store';
 import Colors from '@/constants/colors';
@@ -37,6 +38,7 @@ export default function LocationsScreen() {
   const { selectedStateId, selectedLgaId, setSelectedStateId, setSelectedLgaId } = useLocationsStore();
   const scheme = useColorScheme() ?? 'light';
   const colors = Colors[scheme];
+  useStatusBar({ barStyle: scheme === 'dark' ? 'light' : 'dark' });
 
   const [drillLevel, setDrillLevel] = useState<DrillLevel>('states');
   const [selectedStateName, setSelectedStateName] = useState<string | null>(null);
@@ -126,13 +128,15 @@ export default function LocationsScreen() {
       <FlashList
         data={drillLevel === 'states' ? SUB_UNITS : listData as DrillItem[]}
         keyExtractor={(item: any) => 'label' in item ? item.label : item.id}
+        removeClippedSubviews
         ListHeaderComponent={
           <View>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.sm }}>
               {(drillLevel as string) !== 'states' ? (
                 <Button label="Back" variant="ghost" size="sm" onPress={handleBack} leftIcon="arrow-back" />
               ) : null}
-              <ThemedText variant="h2" style={{ marginBottom: 0 }}>Electoral Geography</ThemedText>
+              <View style={[styles.titleIndicator, { backgroundColor: colors.primary }]} />
+              <ThemedText variant="h2" style={{ flex: 1, marginBottom: 0 }}>Electoral Geography</ThemedText>
             </View>
             <ThemedText variant="body" color="textSecondary" style={{ marginBottom: spacing.lg }}>
               {drillLevel === 'states' ? 'Manage electoral locations across Nigeria' : getHeaderLabel()}
@@ -140,9 +144,10 @@ export default function LocationsScreen() {
 
             {drillLevel === 'states' && (
               <Card style={shadows.md}>
-                <ThemedText variant="h3" style={{ marginBottom: spacing.md }}>
-                  States & FCT ({states.length})
-                </ThemedText>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.md }}>
+                  <View style={[styles.titleIndicator, { backgroundColor: colors.accent }]} />
+                  <ThemedText variant="h3" style={{ flex: 1 }}>States & FCT ({states.length})</ThemedText>
+                </View>
                 <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, paddingHorizontal: spacing.md }}>
                   {states.map((state) => (
                     <Button
@@ -216,4 +221,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  titleIndicator: { width: 4, height: 16, borderRadius: radius.full },
 });
