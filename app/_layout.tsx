@@ -20,7 +20,7 @@ SplashScreen.preventAutoHideAsync();
 enableScreens();
 
 export const unstable_settings = {
-  initialRouteName: 'login',
+  initialRouteName: '(auth)',
 };
 
 export default function RootLayout() {
