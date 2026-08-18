@@ -6,6 +6,7 @@ let mmkvAvailable = false;
 
 try {
   if (Platform.OS !== 'web') {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports -- dynamic require to avoid NitroModules crash in Expo Go; caught by try/catch below
     mmkvInstance = require('react-native-mmkv').createMMKV();
     mmkvAvailable = true;
   }
@@ -17,6 +18,7 @@ let secureStoreAvailable = false;
 let secureStoreModule: { getItemAsync: (key: string) => Promise<string | null>; setItemAsync: (key: string, value: string) => Promise<void>; deleteItemAsync: (key: string) => Promise<void> } | null = null;
 
 try {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports -- dynamic require to avoid NitroModules crash in Expo Go; caught by try/catch below
   secureStoreModule = require('expo-secure-store');
   secureStoreAvailable = true;
 } catch {
