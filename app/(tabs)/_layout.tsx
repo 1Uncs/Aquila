@@ -13,6 +13,7 @@ export default function TabLayout() {
       labelStyle={{ fontSize: 10 }}
       backgroundColor={colors.surface}
       disableTransparentOnScrollEdge
+      blurEffect="systemChromeMaterial"
     >
       <NativeTabs.Trigger name="index" options={{ title: 'Dashboard' }}>
         <Icon

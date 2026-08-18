@@ -57,7 +57,7 @@ export default function ElectionDetailScreen() {
               end={{ x: 1, y: 1 }}
               style={[styles.headerCard, shadows.lg]}
             >
-              <ThemedText variant="xxl" style={{ color: '#fff', fontWeight: '700', marginBottom: spacing.xs }}>
+               <ThemedText variant="xxl" style={{ color: '#fff', fontWeight: '700', marginBottom: spacing.xs }}>
                 {election.position}
               </ThemedText>
               <ThemedText variant="body" style={{ color: 'rgba(255,255,255,0.95)' }}>
@@ -80,7 +80,7 @@ export default function ElectionDetailScreen() {
           <FlashListItem id={c.id}>
             <View style={styles.row}>
               <View style={[styles.avatar, { backgroundColor: colors.accent }]}>
-                <Ionicons name="person" size={24} color="#fff" />
+                 <Ionicons name="person" size={24} color={colors.surface} />
               </View>
               <View style={{ flex: 1 }}>
                 <ThemedText variant="body" style={{ fontWeight: '600' }}>{c.fullName}</ThemedText>

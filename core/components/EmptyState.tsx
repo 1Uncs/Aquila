@@ -94,7 +94,7 @@ const styles = StyleSheet.create({
   },
   ghost: {
     borderWidth: border.thick,
-    borderColor: '#0f172a',
+    borderColor: '#94a3b8',
     borderStyle: 'dashed',
     borderRadius: radius.lg,
     marginHorizontal: spacing.lg,

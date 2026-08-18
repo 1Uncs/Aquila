@@ -5,7 +5,7 @@ import { useColorScheme } from '@/core/hooks/useColorScheme';
 import Colors from '@/constants/colors';
 import { radius, shadows, opacities, border, spacing } from '@/constants/tokens';
 
-type CardVariant = 'default' | 'highlighted' | 'elevated' | 'flat';
+type CardVariant = 'default' | 'highlighted' | 'elevated' | 'flat' | 'glass';
 
 type CardProps = {
   children: React.ReactNode;
@@ -33,14 +33,15 @@ export function Card({
   const isHighlighted = variant === 'highlighted';
   const isElevated = variant === 'elevated';
   const isFlat = variant === 'flat';
+  const isGlass = variant === 'glass';
 
-  const borderColor = isHighlighted ? colors.primary : colors.border;
-  const borderWidth = isHighlighted ? border.thick : border.thin;
+  const borderColor = isHighlighted ? colors.primary : isGlass ? 'transparent' : colors.border;
+  const borderWidth = isHighlighted ? border.thick : isGlass ? border.thin : border.thin;
   const shadow = isElevated
     ? shadows.lg
     : isHighlighted
       ? shadows.md
-      : isFlat
+      : isFlat || isGlass
         ? {}
         : shadows.md;
 
@@ -50,7 +51,7 @@ export function Card({
 
   const cardStyle = [
     styles.card,
-    { backgroundColor: colors.surface, borderColor, borderWidth },
+    { backgroundColor: isGlass ? colors.surfaceElevated + '99' : colors.surface, borderColor, borderWidth },
     shadow,
     mergedStyle,
   ];

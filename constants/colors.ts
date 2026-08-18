@@ -1,7 +1,7 @@
 export const colors = {
   light: {
-    primary: '#0f172a',
-    primaryLight: '#1e293b',
+    primary: '#4f46e5',
+    primaryLight: '#6366f1',
     accent: '#f59e0b',
     accentDark: '#d97706',
     success: '#10b981',
@@ -22,8 +22,8 @@ export const colors = {
     press: 'rgba(0,0,0,0.6)',
   },
   dark: {
-    primary: '#38bdf8',
-    primaryLight: '#0ea5e9',
+    primary: '#818cf8',
+    primaryLight: '#a5b4fc',
     accent: '#fbbf24',
     accentDark: '#f59e0b',
     success: '#34d399',

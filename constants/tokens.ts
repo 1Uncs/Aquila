@@ -9,10 +9,10 @@ export const spacing = {
 };
 
 export const radius = {
-  sm: 4,
-  md: 8,
-  lg: 16,
-  xl: 24,
+  sm: 8,
+  md: 12,
+  lg: 20,
+  xl: 28,
   full: 9999,
 };
 
@@ -24,7 +24,7 @@ export const border = {
 export const sizes = {
   icon: 48,
   avatar: 80,
-  statCard: 128,
+  statCard: 152,
   rankBadge: 32,
 } as const;
 
@@ -38,24 +38,24 @@ export const typography = {
     xxl: 32,
   },
   lineHeights: {
-    xs: 16,
-    sm: 20,
-    md: 24,
-    lg: 28,
-    xl: 32,
-    xxl: 40,
+    xs: 18,
+    sm: 22,
+    md: 26,
+    lg: 30,
+    xl: 34,
+    xxl: 42,
   },
   fontFamily: {
-    regular: 'System',
-    medium: 'System',
-    bold: 'System',
+    regular: 'Inter-Regular',
+    medium: 'Inter-Medium',
+    bold: 'Inter-Bold',
   },
 };
 
 export const shadows = {
-  sm: { shadowColor: '#000', shadowOpacity: 0.04, shadowRadius: 8, elevation: 2 } as const,
-  md: { shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 12, elevation: 4 } as const,
-  lg: { shadowColor: '#000', shadowOpacity: 0.12, shadowRadius: 20, elevation: 8 } as const,
+  sm: { shadowColor: '#000', shadowOpacity: 0.03, shadowRadius: 12, elevation: 2 } as const,
+  md: { shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 16, elevation: 4 } as const,
+  lg: { shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 24, elevation: 8 } as const,
 };
 
 export const opacities = {
@@ -77,8 +77,8 @@ export const animation = {
 };
 
 export const gradientPresets = {
-  primary: ['#0f172a', '#1e3a5f'] as const,
-  accent: ['#f59e0b', '#d97706'] as const,
+  primary: ['#4f46e5', '#7c3aed'] as const,
+  accent: ['#f59e0b', '#f97316'] as const,
   success: ['#10b981', '#059669'] as const,
-  election: ['#0f172a', '#1e40af'] as const,
+  election: ['#4f46e5', '#4338ca'] as const,
 };

@@ -30,9 +30,10 @@ type StatCardProps = {
   label: string;
   value: string;
   gradient: readonly [string, string];
+  colors: typeof Colors.light;
 };
 
-function StatCard({ icon, label, value, gradient }: StatCardProps) {
+function StatCard({ icon, label, value, gradient, colors }: StatCardProps) {
   const { impact } = useHaptics();
 
   return (
@@ -43,10 +44,10 @@ function StatCard({ icon, label, value, gradient }: StatCardProps) {
       accessibilityLabel={`${label}: ${value}`}
     >
       <GradientIcon name={icon} gradient={gradient} />
-      <ThemedText variant="xxl" style={{ marginTop: spacing.sm, fontWeight: '700' }} minFontSize={24} maxFontSize={40}>
+      <ThemedText variant="xxl" style={{ marginTop: spacing.sm, fontWeight: '700', color: colors.primary }} minFontSize={28} maxFontSize={44}>
         {value}
       </ThemedText>
-      <ThemedText variant="caption" color="textSecondary">
+      <ThemedText variant="caption" color="textSecondary" style={{ marginTop: spacing.xs }}>
         {label}
       </ThemedText>
     </Card>
@@ -63,17 +64,27 @@ const severityColors: Record<string, string> = {
 function QuickActions({ colors, electionId }: { colors: typeof Colors.light; electionId?: string }) {
   return (
     <View>
-      <ThemedText variant="h3" style={{ marginHorizontal: spacing.md, marginTop: spacing.xl, marginBottom: spacing.sm }} minFontSize={16} maxFontSize={24}>
+      <ThemedText variant="h3" style={{ marginHorizontal: spacing.md, marginTop: spacing.xl, marginBottom: spacing.sm }} minFontSize={16} maxFontSize={22}>
         Quick Actions
       </ThemedText>
       <View style={{ flexDirection: 'row', gap: spacing.sm, marginHorizontal: spacing.md }}>
         <Card pressable style={styles.quickActionCard} onPress={() => router.push({ pathname: ROUTES.ELECTION_DETAIL, params: { id: electionId ?? 'e1' } })}>
-          <ThemedText variant="label" style={{ color: colors.primary, fontWeight: '600' }}>View Election</ThemedText>
-          <ThemedText variant="caption" color="textSecondary">Details & results</ThemedText>
+          <View style={[styles.quickActionIcon, { backgroundColor: colors.primary + '12' }]}>
+            <Ionicons name="document-text-outline" size={22} color={colors.primary} />
+          </View>
+          <View style={{ marginTop: spacing.sm }}>
+            <ThemedText variant="label" style={{ color: colors.primary, fontWeight: '700' }}>View Election</ThemedText>
+            <ThemedText variant="caption" color="textSecondary">Details & results</ThemedText>
+          </View>
         </Card>
         <Card pressable style={styles.quickActionCard} onPress={() => router.push(ROUTES.INCIDENT_REPORT)}>
-          <ThemedText variant="label" style={{ color: colors.accent, fontWeight: '600' }}>Report Issue</ThemedText>
-          <ThemedText variant="caption" color="textSecondary">File an incident</ThemedText>
+          <View style={[styles.quickActionIcon, { backgroundColor: colors.accent + '12' }]}>
+            <Ionicons name="warning-outline" size={22} color={colors.accent} />
+          </View>
+          <View style={{ marginTop: spacing.sm }}>
+            <ThemedText variant="label" style={{ color: colors.accent, fontWeight: '700' }}>Report Issue</ThemedText>
+            <ThemedText variant="caption" color="textSecondary">File an incident</ThemedText>
+          </View>
         </Card>
       </View>
     </View>
@@ -99,7 +110,10 @@ function WinnerCard({ candidates, results, colors }: { candidates: Candidate[]; 
 
   return (
     <Card style={[shadows.md, { marginTop: spacing.lg }]}>
-      <ThemedText variant="h3" style={{ marginBottom: spacing.sm }}>Leading Candidate</ThemedText>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.md }}>
+        <View style={[styles.sectionIndicator, { backgroundColor: colors.accent }]} />
+        <ThemedText variant="h3" style={{ flex: 1 }}>Leading Candidate</ThemedText>
+      </View>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
         <LinearGradient colors={gradientPresets.accent} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={[styles.winnerBadge, { borderRadius: radius.lg }]}>
           <ThemedText variant="xxl" style={{ color: '#fff', fontWeight: '700' }}>
@@ -107,7 +121,7 @@ function WinnerCard({ candidates, results, colors }: { candidates: Candidate[]; 
           </ThemedText>
         </LinearGradient>
         <View style={{ flex: 1 }}>
-          <ThemedText variant="body" style={{ fontWeight: '700' }}>{winner.fullName}</ThemedText>
+          <ThemedText variant="body" style={{ fontWeight: '700', fontSize: 17 }}>{winner.fullName}</ThemedText>
           <ThemedText variant="caption" color="textSecondary">
             {winner.partyName} ({winner.partyAcronym})
           </ThemedText>
@@ -140,8 +154,10 @@ function WatchCandidateCard({ candidates, colors }: { candidates: Candidate[]; c
     return (
       <Card pressable style={[shadows.sm, { marginTop: spacing.lg }]} onPress={() => setExpanded(true)}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
-          <Ionicons name="eye-outline" size={22} color={colors.primary} />
-          <View>
+          <View style={[styles.puIcon, { backgroundColor: colors.primary + '12' }]}>
+            <Ionicons name="eye-outline" size={22} color={colors.primary} />
+          </View>
+          <View style={{ flex: 1 }}>
             <ThemedText variant="body" style={{ fontWeight: '600' }}>Watch a Candidate</ThemedText>
             <ThemedText variant="caption" color="textSecondary">Track your preferred candidate</ThemedText>
           </View>
@@ -153,8 +169,10 @@ function WatchCandidateCard({ candidates, colors }: { candidates: Candidate[]; c
 
   return (
     <Card style={[shadows.sm, { marginTop: spacing.lg }]}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: expanded ? spacing.sm : 0 }}>
-        <Ionicons name={watched ? 'eye' : 'eye-outline'} size={22} color={colors.primary} />
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: expanded ? spacing.md : 0 }}>
+        <View style={[styles.puIcon, { backgroundColor: colors.primary + '12' }]}>
+          <Ionicons name={watched ? 'eye' : 'eye-outline'} size={22} color={colors.primary} />
+        </View>
         <ThemedText variant="body" style={{ fontWeight: '600', flex: 1 }}>
           {watched ? `Watching: ${watched.fullName}` : 'Watch a Candidate'}
         </ThemedText>
@@ -259,8 +277,8 @@ export default function DashboardScreen() {
         </View>
 
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: spacing.md, gap: spacing.md, marginTop: spacing.lg }} keyboardShouldPersistTaps="handled">
-          <StatCard icon="🗳" label="Total Elections" value={String(elections.length)} gradient={gradientPresets.primary} />
-          <StatCard icon="⚠" label="Open Incidents" value={String(recentIncidents.length)} gradient={gradientPresets.accent} />
+          <StatCard icon="🗳" label="Total Elections" value={String(elections.length)} gradient={gradientPresets.primary} colors={colors} />
+          <StatCard icon="⚠" label="Open Incidents" value={String(recentIncidents.length)} gradient={gradientPresets.accent} colors={colors} />
         </ScrollView>
 
         {(isFieldAgent || isPollingAgent) && (
@@ -360,7 +378,10 @@ export default function DashboardScreen() {
 
             {puDetails.incidents.length > 0 && (
               <Card style={[shadows.md, { padding: spacing.md, marginBottom: spacing.sm }]}>
-                <ThemedText variant="h3" style={{ marginBottom: spacing.sm }} minFontSize={16} maxFontSize={22}>Incidents at this PU</ThemedText>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.md }}>
+                  <View style={[styles.sectionIndicator, { backgroundColor: colors.critical }]} />
+                  <ThemedText variant="h3" style={{ flex: 1 }} minFontSize={16} maxFontSize={22}>Incidents at this PU</ThemedText>
+                </View>
                 {puDetails.incidents.map((inc) => (
                   <View key={inc.id} style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.xs }}>
                     <View style={[styles.severityDot, { backgroundColor: colors[severityColors[inc.severity] as keyof typeof Colors.light] as any }]} />
@@ -380,11 +401,14 @@ export default function DashboardScreen() {
 
         {!isFieldAgent && !isPollingAgent && (
           <View style={{ marginHorizontal: spacing.md, marginTop: spacing.lg }}>
-            <ThemedText variant="h3" style={{ marginBottom: spacing.sm }} minFontSize={16} maxFontSize={22}>Reporting Progress</ThemedText>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.sm }}>
+              <View style={[styles.sectionIndicator, { backgroundColor: colors.primary }]} />
+              <ThemedText variant="h3" style={{ flex: 1 }} minFontSize={16} maxFontSize={22}>Reporting Progress</ThemedText>
+            </View>
             <Card style={[shadows.md]}>
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: spacing.xs }}>
-                <ThemedText variant="body">{totalReportingPUs.toLocaleString()} / {totalPUs.toLocaleString()} Polling Units</ThemedText>
-                <ThemedText variant="caption" color="textSecondary">{reportingPct}%</ThemedText>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: spacing.sm }}>
+                <ThemedText variant="body" style={{ fontWeight: '500' }}>{totalReportingPUs.toLocaleString()} / {totalPUs.toLocaleString()} Polling Units</ThemedText>
+                <ThemedText variant="caption" color="textSecondary" style={{ fontWeight: '600' }}>{reportingPct}%</ThemedText>
               </View>
               <View style={[styles.progressTrack, { backgroundColor: colors.border }]}>
                 <View style={[styles.progressFill, { width: `${reportingPct}%`, backgroundColor: colors.primary }]} />
@@ -399,7 +423,10 @@ export default function DashboardScreen() {
 
         {isFieldAgent && (
           <View style={{ marginHorizontal: spacing.md, marginTop: spacing.lg }}>
-            <ThemedText variant="h3" style={{ marginBottom: spacing.sm }} minFontSize={16} maxFontSize={22}>Your Locations</ThemedText>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.sm }}>
+              <View style={[styles.sectionIndicator, { backgroundColor: colors.primary }]} />
+              <ThemedText variant="h3" style={{ flex: 1 }} minFontSize={16} maxFontSize={22}>Your Locations</ThemedText>
+            </View>
             <ThemedText variant="body" color="textSecondary" style={{ marginBottom: spacing.md }}>
               Results aggregated across all your assigned polling units
             </ThemedText>
@@ -435,12 +462,19 @@ export default function DashboardScreen() {
         ) : (
           elections.map((election) => (
             <Card key={election.id} pressable onPress={() => router.push({ pathname: ROUTES.ELECTION_DETAIL, params: { id: election.id } })} style={[shadows.sm, { marginBottom: spacing.sm }]}>
-              <ThemedText variant="body" style={{ fontWeight: '600' }}>
-                {election.position} - {election.electoralArea}
-              </ThemedText>
-              <ThemedText variant="caption" color="textSecondary" style={{ marginTop: spacing.xs }}>
-                {election.electionDate} · {election.status}
-              </ThemedText>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.xs }}>
+                <View style={[styles.electionIcon, { backgroundColor: colors.primary + '12' }]}>
+                  <Ionicons name="calendar-outline" size={18} color={colors.primary} />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <ThemedText variant="body" style={{ fontWeight: '600' }}>
+                    {election.position} - {election.electoralArea}
+                  </ThemedText>
+                  <ThemedText variant="caption" color="textSecondary" style={{ marginTop: spacing.xs }}>
+                    {election.electionDate} · {election.status}
+                  </ThemedText>
+                </View>
+              </View>
             </Card>
           ))
         )}
@@ -483,9 +517,9 @@ export default function DashboardScreen() {
 }
 
 const styles = StyleSheet.create({
-  welcomeWrap: { marginHorizontal: spacing.md, marginTop: spacing.md, borderRadius: radius.lg, overflow: 'hidden' },
-  welcomeGradient: { paddingVertical: spacing.lg, paddingHorizontal: spacing.lg },
-  statCard: { width: sizes.statCard, padding: spacing.md, borderRadius: radius.lg },
+  welcomeWrap: { marginHorizontal: spacing.md, marginTop: spacing.md, borderRadius: radius.xl, overflow: 'hidden' },
+  welcomeGradient: { paddingVertical: spacing.xxl, paddingHorizontal: spacing.lg },
+  statCard: { width: sizes.statCard, padding: spacing.lg, borderRadius: radius.lg },
   gradientIconWrap: { overflow: 'hidden' },
   gradientIconBg: { width: 48, height: 48, borderRadius: radius.md, alignItems: 'center', justifyContent: 'center' },
   progressTrack: { height: spacing.sm, borderRadius: radius.sm, overflow: 'hidden' },
@@ -493,8 +527,11 @@ const styles = StyleSheet.create({
   severityDot: { width: spacing.sm, height: spacing.sm, borderRadius: radius.sm },
   severityBadge: { paddingHorizontal: spacing.sm, paddingVertical: spacing.xs, borderRadius: radius.full },
   row: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
-  quickActionCard: { flex: 1 },
+  quickActionCard: { flex: 1, padding: spacing.md },
+  quickActionIcon: { width: 40, height: 40, borderRadius: radius.md, alignItems: 'center', justifyContent: 'center' },
   puIcon: { width: 40, height: 40, borderRadius: radius.full, alignItems: 'center', justifyContent: 'center' },
   winnerBadge: { width: 48, height: 48, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
   statusDot: { width: spacing.sm, height: spacing.sm, borderRadius: radius.full },
+  sectionIndicator: { width: 4, height: 16, borderRadius: radius.full },
+  electionIcon: { width: 36, height: 36, borderRadius: radius.md, alignItems: 'center', justifyContent: 'center' },
 });
