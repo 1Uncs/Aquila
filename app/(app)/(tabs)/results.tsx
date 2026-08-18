@@ -117,7 +117,7 @@ export default function ResultsScreen() {
               <ThemedText variant="h3" style={{ flex: 1 }} minFontSize={16} maxFontSize={22}>Recent Results</ThemedText>
             </View>
             {loading ? (
-              <View>
+              <View style={{ gap: spacing.md, paddingBottom: spacing.md }}>
                 <SkeletonCard />
                 <SkeletonCard />
                 <SkeletonCard />

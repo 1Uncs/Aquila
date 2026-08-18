@@ -99,7 +99,7 @@ export default function LoginScreen() {
                 autoCapitalize="none"
                 keyboardType="email-address"
                 leftIcon="mail-outline"
-                style={{ marginBottom: spacing.md }}
+                containerStyle={{ marginBottom: spacing.md }}
               />
 
               <Input

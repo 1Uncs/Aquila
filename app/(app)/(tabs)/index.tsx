@@ -455,7 +455,7 @@ export default function DashboardScreen() {
           Upcoming Elections
         </ThemedText>
         {loading ? (
-          <View>
+          <View style={{ gap: spacing.md, paddingBottom: spacing.md }}>
             <SkeletonCard />
             <SkeletonCard />
             <SkeletonCard />
@@ -463,23 +463,25 @@ export default function DashboardScreen() {
         ) : elections.length === 0 ? (
           <EmptyState icon="calendar-outline" title="No Elections" subtitle="No elections configured yet" />
         ) : (
-          elections.map((election) => (
-            <Card key={election.id} pressable onPress={() => router.push({ pathname: ROUTES.ELECTION_DETAIL, params: { id: election.id } })} style={[shadows.sm, { marginBottom: spacing.md }]}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.xs }}>
-                <View style={[styles.electionIcon, { backgroundColor: colors.primary + '12' }]}>
-                  <Ionicons name="calendar-outline" size={18} color={colors.primary} />
+          <View style={{ gap: spacing.md }}>
+            {elections.map((election) => (
+              <Card key={election.id} pressable onPress={() => router.push({ pathname: ROUTES.ELECTION_DETAIL, params: { id: election.id } })} style={shadows.sm}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.xs }}>
+                  <View style={[styles.electionIcon, { backgroundColor: colors.primary + '12' }]}>
+                    <Ionicons name="calendar-outline" size={18} color={colors.primary} />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <ThemedText variant="body" style={{ fontWeight: '600' }}>
+                      {election.position} - {election.electoralArea}
+                    </ThemedText>
+                    <ThemedText variant="caption" color="textSecondary" style={{ marginTop: spacing.xs }}>
+                      {election.electionDate} · {election.status}
+                    </ThemedText>
+                  </View>
                 </View>
-                <View style={{ flex: 1 }}>
-                  <ThemedText variant="body" style={{ fontWeight: '600' }}>
-                    {election.position} - {election.electoralArea}
-                  </ThemedText>
-                  <ThemedText variant="caption" color="textSecondary" style={{ marginTop: spacing.xs }}>
-                    {election.electionDate} · {election.status}
-                  </ThemedText>
-                </View>
-              </View>
-            </Card>
-          ))
+              </Card>
+            ))}
+          </View>
         )}
 
         <ThemedText variant="h3" style={{ marginBottom: spacing.sm }} minFontSize={16} maxFontSize={22}>

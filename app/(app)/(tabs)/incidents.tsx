@@ -72,7 +72,7 @@ export default function IncidentsScreen() {
             </View>
 
             {loading ? (
-              <View>
+              <View style={{ gap: spacing.md, paddingBottom: spacing.md }}>
                 <SkeletonCard />
                 <SkeletonCard />
                 <SkeletonCard />

@@ -74,7 +74,7 @@ export default function ElectionsScreen() {
             </ScrollView>
 
             {loading ? (
-              <View>
+              <View style={{ gap: spacing.md, paddingBottom: spacing.md }}>
                 <SkeletonCard />
                 <SkeletonCard />
               </View>
