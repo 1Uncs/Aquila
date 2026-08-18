@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { StyleSheet, View } from 'react-native';
+import { useFocusEffect } from 'expo-router';
 import { FlashList } from '@shopify/flash-list';
 import { ScreenView } from '@/core/components/ScreenView';
 import { ThemedText, FlashListItem, EmptyState, Card, Button } from '@/core/components';
@@ -78,7 +79,7 @@ export default function LocationsScreen() {
     setDrillLevel(selectedSubUnit === 'wards' ? 'wards' : 'pus');
   };
 
-  const handleBack = () => {
+  const handleBack = useCallback(() => {
     if (drillLevel === 'wards' || drillLevel === 'pus') {
       setDrillLevel('subUnits');
       setSelectedLgaId(null);
@@ -92,7 +93,17 @@ export default function LocationsScreen() {
       setSelectedStateName(null);
       setSelectedSubUnit(null);
     }
-  };
+  }, [drillLevel, setDrillLevel, setSelectedStateId, setSelectedStateName, setSelectedLgaId, setSelectedSubUnit]);
+
+  useFocusEffect(
+    useCallback(() => {
+      return () => {
+        if (drillLevel !== 'states') {
+          handleBack();
+        }
+      };
+    }, [drillLevel, handleBack])
+  );
 
   const SUB_UNITS: SubUnitItem[] = [
     { type: 'lgas', icon: 'map-outline', label: 'LGAs / Area Councils', sub: 'Local Government Areas' },
@@ -131,9 +142,6 @@ export default function LocationsScreen() {
         ListHeaderComponent={
           <View>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.sm }}>
-              {(drillLevel as string) !== 'states' ? (
-                <Button label="Back" variant="ghost" size="sm" onPress={handleBack} leftIcon="arrow-back" />
-              ) : null}
               <View style={[styles.titleIndicator, { backgroundColor: colors.primary }]} />
               <ThemedText variant="h2" style={{ flex: 1, marginBottom: 0 }}>Electoral Geography</ThemedText>
             </View>
