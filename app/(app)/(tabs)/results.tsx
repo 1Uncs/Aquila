@@ -152,7 +152,7 @@ export default function ResultsScreen() {
 }
 
 const styles = StyleSheet.create({
-  statCard: { width: sizes.statCard, padding: spacing.lg, borderRadius: radius.lg },
+  statCard: { width: sizes.statCard },
   gradientIconWrap: { overflow: 'hidden', alignSelf: 'flex-start' },
   gradientIconBg: { width: 48, height: 48, borderRadius: radius.md, alignItems: 'center', justifyContent: 'center' },
   actionBtn: { flex: 1 },

@@ -524,7 +524,7 @@ export default function DashboardScreen() {
 const styles = StyleSheet.create({
   welcomeWrap: { marginTop: spacing.md, borderRadius: radius.xl, overflow: 'hidden' },
   welcomeGradient: { paddingVertical: spacing.xxl, paddingHorizontal: spacing.lg },
-  statCard: { width: sizes.statCard, padding: spacing.lg, borderRadius: radius.lg },
+  statCard: { width: sizes.statCard },
   gradientIconWrap: { overflow: 'hidden' },
   gradientIconBg: { width: 48, height: 48, borderRadius: radius.md, alignItems: 'center', justifyContent: 'center' },
   progressTrack: { height: spacing.sm, borderRadius: radius.sm, overflow: 'hidden' },

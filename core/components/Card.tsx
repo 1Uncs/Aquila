@@ -69,11 +69,7 @@ export function Card({
 
   if (pressable && onPress) {
     return (
-      <AnimatedCard
-        onPress={onPress}
-        accessibilityLabel={accessibilityLabel}
-        testID={testID}
-      >
+      <AnimatedCard onPress={onPress} accessibilityLabel={accessibilityLabel} testID={testID}>
         <View style={cardStyle} accessible accessibilityRole="button" accessibilityLabel={accessibilityLabel}>
           {children}
         </View>
@@ -140,8 +136,7 @@ function AnimatedCard({
       onPressOut={handlePressOut}
       testID={testID}
       style={({ pressed }: PressableStateCallbackType) => [
-        styles.card,
-        { backgroundColor: colors.surface },
+        { borderRadius: radius.md },
         pressed && { opacity: opacities.press },
         Platform.OS === 'android' && styles.androidRippleContainer,
       ]}
