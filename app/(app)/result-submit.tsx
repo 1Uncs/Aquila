@@ -163,7 +163,7 @@ export default function SubmitResultScreen() {
             <Button
               label="Select Polling Unit"
               variant="outline"
-              onPress={() => router.push({ pathname: '/pu-picker' as any, params: { mode: 'result', ...(electionId ? { electionId } : {}) } })}
+                       onPress={() => router.push({ pathname: ROUTES.PU_PICKER, params: { mode: 'result', ...(electionId ? { electionId } : {}) } })}
               style={{ marginBottom: spacing.md }}
               leftIcon="location-outline"
             />
@@ -180,7 +180,7 @@ export default function SubmitResultScreen() {
                       label="Change"
                       size="sm"
                       variant="ghost"
-                      onPress={() => router.push({ pathname: '/pu-picker' as any, params: { mode: 'result', ...(electionId ? { electionId } : {}) } })}
+              onPress={() => router.push({ pathname: ROUTES.PU_PICKER, params: { mode: 'result', ...(electionId ? { electionId } : {}) } })}
                     />
                   )}
                 </View>

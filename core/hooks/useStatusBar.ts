@@ -11,9 +11,9 @@ type StatusBarConfig = {
 };
 
 export function useStatusBar(config: StatusBarConfig) {
+  const { barStyle = 'auto', hidden = false, translucent = false } = config;
   const scheme = _useRNColorScheme() ?? 'light';
   useEffect(() => {
-    const { barStyle = 'auto', hidden = false, translucent = false } = config;
     const resolvedStyle = barStyle === 'auto' ? (scheme === 'dark' ? 'light' : 'dark') : barStyle;
     setStatusBarStyle(resolvedStyle);
     setStatusBarHidden(hidden);
@@ -34,5 +34,5 @@ export function useStatusBar(config: StatusBarConfig) {
     return () => {
       subscription.remove();
     };
-  }, [config.barStyle, config.hidden, config.translucent, scheme, config]);
+  }, [barStyle, hidden, translucent, scheme]);
 }

@@ -22,7 +22,6 @@ export default function PartiesScreen() {
       <FlashList
         data={parties}
         keyExtractor={(item) => item.id}
-        removeClippedSubviews
         ListHeaderComponent={
           <View>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.sm }}>

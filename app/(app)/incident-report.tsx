@@ -12,6 +12,7 @@ import { spacing, shadows, radius } from '@/constants/tokens';
 import { IncidentCategory, IncidentSeverity } from '@/types';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
 import { useStatusBar } from '@/core/hooks/useStatusBar';
+import { ROUTES } from '@/constants/routes';
 import Colors from '@/constants/colors';
 
 const CATEGORIES = [
@@ -238,7 +239,7 @@ export default function ReportIncidentScreen() {
               label="Select Polling Unit"
               variant="outline"
               size="sm"
-              onPress={() => router.push({ pathname: '/pu-picker' as any, params: { mode: 'incident', ...(electionId ? { electionId } : {}) } })}
+              onPress={() => router.push({ pathname: ROUTES.PU_PICKER, params: { mode: 'incident', ...(electionId ? { electionId } : {}) } })}
               style={{ marginHorizontal: spacing.md, marginBottom: spacing.md }}
               leftIcon="location-outline"
             />

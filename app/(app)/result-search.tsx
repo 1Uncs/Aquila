@@ -25,7 +25,6 @@ export default function ResultSearchScreen() {
       <FlashList
         data={filtered}
         keyExtractor={(item) => item.id}
-        removeClippedSubviews
         ListHeaderComponent={
           <View>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.sm }}>

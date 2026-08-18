@@ -53,7 +53,6 @@ export default function ElectionDetailScreen() {
       <FlashList
         data={candidates}
         keyExtractor={(item) => item.id}
-        removeClippedSubviews
         ListHeaderComponent={
           <View>
             <LinearGradient

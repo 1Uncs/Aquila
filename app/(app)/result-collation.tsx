@@ -45,7 +45,6 @@ export default function CollationScreen() {
       <FlashList
         data={ranked}
         keyExtractor={(item) => item.candId}
-        removeClippedSubviews
         ListHeaderComponent={
           <View>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.sm, marginHorizontal: spacing.md, marginTop: spacing.md }}>

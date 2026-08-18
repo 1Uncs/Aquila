@@ -128,7 +128,6 @@ export default function LocationsScreen() {
       <FlashList
         data={drillLevel === 'states' ? SUB_UNITS : listData as DrillItem[]}
         keyExtractor={(item: any) => 'label' in item ? item.label : item.id}
-        removeClippedSubviews
         ListHeaderComponent={
           <View>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.sm }}>

@@ -1,7 +1,6 @@
 import { enableScreens } from 'react-native-screens';
 import React, { useEffect, useRef, useState } from 'react';
-import { StyleSheet, Platform } from 'react-native';
-import { InteractionManager } from 'react-native';
+import { StyleSheet } from 'react-native';
 import * as SplashScreen from 'expo-splash-screen';
 import { useFonts } from 'expo-font';
 import { Stack, useRouter, useSegments, useRootNavigationState } from 'expo-router';
@@ -76,6 +75,9 @@ function RootLayoutNav() {
   const [isNavigationReady, setIsNavigationReady] = useState(false);
   const lastTargetRef = useRef<string | null>(null);
   const seededRef = useRef(false);
+  const prevAuthRef = useRef(isAuthenticated);
+  const segmentsRef = useRef(segments);
+  segmentsRef.current = segments;
 
   useEffect(() => {
     if (navigationState?.key) {
@@ -238,55 +240,28 @@ function RootLayoutNav() {
 
   useEffect(() => {
     if (!isNavigationReady) return;
+    const prevAuth = prevAuthRef.current;
+    prevAuthRef.current = isAuthenticated;
+    if (prevAuth === isAuthenticated) return;
+
+    const inAuthGroup = segmentsRef.current[0] === '(auth)';
     const target = !isAuthenticated
       ? '/(auth)/login'
-      : isAuthenticated && segments[0] === '(auth)'
-        ? '/(tabs)'
+      : isAuthenticated && inAuthGroup
+        ? '/(app)/(tabs)'
         : null;
+
     if (!target || lastTargetRef.current === target) return;
     lastTargetRef.current = target;
-    const task = InteractionManager.runAfterInteractions(() => {
-      const inAuthGroup = segments[0] === '(auth)';
-      if (!isAuthenticated && !inAuthGroup) {
-        router.replace('/(auth)/login' as any);
-      } else if (isAuthenticated && inAuthGroup) {
-        router.replace('/(tabs)' as any);
-      }
-    });
-    return () => task.cancel();
-  }, [segments, isNavigationReady, isAuthenticated, router]);
+    router.replace(target as any);
+  }, [isNavigationReady, isAuthenticated, router]);
 
   return (
     <Stack>
       <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      <Stack.Screen name="election-detail" options={pushOptions('Election Details')} />
-      <Stack.Screen name="result-submit" options={pushOptions('Submit Result')} />
-      <Stack.Screen name="result-collation" options={pushOptions('Result Collation')} />
-      <Stack.Screen name="result-search" options={pushOptions('Search Results')} />
-      <Stack.Screen name="incident-report" options={pushOptions('Report Incident')} />
-      <Stack.Screen name="incident-search" options={pushOptions('Search Incidents')} />
-      <Stack.Screen name="result-drafts" options={pushOptions('Drafts')} />
-      <Stack.Screen name="pu-picker" options={pushOptions('Select Polling Unit')} />
-      <Stack.Screen name="locations" options={pushOptions('Locations')} />
-      <Stack.Screen name="parties" options={pushOptions('Political Parties')} />
+      <Stack.Screen name="(app)" options={{ headerShown: false }} />
     </Stack>
   );
-}
-
-function pushOptions(title: string) {
-  return {
-    headerShown: true,
-    title,
-    headerBackTitle: 'Back',
-    ...(Platform.OS === 'ios'
-      ? {
-          headerTransparent: true,
-          headerShadowVisible: false,
-          headerBackButtonDisplayMode: 'minimal' as const,
-        }
-      : {}),
-  };
 }
 
 const styles = StyleSheet.create({
