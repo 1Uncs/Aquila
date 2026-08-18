@@ -224,11 +224,11 @@ export default function ReportIncidentScreen() {
             leftIcon="location-outline"
           />
 
-          <ThemedText variant="label" style={{ marginHorizontal: spacing.md, marginBottom: spacing.xs, marginTop: spacing.md }}>
+          <ThemedText variant="label" style={{ marginBottom: spacing.xs, marginTop: spacing.md }}>
             Tie to Polling Unit (optional)
           </ThemedText>
           {selectedPuId ? (
-            <Card style={[shadows.sm, { marginHorizontal: spacing.md, marginBottom: spacing.md, padding: spacing.md }]}>
+            <Card style={[shadows.sm, { marginBottom: spacing.md }]}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
                 <ThemedText variant="body" style={{ fontWeight: '600', flex: 1 }}>{selectedPuName}</ThemedText>
                 <Button label="Remove" size="sm" variant="ghost" onPress={() => { setSelectedPuId(''); setSelectedPuName(''); }} />
@@ -240,15 +240,15 @@ export default function ReportIncidentScreen() {
               variant="outline"
               size="sm"
               onPress={() => router.push({ pathname: ROUTES.PU_PICKER, params: { mode: 'incident', ...(electionId ? { electionId } : {}) } })}
-              style={{ marginHorizontal: spacing.md, marginBottom: spacing.md }}
+              style={{ marginBottom: spacing.md }}
               leftIcon="location-outline"
             />
           )}
 
-          <ThemedText variant="label" style={{ marginHorizontal: spacing.md, marginBottom: spacing.sm }}>
+          <ThemedText variant="label" style={{ marginBottom: spacing.sm }}>
             Category
           </ThemedText>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: spacing.md, gap: spacing.sm, marginBottom: spacing.lg }} keyboardShouldPersistTaps="handled">
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: spacing.sm, marginBottom: spacing.lg }} keyboardShouldPersistTaps="handled">
             {CATEGORIES.map((cat) => (
               <Button
                 key={cat}
@@ -260,10 +260,10 @@ export default function ReportIncidentScreen() {
             ))}
           </ScrollView>
 
-          <ThemedText variant="label" style={{ marginHorizontal: spacing.md, marginBottom: spacing.sm }}>
+          <ThemedText variant="label" style={{ marginBottom: spacing.sm }}>
             Severity
           </ThemedText>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: spacing.md, gap: spacing.sm, marginBottom: spacing.lg }} keyboardShouldPersistTaps="handled">
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: spacing.sm, marginBottom: spacing.lg }} keyboardShouldPersistTaps="handled">
             {SEVERITIES.map((sev) => (
               <Button
                 key={sev}
@@ -285,18 +285,18 @@ export default function ReportIncidentScreen() {
             containerStyle={{ minHeight: 120 }}
           />
 
-          <ThemedText variant="label" style={{ marginHorizontal: spacing.md, marginTop: spacing.lg, marginBottom: spacing.sm }}>
+          <ThemedText variant="label" style={{ marginTop: spacing.lg, marginBottom: spacing.sm }}>
             Attach Media
           </ThemedText>
 
-          <View style={{ flexDirection: 'row', gap: spacing.sm, marginHorizontal: spacing.md, marginBottom: spacing.md, flexWrap: 'wrap', alignItems: 'center' }}>
+          <View style={{ flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.md, flexWrap: 'wrap', alignItems: 'center' }}>
             <Button label="Photo" variant="outline" size="sm" onPress={handleTakePhoto} leftIcon="camera" style={{ minWidth: 80 }} />
             <Button label="Gallery" variant="outline" size="sm" onPress={handleAddPhoto} leftIcon="image" style={{ minWidth: 80 }} />
             <Button label="Video" variant="outline" size="sm" onPress={handleRecordVideo} leftIcon="videocam" style={{ minWidth: 80 }} />
             <Button label="Audio" variant="outline" size="sm" onPress={handleAttachAudio} leftIcon="musical-notes-outline" style={{ minWidth: 80 }} />
           </View>
 
-          <View style={{ flexDirection: 'row', gap: spacing.sm, marginHorizontal: spacing.md, marginBottom: spacing.md, flexWrap: 'wrap', alignItems: 'center' }}>
+          <View style={{ flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.md, flexWrap: 'wrap', alignItems: 'center' }}>
             <Button
               label={isRecording ? 'Stop Recording' : 'Record Memo'}
               variant={isRecording ? 'primary' : 'outline'}
@@ -317,7 +317,7 @@ export default function ReportIncidentScreen() {
           </View>
 
           {mediaUris.length > 0 && (
-            <View style={{ marginHorizontal: spacing.md, marginBottom: spacing.md }}>
+            <View style={{ marginBottom: spacing.md }}>
               <ThemedText variant="caption" color="textSecondary" style={{ marginBottom: spacing.xs }}>
                 {mediaUris.length} file{mediaUris.length !== 1 ? 's' : ''} attached
               </ThemedText>
@@ -334,7 +334,7 @@ export default function ReportIncidentScreen() {
             </View>
           )}
 
-          <View style={{ flexDirection: 'row', gap: spacing.md, marginHorizontal: spacing.md, marginTop: spacing.lg }}>
+          <View style={{ flexDirection: 'row', gap: spacing.md, marginTop: spacing.lg }}>
             <Button label="Cancel" variant="outline" onPress={() => router.back()} fullWidth />
             <Button label="Submit" onPress={handleSubmit} loading={submitting} fullWidth />
           </View>

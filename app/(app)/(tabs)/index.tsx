@@ -65,10 +65,10 @@ const severityColors: Record<string, string> = {
 function QuickActions({ colors, electionId }: { colors: typeof Colors.light; electionId?: string }) {
   return (
     <View>
-      <ThemedText variant="h3" style={{ marginHorizontal: spacing.md, marginTop: spacing.xl, marginBottom: spacing.sm }} minFontSize={16} maxFontSize={22}>
+      <ThemedText variant="h3" style={{ marginBottom: spacing.sm }} minFontSize={16} maxFontSize={22}>
         Quick Actions
       </ThemedText>
-      <View style={{ flexDirection: 'row', gap: spacing.sm, marginHorizontal: spacing.md }}>
+      <View style={{ flexDirection: 'row', gap: spacing.sm }}>
         <Card pressable style={styles.quickActionCard} onPress={() => router.push({ pathname: ROUTES.ELECTION_DETAIL, params: { id: electionId ?? 'e1' } })}>
           <View style={[styles.quickActionIcon, { backgroundColor: colors.primary + '12' }]}>
             <Ionicons name="document-text-outline" size={22} color={colors.primary} />
@@ -110,7 +110,7 @@ function WinnerCard({ candidates, results, colors }: { candidates: Candidate[]; 
   if (!winner || winner.total === 0) return null;
 
   return (
-    <Card style={[shadows.md, { marginTop: spacing.lg }]}>
+    <Card style={shadows.md}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.md }}>
         <View style={[styles.sectionIndicator, { backgroundColor: colors.accent }]} />
         <ThemedText variant="h3" style={{ flex: 1 }}>Leading Candidate</ThemedText>
@@ -122,7 +122,7 @@ function WinnerCard({ candidates, results, colors }: { candidates: Candidate[]; 
           </ThemedText>
         </LinearGradient>
         <View style={{ flex: 1 }}>
-          <ThemedText variant="body" style={{ fontWeight: '700', fontSize: 17 }}>{winner.fullName}</ThemedText>
+          <ThemedText variant="body" style={{ fontWeight: '700' }}>{winner.fullName}</ThemedText>
           <ThemedText variant="caption" color="textSecondary">
             {winner.partyName} ({winner.partyAcronym})
           </ThemedText>
@@ -153,7 +153,7 @@ function WatchCandidateCard({ candidates, colors }: { candidates: Candidate[]; c
 
   if (!expanded && !watched) {
     return (
-      <Card pressable style={[shadows.sm, { marginTop: spacing.lg }]} onPress={() => setExpanded(true)}>
+      <Card pressable style={shadows.sm} onPress={() => setExpanded(true)}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
           <View style={[styles.puIcon, { backgroundColor: colors.primary + '12' }]}>
             <Ionicons name="eye-outline" size={22} color={colors.primary} />
@@ -169,7 +169,7 @@ function WatchCandidateCard({ candidates, colors }: { candidates: Candidate[]; c
   }
 
   return (
-    <Card style={[shadows.sm, { marginTop: spacing.lg }]}>
+    <Card style={shadows.sm}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: expanded ? spacing.md : 0 }}>
         <View style={[styles.puIcon, { backgroundColor: colors.primary + '12' }]}>
           <Ionicons name={watched ? 'eye' : 'eye-outline'} size={22} color={colors.primary} />
@@ -267,7 +267,7 @@ export default function DashboardScreen() {
 
   return (
     <ScreenView scrollable keyboardShouldPersistTaps="handled" refreshControl={refreshControl}>
-      <View style={{ paddingBottom: spacing.xxl }}>
+      <View style={{ paddingBottom: spacing.xxl, gap: spacing.screen.sectionGap }}>
         <View style={styles.welcomeWrap}>
           <LinearGradient colors={[...gradientPresets.primary]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.welcomeGradient}>
             <ThemedText variant="xl" style={{ color: '#fff', fontWeight: '700', marginBottom: spacing.xs }} minFontSize={18} maxFontSize={26}>
@@ -279,18 +279,18 @@ export default function DashboardScreen() {
           </LinearGradient>
         </View>
 
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: spacing.md, gap: spacing.md, marginTop: spacing.lg }} keyboardShouldPersistTaps="handled">
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: spacing.md }} keyboardShouldPersistTaps="handled">
           <StatCard icon="🗳" label="Total Elections" value={String(elections.length)} gradient={gradientPresets.primary} colors={colors} />
           <StatCard icon="⚠" label="Open Incidents" value={String(recentIncidents.length)} gradient={gradientPresets.accent} colors={colors} />
         </ScrollView>
 
         {(isFieldAgent || isPollingAgent) && (
-          <View style={{ marginHorizontal: spacing.md, marginTop: spacing.lg }}>
+          <View>
             <ThemedText variant="label" style={{ marginBottom: spacing.xs }}>
               {isPollingAgent ? 'Your Polling Unit' : 'Your Polling Unit'}
             </ThemedText>
             {selectedPollingUnitId && puDetails ? (
-              <Card style={[shadows.md, { padding: spacing.md }]}>
+              <Card style={shadows.md}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
                   <View style={[styles.puIcon, { backgroundColor: colors.accent + '20' }]}>
                     <Ionicons name="location" size={20} color={colors.accent} />
@@ -328,9 +328,9 @@ export default function DashboardScreen() {
         )}
 
         {puDetails && (
-          <View style={{ marginHorizontal: spacing.md, marginTop: spacing.lg }}>
+          <View>
             <ThemedText variant="h3" style={{ marginBottom: spacing.sm }} minFontSize={16} maxFontSize={22}>{puDetails.name}</ThemedText>
-            <Card style={[shadows.md, { padding: spacing.md, marginBottom: spacing.sm }]}>
+            <Card style={[shadows.md, { marginBottom: spacing.md }]}>
               <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginBottom: spacing.sm }}>
                 <View style={{ backgroundColor: colors.accent + '18', paddingHorizontal: spacing.sm, paddingVertical: spacing.xs, borderRadius: radius.full }}>
                   <ThemedText variant="caption" style={{ color: colors.primary, fontWeight: '600' }}>{puDetails.code}</ThemedText>
@@ -355,7 +355,7 @@ export default function DashboardScreen() {
             </Card>
 
             {puDetails.result && (
-              <Card style={[shadows.md, { padding: spacing.md, marginBottom: spacing.sm }]}>
+              <Card style={[shadows.md, { marginBottom: spacing.md }]}>
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: spacing.sm }}>
                   <ThemedText variant="h3" style={{ marginBottom: 0 }} minFontSize={16} maxFontSize={22}>Results</ThemedText>
                   <View style={{ flexDirection: 'row', gap: spacing.sm, alignItems: 'center' }}>
@@ -380,7 +380,7 @@ export default function DashboardScreen() {
             )}
 
             {puDetails.incidents.length > 0 && (
-              <Card style={[shadows.md, { padding: spacing.md, marginBottom: spacing.sm }]}>
+              <Card style={[shadows.md, { marginBottom: spacing.md }]}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.md }}>
                   <View style={[styles.sectionIndicator, { backgroundColor: colors.critical }]} />
                   <ThemedText variant="h3" style={{ flex: 1 }} minFontSize={16} maxFontSize={22}>Incidents at this PU</ThemedText>
@@ -403,7 +403,7 @@ export default function DashboardScreen() {
         )}
 
         {!isFieldAgent && !isPollingAgent && (
-          <View style={{ marginHorizontal: spacing.md, marginTop: spacing.lg }}>
+          <View>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.sm }}>
               <View style={[styles.sectionIndicator, { backgroundColor: colors.primary }]} />
               <ThemedText variant="h3" style={{ flex: 1 }} minFontSize={16} maxFontSize={22}>Reporting Progress</ThemedText>
@@ -425,7 +425,7 @@ export default function DashboardScreen() {
         <WatchCandidateCard candidates={candidates} colors={colors} />
 
         {isFieldAgent && (
-          <View style={{ marginHorizontal: spacing.md, marginTop: spacing.lg }}>
+          <View>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.sm }}>
               <View style={[styles.sectionIndicator, { backgroundColor: colors.primary }]} />
               <ThemedText variant="h3" style={{ flex: 1 }} minFontSize={16} maxFontSize={22}>Your Locations</ThemedText>
@@ -437,7 +437,7 @@ export default function DashboardScreen() {
               <EmptyState icon="location-outline" title="No Results" subtitle="No results for your assigned locations yet" />
             ) : (
               allResults.slice(0, 5).map((r) => (
-                <Card key={r.id} style={[shadows.sm, { marginBottom: spacing.sm }]}>
+                <Card key={r.id} style={[shadows.sm, { marginBottom: spacing.md }]}>
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                     <View>
                       <ThemedText variant="body" style={{ fontWeight: '600' }}>{r.pollingUnitName}</ThemedText>
@@ -451,11 +451,11 @@ export default function DashboardScreen() {
           </View>
         )}
 
-        <ThemedText variant="h3" style={{ marginHorizontal: spacing.md, marginTop: spacing.xl, marginBottom: spacing.sm }} minFontSize={16} maxFontSize={22}>
+        <ThemedText variant="h3" style={{ marginBottom: spacing.sm }} minFontSize={16} maxFontSize={22}>
           Upcoming Elections
         </ThemedText>
         {loading ? (
-          <View style={{ paddingHorizontal: spacing.md }}>
+          <View>
             <SkeletonCard />
             <SkeletonCard />
             <SkeletonCard />
@@ -464,7 +464,7 @@ export default function DashboardScreen() {
           <EmptyState icon="calendar-outline" title="No Elections" subtitle="No elections configured yet" />
         ) : (
           elections.map((election) => (
-            <Card key={election.id} pressable onPress={() => router.push({ pathname: ROUTES.ELECTION_DETAIL, params: { id: election.id } })} style={[shadows.sm, { marginBottom: spacing.sm }]}>
+            <Card key={election.id} pressable onPress={() => router.push({ pathname: ROUTES.ELECTION_DETAIL, params: { id: election.id } })} style={[shadows.sm, { marginBottom: spacing.md }]}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.xs }}>
                 <View style={[styles.electionIcon, { backgroundColor: colors.primary + '12' }]}>
                   <Ionicons name="calendar-outline" size={18} color={colors.primary} />
@@ -482,7 +482,7 @@ export default function DashboardScreen() {
           ))
         )}
 
-        <ThemedText variant="h3" style={{ marginHorizontal: spacing.md, marginTop: spacing.xl, marginBottom: spacing.sm }} minFontSize={16} maxFontSize={22}>
+        <ThemedText variant="h3" style={{ marginBottom: spacing.sm }} minFontSize={16} maxFontSize={22}>
           Recent Incidents
         </ThemedText>
         {recentIncidents.length === 0 ? (
@@ -491,7 +491,7 @@ export default function DashboardScreen() {
           recentIncidents.map((incident) => {
             const sevKey = incident.severity === 'CRITICAL' ? 'CRITICAL' : incident.severity;
             return (
-              <Card key={incident.id} style={[shadows.sm, { marginBottom: spacing.sm }]}>
+              <Card key={incident.id} style={[shadows.sm, { marginBottom: spacing.md }]}>
                 <View style={styles.row}>
                   <View style={[styles.severityDot, { backgroundColor: colors[severityColors[sevKey] as keyof typeof Colors.light] as any }]} />
                   <View style={{ flex: 1 }}>
@@ -520,7 +520,7 @@ export default function DashboardScreen() {
 }
 
 const styles = StyleSheet.create({
-  welcomeWrap: { marginHorizontal: spacing.md, marginTop: spacing.md, borderRadius: radius.xl, overflow: 'hidden' },
+  welcomeWrap: { marginTop: spacing.md, borderRadius: radius.xl, overflow: 'hidden' },
   welcomeGradient: { paddingVertical: spacing.xxl, paddingHorizontal: spacing.lg },
   statCard: { width: sizes.statCard, padding: spacing.lg, borderRadius: radius.lg },
   gradientIconWrap: { overflow: 'hidden' },
@@ -530,7 +530,7 @@ const styles = StyleSheet.create({
   severityDot: { width: spacing.sm, height: spacing.sm, borderRadius: radius.sm },
   severityBadge: { paddingHorizontal: spacing.sm, paddingVertical: spacing.xs, borderRadius: radius.full },
   row: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
-  quickActionCard: { flex: 1, padding: spacing.md },
+  quickActionCard: { flex: 1 },
   quickActionIcon: { width: 40, height: 40, borderRadius: radius.md, alignItems: 'center', justifyContent: 'center' },
   puIcon: { width: 40, height: 40, borderRadius: radius.full, alignItems: 'center', justifyContent: 'center' },
   winnerBadge: { width: 48, height: 48, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },

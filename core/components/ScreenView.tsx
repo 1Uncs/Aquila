@@ -14,6 +14,7 @@ type ScreenViewProps = {
   noScrollPadding?: boolean;
   refreshControl?: React.ReactElement;
   skipAndroidTopPadding?: boolean;
+  sectionGap?: number;
 };
 
 export function ScreenView({
@@ -26,6 +27,7 @@ export function ScreenView({
   noScrollPadding = false,
   refreshControl,
   skipAndroidTopPadding = false,
+  sectionGap,
 }: ScreenViewProps) {
   const insets = useSafeAreaInsets();
   const scheme = useColorScheme() ?? 'light';
@@ -38,10 +40,12 @@ export function ScreenView({
     paddingBottom: Platform.OS === 'android' ? insets.bottom : 0,
   };
 
+  const resolvedSectionGap = sectionGap ?? spacing.screen.sectionGap;
+
   if (scrollable) {
     const scrollContentStyle = [
       styles.scrollContent,
-      noScrollPadding ? {} : { paddingHorizontal: spacing.md, paddingTop: spacing.md },
+      noScrollPadding ? {} : { paddingHorizontal: spacing.screen.paddingHorizontal, paddingTop: spacing.screen.padding },
       contentContainerStyle,
     ];
 
@@ -68,7 +72,15 @@ export function ScreenView({
 
   return (
     <View style={[baseStyle, style]} testID={testID}>
-      <View style={[noScrollPadding ? {} : { paddingHorizontal: spacing.md, paddingTop: spacing.md, flex: 1 }]}>
+      <View style={[
+        noScrollPadding ? {} : {
+          paddingHorizontal: spacing.screen.paddingHorizontal,
+          paddingTop: spacing.screen.padding,
+          flex: 1,
+          gap: resolvedSectionGap,
+        },
+        contentContainerStyle,
+      ]}>
         {children}
       </View>
     </View>
@@ -81,6 +93,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
-    paddingBottom: spacing.md,
+    paddingBottom: spacing.screen.padding,
+    gap: spacing.screen.sectionGap,
   },
 });

@@ -73,10 +73,10 @@ export default function PUPickerScreen() {
               containerStyle={{ marginBottom: spacing.md }}
             />
 
-            <ThemedText variant="label" style={{ marginHorizontal: spacing.md, marginBottom: spacing.sm }}>
+            <ThemedText variant="label" style={{ marginBottom: spacing.sm }}>
               Filter by LGA
             </ThemedText>
-            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.xs, marginHorizontal: spacing.md, marginBottom: spacing.lg }}>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.xs, marginBottom: spacing.lg }}>
               <Button
                 label="All"
                 size="sm"
@@ -125,7 +125,7 @@ export default function PUPickerScreen() {
             </FlashListItem>
           );
         }}
-        contentContainerStyle={{ paddingHorizontal: spacing.md, paddingBottom: spacing.xxl }}
+        contentContainerStyle={{ paddingBottom: spacing.xxl }}
       />
     </ScreenView>
   );

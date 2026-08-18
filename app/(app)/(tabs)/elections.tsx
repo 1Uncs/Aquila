@@ -74,7 +74,7 @@ export default function ElectionsScreen() {
             </ScrollView>
 
             {loading ? (
-              <View style={{ paddingHorizontal: spacing.md }}>
+              <View>
                 <SkeletonCard />
                 <SkeletonCard />
               </View>
@@ -120,7 +120,7 @@ export default function ElectionsScreen() {
             </FlashListItem>
           );
         }}
-        contentContainerStyle={{ paddingHorizontal: spacing.md, paddingBottom: spacing.xxl }}
+        contentContainerStyle={{ paddingBottom: spacing.xxl }}
       />
     </ScreenView>
   );
@@ -136,5 +136,5 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.xs,
     borderRadius: radius.full,
   },
-  titleIndicator: { width: 4, height: 16, borderRadius: radius.full, marginHorizontal: spacing.md },
+  titleIndicator: { width: 4, height: 16, borderRadius: radius.full, marginHorizontal: 0 },
 });

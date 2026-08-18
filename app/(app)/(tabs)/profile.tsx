@@ -37,7 +37,7 @@ export default function ProfileTabScreen() {
 
   return (
     <ScreenView scrollable keyboardShouldPersistTaps="handled">
-      <View style={{ paddingBottom: spacing.xxl }}>
+      <View style={{ paddingBottom: spacing.xxl, gap: spacing.screen.sectionGap }}>
         <LinearGradient colors={[...gradientPresets.primary]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.header}>
           <View style={[styles.avatar, shadows.lg]}>
             <LinearGradient colors={['rgba(255,255,255,0.25)', 'rgba(255,255,255,0.15)']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.avatarBg}>
@@ -57,7 +57,7 @@ export default function ProfileTabScreen() {
           </ThemedText>
         </LinearGradient>
 
-         <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginHorizontal: spacing.md, marginTop: spacing.xl, marginBottom: spacing.sm }}>
+         <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.sm }}>
            <View style={[styles.sectionIndicator, { backgroundColor: colors.primary }]} />
            <ThemedText variant="h3" style={{ flex: 1 }} minFontSize={16} maxFontSize={22}>Management</ThemedText>
          </View>
@@ -70,7 +70,7 @@ export default function ProfileTabScreen() {
           </Card>
         ))}
 
-         <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginHorizontal: spacing.md, marginTop: spacing.xl, marginBottom: spacing.sm }}>
+         <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.sm }}>
            <View style={[styles.sectionIndicator, { backgroundColor: colors.accent }]} />
            <ThemedText variant="h3" style={{ flex: 1 }} minFontSize={16} maxFontSize={22}>Account</ThemedText>
          </View>
@@ -93,7 +93,7 @@ export default function ProfileTabScreen() {
             { text: 'Cancel', style: 'cancel' },
             { text: 'Sign Out', style: 'destructive', onPress: logout },
           ])
-        } style={{ marginHorizontal: spacing.md, marginTop: spacing.xl }} fullWidth />
+        } fullWidth />
       </View>
     </ScreenView>
   );
@@ -120,7 +120,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  menuItem: { marginHorizontal: spacing.md, marginVertical: spacing.xs },
+  menuItem: { marginVertical: spacing.md },
   menuItemRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   statsRow: { flexDirection: 'row', alignItems: 'center' },
   statItem: { flex: 1, paddingVertical: spacing.sm },

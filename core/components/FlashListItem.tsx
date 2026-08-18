@@ -11,7 +11,7 @@ type FlashListItemProps = {
   testID?: string;
 };
 
-const baseItemStyle: ViewStyle = { marginBottom: spacing.sm, ...shadows.sm };
+const baseItemStyle: ViewStyle = { marginBottom: spacing.md, ...shadows.sm };
 
 export function FlashListItem({
   children,

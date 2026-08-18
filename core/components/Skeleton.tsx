@@ -32,10 +32,10 @@ export function SkeletonCard({ style, lines = 3 }: SkeletonCardProps) {
   return (
     <View style={[styles.card, style]}>
       <View style={styles.cardHeader}>
-        <Shimmer width={40} height={40} borderRadius={radius.full} />
+        <Shimmer width={48} height={48} borderRadius={radius.full} />
         <View style={styles.cardHeaderText}>
           <Shimmer width="70%" height={14} borderRadius={radius.sm} />
-          <Shimmer width="50%" height={12} borderRadius={radius.sm} style={{ marginTop: spacing.xs }} />
+          <Shimmer width="50%" height={12} borderRadius={radius.sm} style={{ marginTop: spacing.sm }} />
         </View>
       </View>
       {Array.from({ length: lines }).map((_, i) => (
@@ -53,8 +53,8 @@ export function SkeletonCard({ style, lines = 3 }: SkeletonCardProps) {
 
 const styles = StyleSheet.create({
   card: {
-    padding: spacing.md,
-    borderRadius: radius.lg,
+    padding: spacing.screen.cardPadding,
+    borderRadius: radius.md,
   },
   cardHeader: {
     flexDirection: 'row',

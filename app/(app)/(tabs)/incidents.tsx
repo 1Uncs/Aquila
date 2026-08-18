@@ -72,7 +72,7 @@ export default function IncidentsScreen() {
             </View>
 
             {loading ? (
-              <View style={{ paddingHorizontal: spacing.md }}>
+              <View>
                 <SkeletonCard />
                 <SkeletonCard />
                 <SkeletonCard />
@@ -107,7 +107,7 @@ export default function IncidentsScreen() {
             </FlashListItem>
           );
         }}
-        contentContainerStyle={{ paddingHorizontal: spacing.md, paddingBottom: spacing.xxl }}
+        contentContainerStyle={{ paddingBottom: spacing.xxl }}
       />
     </ScreenView>
   );
@@ -116,10 +116,10 @@ export default function IncidentsScreen() {
 const styles = StyleSheet.create({
   chipRow: { paddingHorizontal: spacing.md, gap: spacing.sm, marginBottom: spacing.lg },
   chip: { marginRight: spacing.sm },
-  actionRow: { flexDirection: 'row', gap: spacing.sm, marginHorizontal: spacing.md, marginBottom: spacing.lg },
+  actionRow: { flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.lg },
   actionBtn: { flex: 1 },
   row: { flexDirection: 'row', alignItems: 'flex-start', gap: spacing.sm },
   incidentInfo: { flex: 1 },
   severityDot: { width: spacing.sm, height: spacing.sm, borderRadius: radius.sm, marginTop: spacing.xs },
-  sectionIndicator: { width: 4, height: 16, borderRadius: radius.full, marginHorizontal: spacing.md },
+  sectionIndicator: { width: 4, height: 16, borderRadius: radius.full },
 });

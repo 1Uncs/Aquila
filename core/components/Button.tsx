@@ -12,7 +12,7 @@ import { DebouncedPressable } from './DebouncedPressable';
 import Colors from '@/constants/colors';
 import { ThemedText } from './ThemedText';
 import { Ionicons } from '@expo/vector-icons';
-import { radius, spacing, opacities, border } from '@/constants/tokens';
+import { radius, spacing, opacities, border, shadows } from '@/constants/tokens';
 
 type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost';
 
@@ -50,15 +50,25 @@ export function Button({
   const colors = Colors[scheme];
 
   const sizeStyles = {
-    sm: { paddingVertical: spacing.sm, paddingHorizontal: spacing.md, minHeight: 48 },
-    md: { paddingVertical: spacing.md, paddingHorizontal: spacing.lg, minHeight: 48 },
+    sm: { paddingVertical: spacing.sm, paddingHorizontal: spacing.md, minHeight: 44 },
+    md: { paddingVertical: spacing.md, paddingHorizontal: spacing.lg, minHeight: 52 },
     lg: { paddingVertical: spacing.lg, paddingHorizontal: spacing.xl, minHeight: 56 },
   };
 
   const variantStyles: Record<ButtonVariant, ViewStyle> = {
-    primary: { backgroundColor: colors.primary },
+    primary: {
+      backgroundColor: colors.primary,
+      ...Platform.select({
+        ios: shadows.md,
+        android: { ...shadows.md, elevation: 4 },
+      }),
+    },
     secondary: { backgroundColor: colors.primaryLight },
-    outline: { backgroundColor: 'transparent', borderWidth: border.thick, borderColor: colors.primary },
+    outline: {
+      backgroundColor: 'transparent',
+      borderWidth: border.thick,
+      borderColor: colors.primary,
+    },
     ghost: { backgroundColor: 'transparent' },
   };
 
@@ -72,7 +82,7 @@ export function Button({
 
   const pressableStyle = ({ pressed }: PressableStateCallbackType) => [
     styles.button,
-    { borderRadius: radius.md },
+    { borderRadius: radius.full },
     sizeStyles[size],
     variantStyles[variant],
     fullWidth && { alignSelf: 'stretch' as FlexAlignType },
@@ -98,7 +108,7 @@ export function Button({
       android_ripple={{
         color: variant === 'primary' || variant === 'secondary' ? 'rgba(255,255,255,0.25)' : colors.press,
         borderless: false,
-        radius: radius.md,
+        radius: radius.full,
       }}
       {...rest}
     >
@@ -108,7 +118,7 @@ export function Button({
         style={[
           styles.label,
           { color: textColor },
-          size === 'lg' && { fontSize: 18 },
+          size === 'lg' && { fontSize: 14 },
         ]}
       >
         {loading ? 'Loading...' : label}
@@ -128,7 +138,7 @@ const styles = StyleSheet.create({
   label: { fontWeight: '600', letterSpacing: 0.3 },
   icon: { lineHeight: 20 },
   androidRippleContainer: {
-    borderRadius: radius.md,
+    borderRadius: radius.full,
     overflow: 'hidden',
   },
 });

@@ -43,7 +43,7 @@ export function Card({
       ? shadows.md
       : isFlat || isGlass
         ? {}
-        : shadows.md;
+        : shadows.sm;
 
   const mergedStyle = Array.isArray(style)
     ? Object.assign({}, ...style)
@@ -51,7 +51,12 @@ export function Card({
 
   const cardStyle = [
     styles.card,
-    { backgroundColor: isGlass ? colors.surfaceElevated + '99' : colors.surface, borderColor, borderWidth },
+    {
+      backgroundColor: isGlass ? colors.surfaceGlass : colors.surface,
+      borderColor,
+      borderWidth,
+      padding: spacing.screen.cardPadding,
+    },
     shadow,
     mergedStyle,
   ];
@@ -154,11 +159,11 @@ function AnimatedCard({
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: radius.lg,
-    padding: spacing.md,
+    borderRadius: radius.md,
+    padding: spacing.screen.cardPadding,
   },
   androidRippleContainer: {
-    borderRadius: radius.lg,
+    borderRadius: radius.md,
     overflow: 'hidden',
   },
 });

@@ -61,7 +61,7 @@ export default function PartiesScreen() {
             </View>
           </FlashListItem>
         )}
-        contentContainerStyle={{ paddingHorizontal: spacing.md, paddingBottom: spacing.xxl }}
+        contentContainerStyle={{ paddingBottom: spacing.xxl }}
       />
     </ScreenView>
   );

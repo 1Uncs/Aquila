@@ -47,7 +47,7 @@ export default function CollationScreen() {
         keyExtractor={(item) => item.candId}
         ListHeaderComponent={
           <View>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.sm, marginHorizontal: spacing.md, marginTop: spacing.md }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.sm }}>
               <View style={[styles.titleIndicator, { backgroundColor: colors.primary }]} />
               <ThemedText variant="h2" style={{ flex: 1 }} minFontSize={20} maxFontSize={28}>Result Collation</ThemedText>
             </View>
@@ -64,7 +64,7 @@ export default function CollationScreen() {
               </ThemedText>
             </LinearGradient>
 
-            <ThemedText variant="h3" style={{ marginHorizontal: spacing.md, marginTop: spacing.xl, marginBottom: spacing.sm }}>
+            <ThemedText variant="h3" style={{ marginTop: spacing.xl, marginBottom: spacing.sm }}>
               Candidate Ranking
             </ThemedText>
             {ranked.length === 0 ? (
@@ -110,9 +110,9 @@ export default function CollationScreen() {
           );
         }}
         ListFooterComponent={
-          <Button label="Back to Results" variant="outline" onPress={() => router.back()} style={{ marginHorizontal: spacing.md, marginTop: spacing.lg }} />
+          <Button label="Back to Results" variant="outline" onPress={() => router.back()} style={{ marginTop: spacing.lg }} />
         }
-        contentContainerStyle={{ paddingHorizontal: spacing.md, paddingBottom: spacing.xxl }}
+        contentContainerStyle={{ paddingBottom: spacing.xxl }}
       />
     </ScreenView>
   );

@@ -72,7 +72,7 @@ export default function ElectionDetailScreen() {
                </ThemedText>
             </LinearGradient>
 
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginHorizontal: spacing.md, marginTop: spacing.lg, marginBottom: spacing.sm }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginTop: spacing.lg, marginBottom: spacing.sm }}>
               <View style={[styles.titleIndicator, { backgroundColor: colors.primary }]} />
               <ThemedText variant="h3" style={{ flex: 1 }} minFontSize={16} maxFontSize={22}>Candidates ({candidates.length})</ThemedText>
             </View>
@@ -105,19 +105,19 @@ export default function ElectionDetailScreen() {
           </FlashListItem>
         )}
         ListFooterComponent={
-          <View style={{ flexDirection: 'row', gap: spacing.md, marginHorizontal: spacing.md, marginTop: spacing.lg }}>
+          <View style={{ flexDirection: 'row', gap: spacing.md, marginTop: spacing.lg }}>
             <Button label="Submit Result" onPress={() => router.push({ pathname: ROUTES.RESULT_SUBMIT, params: { electionId: id } })} fullWidth />
             <Button label="Report Incident" variant="outline" onPress={() => router.push({ pathname: ROUTES.INCIDENT_REPORT, params: { electionId: id } })} fullWidth />
           </View>
         }
-        contentContainerStyle={{ paddingHorizontal: spacing.md, paddingBottom: spacing.xxl }}
+        contentContainerStyle={{ paddingBottom: spacing.xxl }}
       />
     </ScreenView>
   );
 }
 
 const styles = StyleSheet.create({
-  headerCard: { marginHorizontal: spacing.md, marginVertical: spacing.md, borderRadius: radius.lg, padding: spacing.lg },
+  headerCard: { marginVertical: spacing.md, borderRadius: radius.lg, padding: spacing.lg },
   row: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
   avatar: { width: sizes.icon, height: sizes.icon, borderRadius: radius.full, alignItems: 'center', justifyContent: 'center' },
   statusBadge: { paddingHorizontal: spacing.sm, paddingVertical: spacing.xs, borderRadius: radius.sm },

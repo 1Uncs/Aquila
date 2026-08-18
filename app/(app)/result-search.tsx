@@ -64,7 +64,7 @@ export default function ResultSearchScreen() {
             </View>
           </FlashListItem>
         )}
-        contentContainerStyle={{ paddingHorizontal: spacing.md, paddingBottom: spacing.xxl }}
+        contentContainerStyle={{ paddingBottom: spacing.xxl }}
       />
     </ScreenView>
   );

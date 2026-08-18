@@ -85,13 +85,13 @@ export const Input = forwardRef<RNTextInput, InputProps>(({
 
   const animatedShadowRadius = animatedValue.interpolate({
     inputRange: [0, 1],
-    outputRange: [0, focused && !error ? 8 : 0],
+    outputRange: [0, focused && !error ? 12 : 0],
   });
 
   return (
     <View style={[styles.wrapper, containerStyle]}>
       {label && (
-        <ThemedText variant="label" style={{ marginBottom: spacing.xs }}>
+        <ThemedText variant="label" style={{ marginBottom: spacing.sm, letterSpacing: 0.4 }}>
           {label}
         </ThemedText>
       )}
@@ -101,7 +101,7 @@ export const Input = forwardRef<RNTextInput, InputProps>(({
           {
             backgroundColor: colors.surface,
             borderColor: animatedBorderColor as unknown as string,
-            borderRadius: radius.lg,
+            borderRadius: radius.md,
             shadowColor: colors.primary,
             shadowOpacity: animatedShadowOpacity as unknown as number,
             shadowRadius: animatedShadowRadius as unknown as number,
@@ -113,7 +113,7 @@ export const Input = forwardRef<RNTextInput, InputProps>(({
           <Ionicons
             name={leftIcon}
             size={20}
-            color={focused ? colors.primary : colors.textSecondary}
+            color={focused ? colors.primary : colors.textMuted}
             style={styles.leftIcon}
           />
         )}
@@ -163,13 +163,13 @@ export const Input = forwardRef<RNTextInput, InputProps>(({
 Input.displayName = 'Input';
 
 const styles = StyleSheet.create({
-  wrapper: { marginHorizontal: spacing.md, marginBottom: spacing.md },
+  wrapper: { marginBottom: spacing.md },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: border.thick,
     paddingHorizontal: spacing.md,
-    height: 52,
+    height: 56,
   },
   input: {
     flex: 1,

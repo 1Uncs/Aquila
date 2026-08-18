@@ -170,7 +170,7 @@ export default function SubmitResultScreen() {
           ) : (
             <View style={{ marginBottom: spacing.md }}>
               <ThemedText variant="label" style={{ marginBottom: spacing.xs }}>Polling Unit</ThemedText>
-              <Card style={[shadows.sm, { padding: spacing.md }]}>
+              <Card style={shadows.sm}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
                   <ThemedText variant="body" style={{ fontWeight: '600', flex: 1 }}>
                     {allPollingUnits.find((p) => p.id === selectedPuId)?.name ?? preselectedPuName ?? 'Unknown PU'}
@@ -188,11 +188,11 @@ export default function SubmitResultScreen() {
             </View>
           )}
 
-          <ThemedText variant="h3" style={{ marginHorizontal: spacing.md, marginTop: spacing.lg, marginBottom: spacing.sm }}>
+          <ThemedText variant="h3" style={{ marginTop: spacing.lg, marginBottom: spacing.sm }}>
             Candidate Votes
           </ThemedText>
 
-          <View style={{ flexDirection: 'row', marginHorizontal: spacing.md, marginBottom: spacing.sm, gap: spacing.sm }}>
+          <View style={{ flexDirection: 'row', marginBottom: spacing.sm, gap: spacing.sm }}>
             <ThemedText variant="caption" style={{ flex: 1, fontWeight: '600', color: themeColors.textSecondary }}>Candidate</ThemedText>
             <ThemedText variant="caption" style={{ width: 80, fontWeight: '600', color: themeColors.textSecondary, textAlign: 'center' }}>INEC</ThemedText>
             <ThemedText variant="caption" style={{ width: 80, fontWeight: '600', color: themeColors.primary, textAlign: 'center' }}>Observed</ThemedText>
@@ -201,7 +201,7 @@ export default function SubmitResultScreen() {
           {candidates.map((c) => {
             const current = votes[c.id] ?? { inec: '', observed: '' };
             return (
-              <View key={c.id} style={{ flexDirection: 'row', alignItems: 'center', marginBottom: spacing.sm, gap: spacing.sm, paddingHorizontal: spacing.md }}>
+              <View key={c.id} style={{ flexDirection: 'row', alignItems: 'center', marginBottom: spacing.sm, gap: spacing.sm }}>
                 <View style={{ flex: 1 }}>
                   <ThemedText variant="body" style={{ fontWeight: '600' }}>{c.fullName}</ThemedText>
                   <ThemedText variant="caption" color="textSecondary">{c.partyAcronym}</ThemedText>
@@ -227,11 +227,11 @@ export default function SubmitResultScreen() {
             );
           })}
 
-          <ThemedText variant="h3" style={{ marginHorizontal: spacing.md, marginTop: spacing.lg, marginBottom: spacing.sm }}>
+          <ThemedText variant="h3" style={{ marginTop: spacing.lg, marginBottom: spacing.sm }}>
             Other Counts
           </ThemedText>
 
-          <View style={{ flexDirection: 'row', gap: spacing.md, marginHorizontal: spacing.md, marginBottom: spacing.sm }}>
+          <View style={{ flexDirection: 'row', gap: spacing.md, marginBottom: spacing.sm }}>
             <View style={{ flex: 1 }}>
               <ThemedText variant="label" style={{ marginBottom: spacing.xs }}>Rejected (INEC)</ThemedText>
               <Input
@@ -262,12 +262,12 @@ export default function SubmitResultScreen() {
           />
 
           {computeTotal() > 0 && (
-            <ThemedText variant="caption" color="textSecondary" style={{ marginHorizontal: spacing.md, marginBottom: spacing.sm }}>
+            <ThemedText variant="caption" color="textSecondary" style={{ marginBottom: spacing.sm }}>
               Total votes cast (observed): {computeTotal().toLocaleString()}
             </ThemedText>
           )}
 
-            <View style={{ flexDirection: 'row', gap: spacing.md, marginHorizontal: spacing.md, marginTop: spacing.lg }}>
+            <View style={{ flexDirection: 'row', gap: spacing.md, marginTop: spacing.lg }}>
               <Button label="Save Draft" variant="outline" onPress={handleSaveDraft} loading={submitting} fullWidth />
               <Button label="Publish" onPress={handlePublish} loading={submitting} fullWidth />
             </View>

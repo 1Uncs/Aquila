@@ -71,7 +71,7 @@ export default function IncidentSearchScreen() {
             </FlashListItem>
           );
         }}
-        contentContainerStyle={{ paddingHorizontal: spacing.md, paddingBottom: spacing.xxl }}
+        contentContainerStyle={{ paddingBottom: spacing.xxl }}
       />
     </ScreenView>
   );

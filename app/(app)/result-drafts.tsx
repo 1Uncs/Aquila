@@ -29,7 +29,7 @@ export default function ResultDraftsScreen() {
         keyExtractor={(item) => item.id}
         ListHeaderComponent={
           <View>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.sm, marginHorizontal: spacing.md, marginTop: spacing.md }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.sm, marginTop: spacing.md }}>
               <View style={[styles.titleIndicator, { backgroundColor: colors.accent }]} />
               <ThemedText variant="h2" style={{ flex: 1 }} minFontSize={20} maxFontSize={28}>Draft Results</ThemedText>
             </View>
@@ -101,7 +101,7 @@ export default function ResultDraftsScreen() {
             </View>
           </FlashListItem>
         )}
-        contentContainerStyle={{ paddingHorizontal: spacing.md, paddingBottom: spacing.xxl }}
+        contentContainerStyle={{ paddingBottom: spacing.xxl }}
       />
     </ScreenView>
   );

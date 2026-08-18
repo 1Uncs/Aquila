@@ -32,12 +32,13 @@ export function EmptyState({
 
   return (
     <View style={[styles.container, ghost && styles.ghost]} testID={testID}>
-      <Ionicons
-        name={icon}
-        size={56}
-        color={colors.textMuted}
-        style={styles.icon}
-      />
+      <View style={[styles.iconWrap, { backgroundColor: colors.borderSubtle }]}>
+        <Ionicons
+          name={icon}
+          size={28}
+          color={colors.textMuted}
+        />
+      </View>
       <ThemedText variant="h3" style={styles.title}>
         {title}
       </ThemedText>
@@ -68,7 +69,6 @@ export function EmptyState({
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: spacing.xl,
@@ -76,9 +76,13 @@ const styles = StyleSheet.create({
     maxWidth: 400,
     alignSelf: 'center',
   },
-  icon: {
-    marginBottom: spacing.md,
-    opacity: 0.8,
+  iconWrap: {
+    width: 64,
+    height: 64,
+    borderRadius: radius.full,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: spacing.lg,
   },
   title: {
     textAlign: 'center',

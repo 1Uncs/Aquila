@@ -4,6 +4,7 @@ import { Platform, PixelRatio, Text as RNText, StyleSheet, TextStyle, useWindowD
 import { LinearGradient } from 'expo-linear-gradient';
 import { ms } from '@/core/utils/ms';
 import { FONT_FAMILY } from '@/constants/fonts';
+import { typography as typographyTokens } from '@/constants/tokens';
 
 const useScheme = (): ColorScheme => {
   return useColorScheme() ?? 'light';
@@ -11,7 +12,7 @@ const useScheme = (): ColorScheme => {
 
 type ThemedTextProps = {
   children: React.ReactNode;
-  variant?: 'h1' | 'h2' | 'h3' | 'xl' | 'xxl' | 'lg' | 'body' | 'caption' | 'label' | 'gradient';
+  variant?: 'display' | 'h1' | 'h2' | 'h3' | 'title' | 'body' | 'caption' | 'label' | 'gradient' | 'xl' | 'xxl' | 'lg';
   color?: keyof typeof Colors.light | string;
   style?: object;
   allowFontScaling?: boolean;
@@ -28,27 +29,31 @@ type ThemedTextProps = {
 };
 
 const SIZE_MAP: Record<string, number> = {
-  h1: 32,
-  h2: 28,
-  h3: 22,
-  xl: 26,
-  xxl: 34,
-  lg: 20,
-  body: 16,
-  caption: 13,
-  label: 14,
+  display: typographyTokens.display,
+  h1: typographyTokens.h1,
+  h2: typographyTokens.h2,
+  h3: typographyTokens.h3,
+  title: typographyTokens.title,
+  body: typographyTokens.body,
+  caption: typographyTokens.caption,
+  label: typographyTokens.label,
+  xxl: typographyTokens.xxl,
+  xl: typographyTokens.xl,
+  lg: typographyTokens.lg,
 };
 
 const LINE_HEIGHT_MAP: Record<string, number> = {
-  h1: 40,
-  h2: 34,
-  h3: 28,
-  xl: 32,
-  xxl: 44,
+  display: typographyTokens.lineHeights.display,
+  h1: typographyTokens.lineHeights.h1,
+  h2: typographyTokens.lineHeights.h2,
+  h3: typographyTokens.lineHeights.h3,
+  title: typographyTokens.lineHeights.title,
+  body: typographyTokens.lineHeights.body,
+  caption: typographyTokens.lineHeights.caption,
+  label: typographyTokens.lineHeights.label,
+  xxl: 38,
+  xl: 30,
   lg: 26,
-  body: 24,
-  caption: 18,
-  label: 20,
 };
 
 export function ThemedText({
@@ -80,9 +85,9 @@ export function ThemedText({
 
   const isGradient = variant === 'gradient';
 
-  const isHeading = ['h1', 'h2', 'h3'].includes(variant);
-  const isSubheading = variant === 'xl';
-  const isDisplay = variant === 'xxl';
+  const isHeading = ['h1', 'h2', 'h3', 'display'].includes(variant);
+  const isSubheading = variant === 'h2' || variant === 'h3';
+  const isTitle = variant === 'title';
 
   const baseFontSize: number = (SIZE_MAP[variant] ?? SIZE_MAP.body)!;
   const responsiveSize = ms(baseFontSize, width);
@@ -93,13 +98,13 @@ export function ThemedText({
   );
 
   const maxFontSizeMultiplier =
-    isDisplay
-      ? 1.3
-      : isHeading
+    variant === 'display' || variant === 'h1'
+      ? 1.25
+      : isSubheading
         ? 1.3
-        : isSubheading
-          ? 1.4
-          : variant === 'lg' || variant === 'body'
+        : isTitle
+          ? 1.35
+          : variant === 'body'
             ? 1.4
             : 1.5;
 
@@ -125,6 +130,8 @@ export function ThemedText({
     baseStyle.letterSpacing = tracking;
   } else if (variant === 'label') {
     baseStyle.letterSpacing = 0.5;
+  } else if (isHeading) {
+    baseStyle.letterSpacing = -0.2;
   }
 
   if (isGradient && gradientColors) {

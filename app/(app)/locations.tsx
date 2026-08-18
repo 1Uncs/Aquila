@@ -147,7 +147,7 @@ export default function LocationsScreen() {
                   <View style={[styles.titleIndicator, { backgroundColor: colors.accent }]} />
                   <ThemedText variant="h3" style={{ flex: 1 }}>States & FCT ({states.length})</ThemedText>
                 </View>
-                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, paddingHorizontal: spacing.md }}>
+                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm }}>
                   {states.map((state) => (
                     <Button
                       key={state.id}
@@ -176,7 +176,7 @@ export default function LocationsScreen() {
             const unit = item as SubUnitItem;
             return (
               <FlashListItem id={unit.label} pressable onPress={() => handleSubUnitSelect(unit.type)}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingHorizontal: spacing.md, paddingVertical: spacing.md }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
                   <View style={[styles.iconCircle, { backgroundColor: colors.accent + '20' }]}>
                     <Ionicons name={unit.icon} size={22} color={colors.accent} />
                   </View>
@@ -193,7 +193,7 @@ export default function LocationsScreen() {
           const isLgaLevelItem = drillLevel === 'lgas';
           return (
             <FlashListItem id={entry.id} pressable onPress={() => isLgaLevelItem ? handleLgaSelect(entry.id) : undefined}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingHorizontal: spacing.md, paddingVertical: spacing.md }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
                 <View style={[styles.iconCircle, { backgroundColor: colors.accent + '20' }]}>
                   <Ionicons name={isLgaLevelItem ? 'location' : drillLevel === 'wards' ? 'git-branch-outline' : drillLevel === 'pus' ? 'business-outline' : drillLevel === 'senatorial' ? 'map' : 'people-outline'} size={22} color={colors.accent} />
                 </View>
@@ -206,7 +206,7 @@ export default function LocationsScreen() {
             </FlashListItem>
           );
         }}
-        contentContainerStyle={{ paddingHorizontal: spacing.md, paddingBottom: spacing.xxl }}
+        contentContainerStyle={{ paddingBottom: spacing.xxl }}
       />
     </ScreenView>
   );

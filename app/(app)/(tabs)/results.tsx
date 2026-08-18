@@ -100,13 +100,13 @@ export default function ResultsScreen() {
               <ThemedText variant="xl" style={{ flex: 1 }} minFontSize={20} maxFontSize={28}>Live Results</ThemedText>
             </View>
 
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: spacing.md, gap: spacing.md, marginBottom: spacing.lg }} keyboardShouldPersistTaps="handled">
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: spacing.md, marginBottom: spacing.lg }} keyboardShouldPersistTaps="handled">
               <StatCard icon="📋" label="Reports" value={String(results.length)} gradient={gradientPresets.primary} colors={colors} />
               <StatCard icon="👥" label="Total Votes" value={totalVotes.toLocaleString()} gradient={gradientPresets.success} colors={colors} />
               <StatCard icon="✓" label="Published" value={String(results.filter((r) => r.status === 'PUBLISHED').length)} gradient={gradientPresets.accent} colors={colors} />
             </ScrollView>
 
-            <View style={{ flexDirection: 'row', gap: spacing.sm, marginHorizontal: spacing.md, marginBottom: spacing.lg }}>
+            <View style={{ flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.lg }}>
               <Button label="Drafts" variant="outline" size="sm" onPress={() => router.push(ROUTES.RESULT_DRAFTS as any)} style={styles.actionBtn} />
               <Button label="Search" variant="primary" size="sm" onPress={() => router.push(ROUTES.RESULT_SEARCH)} style={styles.actionBtn} />
               <Button label="More" variant="ghost" size="sm" onPress={openMoreActions} style={styles.actionBtn} leftIcon="ellipsis-horizontal" />
@@ -117,7 +117,7 @@ export default function ResultsScreen() {
               <ThemedText variant="h3" style={{ flex: 1 }} minFontSize={16} maxFontSize={22}>Recent Results</ThemedText>
             </View>
             {loading ? (
-              <View style={{ paddingHorizontal: spacing.md }}>
+              <View>
                 <SkeletonCard />
                 <SkeletonCard />
                 <SkeletonCard />
@@ -145,7 +145,7 @@ export default function ResultsScreen() {
             </View>
           </FlashListItem>
         )}
-        contentContainerStyle={{ paddingHorizontal: spacing.md, paddingBottom: spacing.xxl }}
+        contentContainerStyle={{ paddingBottom: spacing.xxl }}
       />
     </ScreenView>
   );
