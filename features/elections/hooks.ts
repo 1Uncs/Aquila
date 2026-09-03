@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { mockApi } from '@/features/elections/service';
+import { FEATURES } from '@/constants/features';
 
 export function useElectionCyclesQuery() {
   return useQuery({
@@ -8,10 +9,13 @@ export function useElectionCyclesQuery() {
   });
 }
 
-export function useElectionsQuery() {
+export function useElectionsQuery(opts?: { pollIntervalMs?: number }) {
+  const pollInterval = opts?.pollIntervalMs ?? (FEATURES.ENABLE_LIVE_POLLING ? FEATURES.LIVE_POLL_INTERVAL_MS : undefined);
   return useQuery({
     queryKey: ['elections', 'list'],
     queryFn: () => mockApi.getElections(),
+    refetchInterval: pollInterval,
+    refetchIntervalInBackground: false,
   });
 }
 
@@ -31,10 +35,13 @@ export function useCandidatesQuery(electionId: string) {
   });
 }
 
-export function useResultsQuery() {
+export function useResultsQuery(opts?: { pollIntervalMs?: number }) {
+  const pollInterval = opts?.pollIntervalMs ?? (FEATURES.ENABLE_LIVE_POLLING ? FEATURES.LIVE_POLL_INTERVAL_MS : undefined);
   return useQuery({
     queryKey: ['results', 'list'],
     queryFn: () => mockApi.getResults(),
+    refetchInterval: pollInterval,
+    refetchIntervalInBackground: false,
   });
 }
 
@@ -45,10 +52,13 @@ export function useDraftsQuery() {
   });
 }
 
-export function useIncidentsQuery() {
+export function useIncidentsQuery(opts?: { pollIntervalMs?: number }) {
+  const pollInterval = opts?.pollIntervalMs ?? (FEATURES.ENABLE_LIVE_POLLING ? FEATURES.LIVE_POLL_INTERVAL_MS : undefined);
   return useQuery({
     queryKey: ['incidents', 'list'],
     queryFn: () => mockApi.getIncidents(),
+    refetchInterval: pollInterval,
+    refetchIntervalInBackground: false,
   });
 }
 

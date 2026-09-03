@@ -1,8 +1,8 @@
 import React, { useState, useMemo } from 'react';
-import { ScrollView, View, StyleSheet } from 'react-native';
+import { ScrollView, View, StyleSheet, LayoutAnimation, Platform, UIManager } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ScreenView } from '@/core/components/ScreenView';
-import { ThemedText, Card, EmptyState, Button, SkeletonCard } from '@/core/components';
+import { ThemedText, Card, EmptyState, Button, SkeletonCard, IncidentMarquee } from '@/core/components';
 import { useAuthStore } from '@/features/auth/store';
 import { ROUTES } from '@/constants/routes';
 import { spacing, radius, shadows, sizes, gradientPresets, border } from '@/constants/tokens';
@@ -15,6 +15,11 @@ import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { Candidate, ResultSubmission } from '@/features/auth/store';
+import { FEATURES } from '@/constants/features';
+
+if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 
 function GradientIcon({ name, gradient }: { name: string; gradient: readonly [string, string] }) {
   return (
@@ -101,6 +106,9 @@ function WinnerCard({ candidates, results, colors }: { candidates: Candidate[]; 
       totalByCandidate[candId] = (totalByCandidate[candId] || 0) + (votes as number);
     });
   });
+
+  // Animate Premier-League style reordering when totals change
+  LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
 
   const ranked = [...candidates]
     .map((c) => ({ ...c, total: totalByCandidate[c.id] || 0 }))
@@ -276,8 +284,20 @@ export default function DashboardScreen() {
             <ThemedText variant="body" style={{ color: 'rgba(255,255,255,0.8)' }}>
               {isElectionOfficer ? 'Election Officer Dashboard' : isFieldAgent ? 'Field Agent Dashboard' : 'Election Intelligence'}
             </ThemedText>
+            {FEATURES.ENABLE_LIVE_POLLING && allResults.length > 0 && (
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.xs, marginTop: spacing.sm, backgroundColor: 'rgba(255,255,255,0.18)', alignSelf: 'flex-start', paddingHorizontal: spacing.sm, paddingVertical: 4, borderRadius: radius.full }}>
+                <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: '#22c55e' }} />
+                <ThemedText variant="caption" style={{ color: '#fff', fontWeight: '700' }}>
+                  LIVE · {allResults.length} PUs reporting
+                </ThemedText>
+              </View>
+            )}
           </LinearGradient>
         </View>
+
+        {FEATURES.ENABLE_INCIDENT_MARQUEE && incidents.length > 0 && (
+          <IncidentMarquee incidents={incidents} style={{ marginHorizontal: 0 }} />
+        )}
 
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: spacing.md }} keyboardShouldPersistTaps="handled">
           <StatCard icon="🗳" label="Total Elections" value={String(elections.length)} gradient={gradientPresets.primary} colors={colors} />

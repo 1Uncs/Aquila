@@ -8,11 +8,6 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
-    "splash": {
-      "image": "./assets/splash.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#0D47A1"
-    },
     "assetBundlePatterns": [
       "**/*"
     ],
@@ -26,8 +21,7 @@
         "backgroundColor": "#0D47A1"
       },
       "package": "com.alabiansolutions.aquila",
-      "softwareKeyboardLayoutMode": "pan",
-      "edgeToEdgeEnabled": true
+      "softwareKeyboardLayoutMode": "pan"
     },
     "web": {
       "bundler": "metro",
@@ -36,7 +30,22 @@
     },
     "plugins": [
       "expo-router",
-      "expo-font"
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash.png",
+          "resizeMode": "contain",
+          "backgroundColor": "#0D47A1"
+        }
+      ],
+      "expo-font",
+      [
+        "expo-audio",
+        {
+          "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone.",
+          "enableBackgroundRecording": true
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

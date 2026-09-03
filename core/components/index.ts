@@ -8,3 +8,4 @@ export { DebouncedPressable } from './DebouncedPressable';
 export { FlashListItem } from './FlashListItem';
 export { Shimmer } from './Shimmer';
 export * from './Skeleton';
+export { IncidentMarquee } from './IncidentMarquee';

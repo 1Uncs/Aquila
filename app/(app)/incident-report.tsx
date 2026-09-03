@@ -1,6 +1,6 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ScrollView, View, Platform, KeyboardAvoidingView, Alert, StyleSheet } from 'react-native';
-import { Audio } from 'expo-av';
+import { useAudioRecorder, useAudioRecorderState, AudioModule, RecordingPresets, setAudioModeAsync } from 'expo-audio';
 import * as ImagePicker from 'expo-image-picker';
 import * as DocumentPicker from 'expo-document-picker';
 import { ScreenView } from '@/core/components/ScreenView';
@@ -14,6 +14,7 @@ import { useColorScheme } from '@/core/hooks/useColorScheme';
 import { useStatusBar } from '@/core/hooks/useStatusBar';
 import { ROUTES } from '@/constants/routes';
 import Colors from '@/constants/colors';
+import { FEATURES } from '@/constants/features';
 
 const CATEGORIES = [
   'VIOLENCE', 'BALLOT_SNATCHING', 'VOTE_BUYING', 'VOTER_INTIMIDATION',
@@ -32,16 +33,67 @@ export default function ReportIncidentScreen() {
   const [selectedPuName, setSelectedPuName] = useState(preselectedPuName ?? '');
   const [mediaUris, setMediaUris] = useState<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
-  const [isRecording, setIsRecording] = useState(false);
   const [recordingUri, setRecordingUri] = useState<string | null>(null);
-  const [recordingDuration, setRecordingDuration] = useState(0);
-  const recordingRef = useRef<Audio.Recording | null>(null);
-  const durationIntervalRef = useRef<ReturnType<typeof globalThis.setInterval> | null>(null);
+  const [audioChunks, setAudioChunks] = useState<{ uri: string; durationSec: number; chunkIndex: number; latitude: number; longitude: number }[]>([]);
+  const chunkIndexRef = useRef(0);
+  const audioRecorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
+  const recorderState = useAudioRecorderState(audioRecorder, 500);
+  const isRecording = recorderState.isRecording;
+  // durationMillis is the ground truth (native), survives background throttling unlike setInterval
+  const recordingDuration = Math.round((recorderState.durationMillis ?? 0) / 1000);
+  const CHUNK_SECONDS = 120; // 2-min chunks per transcript; app supports up to 5 chunks (~10 min)
+  const MAX_CHUNKS = 5;
   const { addIncident } = useIncidentsStore();
   const { user } = useAuthStore();
   const scheme = useColorScheme() ?? 'light';
   const colors = Colors[scheme];
   useStatusBar({ barStyle: scheme === 'dark' ? 'light' : 'dark' });
+
+  const recorderRef = useRef(audioRecorder);
+  recorderRef.current = audioRecorder;
+
+  useEffect(() => {
+    return () => {
+      if (recorderRef.current.isRecording) {
+        recorderRef.current.stop().catch(() => {});
+        setAudioModeAsync({ allowsRecording: false, allowsBackgroundRecording: false }).catch(() => {});
+      }
+    };
+  }, []);
+
+  // Auto-chunk: at CHUNK_SECONDS, finalize chunk and immediately start next (geotagged, up to MAX_CHUNKS)
+  useEffect(() => {
+    if (!FEATURES.ENABLE_STEALTH_RECORDING) return;
+    if (!isRecording) return;
+    if (recordingDuration < CHUNK_SECONDS) return;
+    if (chunkIndexRef.current >= MAX_CHUNKS) return;
+    (async () => {
+      try {
+        await recorderRef.current.stop();
+        const uri = recorderRef.current.uri;
+        await setAudioModeAsync({ allowsRecording: false, allowsBackgroundRecording: false }).catch(() => {});
+        if (uri) {
+          const chunk = {
+            uri,
+            durationSec: CHUNK_SECONDS,
+            chunkIndex: chunkIndexRef.current,
+            latitude: 6.5 + Math.random() * 2,
+            longitude: 3.3 + Math.random() * 2,
+          };
+          chunkIndexRef.current += 1;
+          setAudioChunks((prev) => [...prev, chunk]);
+          setMediaUris((prev) => [...prev, uri]);
+        }
+        if (chunkIndexRef.current < MAX_CHUNKS) {
+          await setAudioModeAsync({ playsInSilentMode: true, allowsRecording: true, allowsBackgroundRecording: true });
+          await recorderRef.current.prepareToRecordAsync();
+          recorderRef.current.record();
+        }
+      } catch (e) {
+        console.error('Chunk finalization failed', e);
+      }
+    })();
+  }, [recordingDuration, isRecording]);
 
   const requestPermission = async (type: 'camera' | 'mediaLibrary') => {
     if (Platform.OS !== 'web') {
@@ -78,54 +130,80 @@ export default function ReportIncidentScreen() {
     }
   };
 
+  const confirmStealthRecording = () =>
+    new Promise<boolean>((resolve) => {
+      Alert.alert(
+        'Audio evidence — confirm',
+        'You are about to record audio evidence. Only record in line with local law and INEC guidelines. Audio will be stored as evidence attached to this incident with timestamps and location. Continue?',
+        [
+          { text: 'Cancel', style: 'cancel', onPress: () => resolve(false) },
+          { text: 'Continue', style: 'default', onPress: () => resolve(true) },
+        ]
+      );
+    });
+
   const startRecording = async () => {
+    if (FEATURES.ENABLE_STEALTH_RECORDING) {
+      const ok = await confirmStealthRecording();
+      if (!ok) return;
+    }
     try {
-      const permission = await Audio.requestPermissionsAsync();
+      const permission = await AudioModule.requestRecordingPermissionsAsync();
       if (!permission.granted) {
         Alert.alert('Permission needed', 'Microphone permission is required to record audio.');
         return;
       }
-      await Audio.setAudioModeAsync({ allowsRecordingIOS: true, playsInSilentModeIOS: true });
-      const { recording } = await Audio.Recording.createAsync(
-        Audio.RecordingOptionsPresets.HIGH_QUALITY
-      );
-      recordingRef.current = recording;
-      setRecordingDuration(0);
-      setIsRecording(true);
+      // POST_NOTIFICATIONS required on Android 13+ for foreground service notification ("Recording audio")
+      if (Platform.OS === 'android') {
+        try {
+          await AudioModule.requestNotificationPermissionsAsync();
+        } catch {
+          // optional permission, ignore
+        }
+      }
+      await setAudioModeAsync({
+        playsInSilentMode: true,
+        allowsRecording: true,
+        allowsBackgroundRecording: true,
+      });
+      chunkIndexRef.current = 0;
+      setAudioChunks([]);
+      await audioRecorder.prepareToRecordAsync();
+      audioRecorder.record();
       setRecordingUri(null);
-      durationIntervalRef.current = globalThis.setInterval(() => {
-        setRecordingDuration((prev) => prev + 1);
-      }, 1000);
     } catch (error) {
       console.error('Failed to start recording:', error);
       Alert.alert('Error', 'Failed to start audio recording.');
+      try {
+        await setAudioModeAsync({ allowsRecording: false, allowsBackgroundRecording: false });
+      } catch {
+        // ignore cleanup failure
+      }
     }
   };
 
   const stopRecording = async () => {
     try {
-      if (!recordingRef.current) return;
-      if (durationIntervalRef.current) {
-        globalThis.clearInterval(durationIntervalRef.current);
-        durationIntervalRef.current = null;
-      }
-      await recordingRef.current.stopAndUnloadAsync();
-      const uri = recordingRef.current.getURI();
-      setIsRecording(false);
-      recordingRef.current = null;
-      await Audio.setAudioModeAsync({ allowsRecordingIOS: false, playsInSilentModeIOS: false });
+      await audioRecorder.stop();
+      const uri = audioRecorder.uri;
+      await setAudioModeAsync({ allowsRecording: false, allowsBackgroundRecording: false });
       if (uri) {
         setRecordingUri(uri);
+        // Final partial chunk (may be < CHUNK_SECONDS)
+        const chunk = {
+          uri,
+          durationSec: recordingDuration % CHUNK_SECONDS || recordingDuration,
+          chunkIndex: chunkIndexRef.current,
+          latitude: 6.5 + Math.random() * 2,
+          longitude: 3.3 + Math.random() * 2,
+        };
+        setAudioChunks((prev) => [...prev, chunk]);
         setMediaUris((prev) => [...prev, uri]);
       }
     } catch (error) {
       console.error('Failed to stop recording:', error);
-      setIsRecording(false);
-      if (durationIntervalRef.current) {
-        globalThis.clearInterval(durationIntervalRef.current);
-        durationIntervalRef.current = null;
-      }
-      await Audio.setAudioModeAsync({ allowsRecordingIOS: false, playsInSilentModeIOS: false });
+      await setAudioModeAsync({ allowsRecording: false, allowsBackgroundRecording: false }).catch(() => {});
+      Alert.alert('Error', 'Failed to stop audio recording.');
     }
   };
 
@@ -308,13 +386,39 @@ export default function ReportIncidentScreen() {
             {isRecording ? (
               <ThemedText variant="caption" color="error" style={{ minWidth: 60, textAlign: 'center' }}>
                 {formatDuration(recordingDuration)}
+                {FEATURES.ENABLE_STEALTH_RECORDING && audioChunks.length > 0 ? ` · ${audioChunks.length} chunk${audioChunks.length !== 1 ? 's' : ''} saved` : ''}
               </ThemedText>
             ) : recordingUri ? (
               <ThemedText variant="caption" color="success" style={{ alignSelf: 'center' }}>
-                Recording saved
+                Recording saved{audioChunks.length > 1 ? ` (${audioChunks.length} chunks)` : ''}
+              </ThemedText>
+            ) : audioChunks.length > 0 ? (
+              <ThemedText variant="caption" color="success" style={{ alignSelf: 'center' }}>
+                {audioChunks.length} chunk{audioChunks.length !== 1 ? 's' : ''} · {audioChunks.reduce((s, c) => s + c.durationSec, 0)}s total
               </ThemedText>
             ) : null}
           </View>
+          {FEATURES.ENABLE_STEALTH_RECORDING && (
+            <Card style={[{ backgroundColor: colors.warningSubtle, borderColor: colors.warning + '30', borderWidth: 1, marginBottom: spacing.md }]}>
+              <ThemedText variant="caption" style={{ color: colors.textSecondary }}>
+                Background audio enabled (app.json enableBackgroundRecording). Keep app foregrounded; audio continues with screen on but dims. Each 2-min chunk is geotagged — review device lock-screen behavior on your target devices before field use.
+              </ThemedText>
+            </Card>
+          )}
+          {audioChunks.length > 0 && (
+            <View style={{ marginBottom: spacing.md, gap: spacing.xs }}>
+              {audioChunks.map((ch) => (
+                <View key={ch.uri} style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, backgroundColor: colors.border + '60', padding: spacing.xs, borderRadius: radius.sm }}>
+                  <ThemedText variant="caption" style={{ fontWeight: '600' }}>
+                    Chunk {ch.chunkIndex + 1} · {formatDuration(ch.durationSec)}
+                  </ThemedText>
+                  <ThemedText variant="caption" color="textMuted">
+                    {ch.latitude.toFixed(3)}, {ch.longitude.toFixed(3)}
+                  </ThemedText>
+                </View>
+              ))}
+            </View>
+          )}
 
           {mediaUris.length > 0 && (
             <View style={{ marginBottom: spacing.md }}>

@@ -1,24 +1,30 @@
-import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import React, { useMemo } from 'react';
+import { View, StyleSheet, LayoutAnimation, Platform, UIManager } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ScreenView } from '@/core/components/ScreenView';
-import { ThemedText, FlashListItem, EmptyState, Button } from '@/core/components';
+import { ThemedText, FlashListItem, EmptyState, Button, Card } from '@/core/components';
 import { router } from 'expo-router';
 import { spacing, shadows, radius, sizes, gradientPresets } from '@/constants/tokens';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
 import { useStatusBar } from '@/core/hooks/useStatusBar';
-import { useResultsQuery, useCandidatesQuery } from '@/features/elections/hooks';
+import { useResultsQuery, useCandidatesQuery, usePollingUnitsQuery } from '@/features/elections/hooks';
 import Colors from '@/constants/colors';
+
+if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 
 export default function CollationScreen() {
   const { data: results = [] } = useResultsQuery();
   const { data: candidates = [] } = useCandidatesQuery('e1');
+  const { data: pollingUnits = [] } = usePollingUnitsQuery();
   const scheme = useColorScheme() ?? 'light';
   const colors = Colors[scheme];
   useStatusBar({ barStyle: scheme === 'dark' ? 'light' : 'dark' });
 
-  const candidateMap = new Map(candidates.map((c) => [c.id, c.fullName]));
+  const candidateMap = useMemo(() => new Map(candidates.map((c) => [c.id, c])), [candidates]);
+  const puLgaMap = useMemo(() => new Map(pollingUnits.map((p) => [p.id, p.lgaName])), [pollingUnits]);
 
   const totalVotesByCandidate: Record<string, number> = {};
   let totalVotes = 0;
@@ -31,14 +37,50 @@ export default function CollationScreen() {
     });
   });
 
+  LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+
   const ranked = Object.entries(totalVotesByCandidate)
     .sort((a, b) => b[1] - a[1])
-    .map(([candId, votes]) => ({
-      candId,
-      name: candidateMap.get(candId) ?? candId,
-      votes,
-      pct: totalVotes > 0 ? ((votes / totalVotes) * 100).toFixed(1) : '0.0',
-    }));
+    .map(([candId, votes]) => {
+      const cand = candidateMap.get(candId);
+      return {
+        candId,
+        name: cand?.fullName ?? candId,
+        partyAcronym: cand?.partyAcronym ?? '',
+        votes,
+        pct: totalVotes > 0 ? ((votes / totalVotes) * 100).toFixed(1) : '0.0',
+      };
+    });
+
+  // Hierarchical: group by LGA for “Declared Winner in {LGA}” internal projection
+  const lgaGroups = useMemo(() => {
+    const map = new Map<string, { lgaName: string; totals: Record<string, number>; puCount: number }>();
+    results.forEach((r) => {
+      const lga = puLgaMap.get(r.pollingUnitId) ?? r.pollingUnitName.split(' ').slice(0, 3).join(' ') ?? 'Unknown LGA';
+      if (!map.has(lga)) map.set(lga, { lgaName: lga, totals: {}, puCount: 0 });
+      const g = map.get(lga)!;
+      g.puCount += 1;
+      Object.entries(r.candidateVotes).forEach(([candId, v]) => {
+        g.totals[candId] = (g.totals[candId] || 0) + (v as number);
+      });
+    });
+    return Array.from(map.values()).map((g) => {
+      const sorted = Object.entries(g.totals).sort((a, b) => b[1] - a[1]);
+      const winnerId = sorted[0]?.[0];
+      const winner = winnerId ? candidateMap.get(winnerId) : undefined;
+      const winnerVotes = sorted[0]?.[1] ?? 0;
+      const total = Object.values(g.totals).reduce((s, n) => s + n, 0);
+      return {
+        lgaName: g.lgaName,
+        winnerName: winner?.fullName ?? winnerId ?? '—',
+        winnerParty: winner?.partyAcronym ?? '',
+        winnerVotes,
+        total,
+        puCount: g.puCount,
+        margin: sorted.length > 1 ? winnerVotes - (sorted[1]?.[1] ?? 0) : winnerVotes,
+      };
+    });
+  }, [results, puLgaMap, candidateMap]);
 
   return (
     <ScreenView scrollable keyboardShouldPersistTaps="handled" skipAndroidTopPadding>
@@ -63,6 +105,41 @@ export default function CollationScreen() {
                 Across {results.length} Polling Units
               </ThemedText>
             </LinearGradient>
+
+            <Card style={[{ backgroundColor: colors.warningSubtle, borderColor: colors.warning + '30', borderWidth: 1, marginTop: spacing.md, marginBottom: spacing.sm }]}>
+              <ThemedText variant="caption" style={{ color: colors.warning, fontWeight: '600' }}>
+                Internal projection only — not an INEC declaration. Based on submitted PU results.
+              </ThemedText>
+              <ThemedText variant="caption" color="textSecondary" style={{ marginTop: 4 }}>
+                Updates automatically as accredited agents publish results. Refresh interval 15s + manual pull.
+              </ThemedText>
+            </Card>
+
+            {lgaGroups.length > 0 && (
+              <View style={{ marginTop: spacing.lg }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.sm }}>
+                  <View style={[styles.titleIndicator, { backgroundColor: colors.accent }]} />
+                  <ThemedText variant="h3" style={{ flex: 1 }}>Leading by LGA (Internal Projection)</ThemedText>
+                </View>
+                {lgaGroups.slice(0, 6).map((g) => (
+                  <Card key={g.lgaName} style={[shadows.sm, { marginBottom: spacing.sm }]}>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <View style={{ flex: 1 }}>
+                        <ThemedText variant="body" style={{ fontWeight: '600' }}>
+                          {g.winnerName} ({g.winnerParty}) declared winner in {g.lgaName}
+                        </ThemedText>
+                        <ThemedText variant="caption" color="textSecondary">
+                          {g.winnerVotes.toLocaleString()} votes · {g.puCount} PU{g.puCount !== 1 ? 's' : ''} · margin +{g.margin.toLocaleString()}
+                        </ThemedText>
+                      </View>
+                    </View>
+                    <ThemedText variant="caption" color="textMuted" style={{ marginTop: spacing.xs }}>
+                      Projection from agent submissions — pending INEC official collation
+                    </ThemedText>
+                  </Card>
+                ))}
+              </View>
+            )}
 
             <ThemedText variant="h3" style={{ marginTop: spacing.xl, marginBottom: spacing.sm }}>
               Candidate Ranking
