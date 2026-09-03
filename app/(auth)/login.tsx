@@ -15,7 +15,7 @@ export default function LoginScreen() {
   const insets = useSafeAreaInsets();
   const scheme = useColorScheme() ?? 'light';
   const colors = Colors[scheme];
-  useStatusBar({ barStyle: scheme === 'dark' ? 'light' : 'dark', hidden: false, translucent: false });
+  useStatusBar({ barStyle: scheme === 'dark' ? 'light' : 'dark', hidden: false });
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');

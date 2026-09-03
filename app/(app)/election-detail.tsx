@@ -21,7 +21,7 @@ export default function ElectionDetailScreen() {
   const [loading, setLoading] = useState(true);
   const scheme = useColorScheme() ?? 'light';
   const colors = Colors[scheme];
-  useStatusBar({ barStyle: 'light', hidden: false, translucent: true });
+  useStatusBar({ barStyle: 'light', hidden: false });
   useForegroundRefresh([['elections', 'detail', id], ['elections', 'candidates', id]], 5 * 60 * 1000);
 
   useEffect(() => {

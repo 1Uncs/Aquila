@@ -1,5 +1,4 @@
-import { NativeTabs, Icon, VectorIcon } from 'expo-router/unstable-native-tabs';
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { NativeTabs } from 'expo-router/unstable-native-tabs';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
 import Colors from '@/constants/colors';
 
@@ -15,35 +14,28 @@ export default function TabLayout() {
       disableTransparentOnScrollEdge
       blurEffect="systemChromeMaterial"
     >
-      <NativeTabs.Trigger name="index" options={{ title: 'Dashboard' }}>
-        <Icon
-          sf={{ default: 'house', selected: 'house.fill' }}
-          androidSrc={<VectorIcon family={MaterialCommunityIcons} name="home" />}
-        />
+      <NativeTabs.Trigger name="index">
+        <NativeTabs.Trigger.Icon sf={{ default: 'house', selected: 'house.fill' }} md="home" />
+        <NativeTabs.Trigger.Label>Dashboard</NativeTabs.Trigger.Label>
       </NativeTabs.Trigger>
-      <NativeTabs.Trigger name="elections" options={{ title: 'Elections' }}>
-        <Icon
-          sf={{ default: 'doc.text', selected: 'doc.text.fill' }}
-          androidSrc={<VectorIcon family={MaterialCommunityIcons} name="file-document" />}
-        />
+      <NativeTabs.Trigger name="elections">
+        <NativeTabs.Trigger.Icon sf={{ default: 'doc.text', selected: 'doc.text.fill' }} md="description" />
+        <NativeTabs.Trigger.Label>Elections</NativeTabs.Trigger.Label>
       </NativeTabs.Trigger>
-      <NativeTabs.Trigger name="results" options={{ title: 'Results' }}>
-        <Icon
-          sf={{ default: 'chart.bar', selected: 'chart.bar.fill' }}
-          androidSrc={<VectorIcon family={MaterialCommunityIcons} name="chart-bar" />}
-        />
+      <NativeTabs.Trigger name="results">
+        <NativeTabs.Trigger.Icon sf={{ default: 'chart.bar', selected: 'chart.bar.fill' }} md="bar_chart" />
+        <NativeTabs.Trigger.Label>Results</NativeTabs.Trigger.Label>
       </NativeTabs.Trigger>
-      <NativeTabs.Trigger name="incidents" options={{ title: 'Incidents' }}>
-        <Icon
+      <NativeTabs.Trigger name="incidents">
+        <NativeTabs.Trigger.Icon
           sf={{ default: 'exclamationmark.triangle', selected: 'exclamationmark.triangle.fill' }}
-          androidSrc={<VectorIcon family={MaterialCommunityIcons} name="alert" />}
+          md="warning"
         />
+        <NativeTabs.Trigger.Label>Incidents</NativeTabs.Trigger.Label>
       </NativeTabs.Trigger>
-      <NativeTabs.Trigger name="profile" options={{ title: 'Profile' }}>
-        <Icon
-          sf={{ default: 'person', selected: 'person.fill' }}
-          androidSrc={<VectorIcon family={MaterialCommunityIcons} name="account" />}
-        />
+      <NativeTabs.Trigger name="profile">
+        <NativeTabs.Trigger.Icon sf={{ default: 'person', selected: 'person.fill' }} md="person" />
+        <NativeTabs.Trigger.Label>Profile</NativeTabs.Trigger.Label>
       </NativeTabs.Trigger>
     </NativeTabs>
   );
