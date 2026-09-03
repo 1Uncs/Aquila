@@ -31,7 +31,9 @@ export default function LoginScreen() {
     setError('');
     try {
       await loginMutation.mutateAsync({ email: email.trim(), password });
-    } catch {
+      if (__DEV__) console.log('[login] success', email.trim());
+    } catch (e) {
+      console.warn('[login] failed', e);
       setError('Invalid credentials. Please try again.');
     }
   };
@@ -45,8 +47,11 @@ export default function LoginScreen() {
         case 'polling': demoEmail = 'polling@aquila.ng'; break;
         case 'officer': demoEmail = 'officer@aquila.ng'; break;
       }
+      if (__DEV__) console.log('[login] demo attempt', role, demoEmail);
       await loginMutation.mutateAsync({ email: demoEmail, password: 'demo' });
-    } catch {
+      if (__DEV__) console.log('[login] demo success', role);
+    } catch (e) {
+      console.warn('[login] demo failed', role, e);
       setError('Demo login failed. Please try again.');
     }
   };

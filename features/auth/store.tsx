@@ -152,19 +152,31 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       isAuthenticated: false,
       isOnboarded: false,
-      login: (user) => set({ user, isAuthenticated: true }),
-      logout: () => set({ user: null, isAuthenticated: false }),
+      login: (user) => {
+        if (__DEV__) console.log('[auth] login', user.email, user.role);
+        set({ user, isAuthenticated: true });
+      },
+      logout: () => {
+        if (__DEV__) console.log('[auth] logout');
+        set({ user: null, isAuthenticated: false });
+      },
       setOnboarded: (val) => set({ isOnboarded: val }),
       setWatchCandidate: (watchCandidateId) =>
         set((s) => ({ user: s.user ? { ...s.user, watchCandidateId } : null })),
       setSelectedPollingUnit: (selectedPollingUnitId, selectedPollingUnitName) =>
         set((s) => ({ user: s.user ? { ...s.user, selectedPollingUnitId, selectedPollingUnitName } : null })),
+      // derived selectors — keep as getters for back-compat but persist will stringify their values; prefer useAuthStore(s=>s.user?.selectedPollingUnitId) in components
       get selectedPollingUnitId() { return get().user?.selectedPollingUnitId; },
       get selectedPollingUnitName() { return get().user?.selectedPollingUnitName; },
     }),
     {
       name: 'aquila-auth',
       storage: createJSONStorage(() => createMMKVStorage()),
+      // skip hydration errors — treat as fresh install
+      onRehydrateStorage: () => (state, error) => {
+        if (error && __DEV__) console.warn('[auth] rehydrate failed', error);
+        if (__DEV__) console.log('[auth] rehydrated', state?.isAuthenticated);
+      },
     }
   )
 );

@@ -5,6 +5,7 @@ import { router } from 'expo-router';
 import { ScreenView } from '@/core/components/ScreenView';
 import { ThemedText, Card, Button } from '@/core/components';
 import { useAuthStore } from '@/features/auth/store';
+import { useLogoutMutation } from '@/features/auth/hooks';
 import { ROUTES } from '@/constants/routes';
 import { spacing, radius, shadows, sizes, gradientPresets, border } from '@/constants/tokens';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
@@ -16,7 +17,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useForegroundRefresh } from '@/core/hooks';
 
 export default function ProfileTabScreen() {
-  const { user, logout } = useAuthStore();
+  const { user } = useAuthStore();
+  const logoutMutation = useLogoutMutation();
   const { data: elections = [] } = useElectionsQuery();
   const electionCount = elections.length;
   const scheme = useColorScheme() ?? 'light';
@@ -88,12 +90,29 @@ export default function ProfileTabScreen() {
           </View>
         </Card>
 
-        <Button label="Sign Out" variant="outline" onPress={() =>
-          Alert.alert('Sign out', 'Are you sure you want to sign out?', [
-            { text: 'Cancel', style: 'cancel' },
-            { text: 'Sign Out', style: 'destructive', onPress: logout },
-          ])
-        } fullWidth />
+        <Button
+          label="Sign Out"
+          variant="outline"
+          loading={logoutMutation.isPending}
+          onPress={() => {
+            if (__DEV__) console.log('[profile] sign out pressed, isAuthenticated', useAuthStore.getState().isAuthenticated);
+            Alert.alert('Sign out', 'Are you sure you want to sign out?', [
+              { text: 'Cancel', style: 'cancel', onPress: () => { if (__DEV__) console.log('[profile] cancel'); } },
+              {
+                text: 'Sign Out',
+                style: 'destructive',
+                onPress: () => {
+                  if (__DEV__) console.log('[profile] confirm sign out');
+                  logoutMutation.mutate(undefined, {
+                    onSuccess: () => { if (__DEV__) console.log('[profile] logout success'); },
+                    onError: (e) => console.warn('[profile] logout failed', e),
+                  });
+                },
+              },
+            ]);
+          }}
+          fullWidth
+        />
       </View>
     </ScreenView>
   );

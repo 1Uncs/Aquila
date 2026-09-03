@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { ScrollView, View, StyleSheet, LayoutAnimation, Platform, UIManager } from 'react-native';
+import { ScrollView, View, StyleSheet, LayoutAnimation } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ScreenView } from '@/core/components/ScreenView';
 import { ThemedText, Card, EmptyState, Button, SkeletonCard, IncidentMarquee } from '@/core/components';
@@ -16,10 +16,6 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { Candidate, ResultSubmission } from '@/features/auth/store';
 import { FEATURES } from '@/constants/features';
-
-if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
-  UIManager.setLayoutAnimationEnabledExperimental(true);
-}
 
 function GradientIcon({ name, gradient }: { name: string; gradient: readonly [string, string] }) {
   return (

@@ -28,6 +28,7 @@ export default [
         AbortController: 'readonly',
         process: 'readonly',
         console: 'readonly',
+        __DEV__: 'readonly',
       },
     },
     plugins: {

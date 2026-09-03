@@ -6,11 +6,21 @@ export const login = async (email: string, password: string) => {
   const user = await mockApi.login(email, password);
   useAuthStore.getState().login(user);
   if (user.token) {
-    await setTokenAsync(user.token);
+    try {
+      await setTokenAsync(user.token);
+    } catch (e) {
+      if (__DEV__) console.warn('[auth] setTokenAsync failed (non-fatal)', e);
+      // do not reject — auth state already committed, SecureStore is auxiliary
+    }
   }
 };
 
 export const logout = async () => {
-  await deleteTokenAsync();
+  // clear Zustand first so UI navigates even if SecureStore throws
   useAuthStore.getState().logout();
+  try {
+    await deleteTokenAsync();
+  } catch (e) {
+    if (__DEV__) console.warn('[auth] deleteTokenAsync failed (non-fatal)', e);
+  }
 };

@@ -76,14 +76,23 @@ function RootLayoutNav() {
   const lastTargetRef = useRef<string | null>(null);
   const seededRef = useRef(false);
   const prevAuthRef = useRef(isAuthenticated);
-  const segmentsRef = useRef(segments);
-  segmentsRef.current = segments;
 
   useEffect(() => {
     if (navigationState?.key) {
       setIsNavigationReady(true);
     }
   }, [navigationState?.key]);
+
+  // safety: if navigationState never resolves (Expo Go + NativeTabs), force ready after 1s
+  useEffect(() => {
+    const t = setTimeout(() => setIsNavigationReady((v) => v || true), 1000);
+    return () => clearTimeout(t);
+  }, []);
+
+  // reset seed on logout so next login re-seeds
+  useEffect(() => {
+    if (!isAuthenticated) seededRef.current = false;
+  }, [isAuthenticated]);
 
   useEffect(() => {
     if (!isNavigationReady || !isAuthenticated || seededRef.current) return;
@@ -239,22 +248,42 @@ function RootLayoutNav() {
   }, [isNavigationReady, isAuthenticated]);
 
   useEffect(() => {
+    if (__DEV__) console.log(`[nav] check isReady=${isNavigationReady} auth=${isAuthenticated} prev=${prevAuthRef.current} segments=${segments.join('/') || '(empty)'}`);
     if (!isNavigationReady) return;
     const prevAuth = prevAuthRef.current;
     prevAuthRef.current = isAuthenticated;
-    if (prevAuth === isAuthenticated) return;
 
-    const inAuthGroup = segmentsRef.current[0] === '(auth)';
-    const target = !isAuthenticated
-      ? '/(auth)/login'
-      : isAuthenticated && inAuthGroup
-        ? '/(app)/(tabs)'
-        : null;
+    const inAuthGroup = segments[0] === '(auth)';
+    const inAppGroup = segments[0] === '(app)';
+    let target: string | null = null;
 
-    if (!target || lastTargetRef.current === target) return;
+    // ground-truth routing: location must match auth, regardless of whether auth just changed
+    if (!isAuthenticated && inAppGroup) target = '/(auth)/login';
+    else if (!isAuthenticated && segments.length > 0 && !inAuthGroup) target = '/(auth)/login';
+    else if (!isAuthenticated && !segments.length) target = '/(auth)/login';
+    else if (isAuthenticated && inAuthGroup) target = '/(app)/(tabs)';
+    else if (!isAuthenticated && inAuthGroup) {
+      // already on login — ensure lastTarget doesn't block future logins
+      lastTargetRef.current = '/(auth)/login';
+      if (__DEV__) console.log('[nav] already in auth, no nav');
+      return;
+    } else {
+      if (__DEV__) console.log('[nav] no target — auth matches location');
+      return;
+    }
+
+    if (lastTargetRef.current === target) {
+      if (__DEV__) console.log('[nav] dedup blocked', target);
+      return;
+    }
     lastTargetRef.current = target;
-    router.replace(target as any);
-  }, [isNavigationReady, isAuthenticated, router]);
+    if (__DEV__) console.log(`[nav] ${prevAuth}→${isAuthenticated} segments=${segments.join('/')} → ${target}`);
+    try {
+      router.replace(target as any);
+    } catch (e) {
+      console.warn('[nav] replace failed', e);
+    }
+  }, [isNavigationReady, isAuthenticated, segments, router]);
 
   return (
     <Stack>

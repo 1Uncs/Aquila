@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { View, StyleSheet, LayoutAnimation, Platform, UIManager } from 'react-native';
+import { View, StyleSheet, LayoutAnimation } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ScreenView } from '@/core/components/ScreenView';
@@ -10,10 +10,6 @@ import { useColorScheme } from '@/core/hooks/useColorScheme';
 import { useStatusBar } from '@/core/hooks/useStatusBar';
 import { useResultsQuery, useCandidatesQuery, usePollingUnitsQuery } from '@/features/elections/hooks';
 import Colors from '@/constants/colors';
-
-if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
-  UIManager.setLayoutAnimationEnabledExperimental(true);
-}
 
 export default function CollationScreen() {
   const { data: results = [] } = useResultsQuery();
