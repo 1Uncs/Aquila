@@ -95,9 +95,9 @@ export default function ElectionDetailScreen() {
               </View>
               <View style={[
                 styles.statusBadge,
-                { backgroundColor: c.status === 'ACTIVE' ? colors.success + '20' : colors.border }
+                { backgroundColor: c.status === 'ACTIVE' ? colors.verified + '20' : colors.pendingSubtle }
               ]}>
-                <ThemedText variant="caption" style={{ color: c.status === 'ACTIVE' ? colors.success : colors.textMuted, fontWeight: '600' }}>
+                <ThemedText variant="caption" style={{ color: c.status === 'ACTIVE' ? colors.verified : colors.pending, fontWeight: '600' }}>
                   {c.status}
                 </ThemedText>
               </View>

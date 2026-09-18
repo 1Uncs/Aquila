@@ -1,5 +1,6 @@
 import { useRef, useEffect, useCallback } from 'react';
 import { Animated, GestureResponderEvent } from 'react-native';
+import { spring } from '@/constants/tokens';
 
 type PressScaleOptions = {
   toValue?: number;
@@ -9,7 +10,7 @@ type PressScaleOptions = {
 };
 
 export function usePressScale(options: PressScaleOptions = {}) {
-  const { toValue = 0.97, tension = 180, friction = 14, pressOutDelay = 80 } = options;
+  const { toValue = 0.97, tension = spring.bouncy.tension, friction = spring.bouncy.friction, pressOutDelay = 80 } = options;
 
   const scale = useRef(new Animated.Value(1)).current;
   const isPressing = useRef(false);

@@ -5,6 +5,7 @@ import { ScreenView } from '@/core/components/ScreenView';
 import { ThemedText, FlashListItem, EmptyState, Input } from '@/core/components';
 import { spacing, radius } from '@/constants/tokens';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
+import { resultStatusColor, resultStatusSubtle } from '@/core/utils/resultStatus';
 import { useStatusBar } from '@/core/hooks/useStatusBar';
 import { useResultsQuery } from '@/features/elections/hooks';
 import Colors from '@/constants/colors';
@@ -54,13 +55,17 @@ export default function ResultSearchScreen() {
                   {result.pollingUnitName}
                 </ThemedText>
                 <ThemedText variant="caption" color="textSecondary" style={{ marginTop: spacing.xs }}>
-                  {result.totalVotesCast.toLocaleString()} votes · {result.status}
+                  {result.totalVotesCast.toLocaleString()} votes
                 </ThemedText>
                 <ThemedText variant="caption" color="textMuted">
                   {new Date(result.submittedAt).toLocaleString()}
                 </ThemedText>
               </View>
-              <View style={[styles.statusDot, { backgroundColor: colors.success }]} />
+              <View style={{ backgroundColor: resultStatusSubtle(result.status, scheme), paddingHorizontal: spacing.sm, paddingVertical: spacing['2xs'], borderRadius: radius.full }}>
+                <ThemedText variant="caption" style={{ color: resultStatusColor(result.status, scheme), fontWeight: '700' }}>
+                  {result.status}
+                </ThemedText>
+              </View>
             </View>
           </FlashListItem>
         )}

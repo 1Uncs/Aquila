@@ -15,8 +15,8 @@ import Colors from '@/constants/colors';
 
 const STATUS_COLORS: Record<string, string> = {
   DRAFT: 'textMuted',
-  SCHEDULED: 'warning',
-  ACTIVE: 'success',
+  SCHEDULED: 'pending',
+  ACTIVE: 'verified',
   COMPLETED: 'primary',
   ARCHIVED: 'textSecondary',
 };
@@ -127,7 +127,7 @@ export default function ElectionsScreen() {
 }
 
 const styles = StyleSheet.create({
-  chipRow: { paddingHorizontal: spacing.md, gap: spacing.sm, marginBottom: spacing.lg },
+  chipRow: { gap: spacing.sm, marginBottom: spacing.lg, paddingRight: spacing.md },
   chip: { marginRight: spacing.sm },
   row: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
   electionInfo: { flex: 1 },

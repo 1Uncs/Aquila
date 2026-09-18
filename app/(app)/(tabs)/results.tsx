@@ -9,6 +9,7 @@ import { ThemedText, FlashListItem, EmptyState, Button, Card, SkeletonCard } fro
 import { ROUTES } from '@/constants/routes';
 import { spacing, radius, shadows, sizes, gradientPresets } from '@/constants/tokens';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
+import { resultStatusColor, resultStatusSubtle } from '@/core/utils/resultStatus';
 import { useStatusBar } from '@/core/hooks/useStatusBar';
 import { useResultsQuery } from '@/features/elections/hooks';
 import * as Haptics from 'expo-haptics';
@@ -129,17 +130,24 @@ export default function ResultsScreen() {
         }
         renderItem={({ item: result }) => (
           <FlashListItem id={result.id}>
-            <ThemedText variant="body" style={{ fontWeight: '600' }}>
-              {result.pollingUnitName}
-            </ThemedText>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
+              <ThemedText variant="body" style={{ fontWeight: '600', flex: 1 }}>
+                {result.pollingUnitName}
+              </ThemedText>
+              <View style={{ backgroundColor: resultStatusSubtle(result.status, scheme), paddingHorizontal: spacing.sm, paddingVertical: spacing['2xs'], borderRadius: radius.full }}>
+                <ThemedText variant="caption" style={{ color: resultStatusColor(result.status, scheme), fontWeight: '700' }}>
+                  {result.status}
+                </ThemedText>
+              </View>
+            </View>
             <ThemedText variant="caption" color="textSecondary" style={{ marginTop: spacing.xs }}>
-              {result.totalVotesCast.toLocaleString()} votes · {result.status}
+              {result.totalVotesCast.toLocaleString()} votes
             </ThemedText>
             <View style={[styles.progressTrack, { backgroundColor: colors.border, marginTop: spacing.sm }]}>
               <View
                 style={[
                   styles.progressFill,
-                  { width: `${Math.min((result.totalVotesCast / 800) * 100, 100)}%`, backgroundColor: colors.success },
+                  { width: `${Math.min((result.totalVotesCast / 800) * 100, 100)}%`, backgroundColor: resultStatusColor(result.status, scheme) },
                 ]}
               />
             </View>

@@ -2,11 +2,13 @@ import React, { useState, useMemo } from 'react';
 import { ScrollView, View, StyleSheet, LayoutAnimation } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ScreenView } from '@/core/components/ScreenView';
-import { ThemedText, Card, EmptyState, Button, SkeletonCard, IncidentMarquee } from '@/core/components';
+import { ThemedText, Card, EmptyState, Button, SkeletonCard, IncidentMarquee, SectionHeader, VoteShareBar, CoverageHero } from '@/core/components';
+import { EntranceView } from '@/core/components/EntranceView';
 import { useAuthStore } from '@/features/auth/store';
 import { ROUTES } from '@/constants/routes';
 import { spacing, radius, shadows, sizes, gradientPresets, border } from '@/constants/tokens';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
+import { resultStatusColor } from '@/core/utils/resultStatus';
 import { useStatusBar } from '@/core/hooks/useStatusBar';
 import { useElectionsQuery, useIncidentsQuery, useCandidatesQuery, useResultsQuery, usePollingUnitsQuery } from '@/features/elections/hooks';
 import { useRefreshControl, useHaptics, useForegroundRefresh } from '@/core/hooks';
@@ -66,9 +68,7 @@ const severityColors: Record<string, string> = {
 function QuickActions({ colors, electionId }: { colors: typeof Colors.light; electionId?: string }) {
   return (
     <View>
-      <ThemedText variant="h3" style={{ marginBottom: spacing.sm }} minFontSize={16} maxFontSize={22}>
-        Quick Actions
-      </ThemedText>
+      <SectionHeader title="Quick Actions" />
       <View style={{ flexDirection: 'row', gap: spacing.sm }}>
         <Card pressable style={styles.quickActionCard} onPress={() => router.push({ pathname: ROUTES.ELECTION_DETAIL, params: { id: electionId ?? 'e1' } })}>
           <View style={[styles.quickActionIcon, { backgroundColor: colors.primary + '12' }]}>
@@ -235,7 +235,6 @@ export default function DashboardScreen() {
   const recentIncidents = incidents.slice(0, 3);
   const totalReportingPUs = allResults.length;
   const totalPUs = 2500;
-  const reportingPct = Math.min(Math.round((totalReportingPUs / totalPUs) * 100), 100);
 
   const isFieldAgent = user?.role === 'FIELD_AGENT';
   const isPollingAgent = user?.role === 'POLLING_AGENT';
@@ -272,6 +271,7 @@ export default function DashboardScreen() {
   return (
     <ScreenView scrollable keyboardShouldPersistTaps="handled" refreshControl={refreshControl}>
       <View style={{ paddingBottom: spacing.xxl, gap: spacing.screen.sectionGap }}>
+        <EntranceView delay={0}>
         <View style={styles.welcomeWrap}>
           <LinearGradient colors={[...gradientPresets.primary]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.welcomeGradient}>
             <ThemedText variant="xl" style={{ color: '#fff', fontWeight: '700', marginBottom: spacing.xs }} minFontSize={18} maxFontSize={26}>
@@ -281,7 +281,7 @@ export default function DashboardScreen() {
               {isElectionOfficer ? 'Election Officer Dashboard' : isFieldAgent ? 'Field Agent Dashboard' : 'Election Intelligence'}
             </ThemedText>
             {FEATURES.ENABLE_LIVE_POLLING && allResults.length > 0 && (
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.xs, marginTop: spacing.sm, backgroundColor: 'rgba(255,255,255,0.18)', alignSelf: 'flex-start', paddingHorizontal: spacing.sm, paddingVertical: 4, borderRadius: radius.full }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.xs, marginTop: spacing.sm, backgroundColor: 'rgba(255,255,255,0.18)', alignSelf: 'flex-start', paddingHorizontal: spacing.sm, paddingVertical: spacing['2xs'], borderRadius: radius.full }}>
                 <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: '#22c55e' }} />
                 <ThemedText variant="caption" style={{ color: '#fff', fontWeight: '700' }}>
                   LIVE · {allResults.length} PUs reporting
@@ -290,15 +290,20 @@ export default function DashboardScreen() {
             )}
           </LinearGradient>
         </View>
+        </EntranceView>
 
         {FEATURES.ENABLE_INCIDENT_MARQUEE && incidents.length > 0 && (
+          <EntranceView delay={80}>
           <IncidentMarquee incidents={incidents} style={{ marginHorizontal: 0 }} />
+          </EntranceView>
         )}
 
+        <EntranceView delay={140}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: spacing.md }} keyboardShouldPersistTaps="handled">
           <StatCard icon="🗳" label="Total Elections" value={String(elections.length)} gradient={gradientPresets.primary} colors={colors} />
           <StatCard icon="⚠" label="Open Incidents" value={String(recentIncidents.length)} gradient={gradientPresets.accent} colors={colors} />
         </ScrollView>
+        </EntranceView>
 
         {(isFieldAgent || isPollingAgent) && (
           <View>
@@ -383,11 +388,11 @@ export default function DashboardScreen() {
                   const isWinner = puDetails.winner && c.id === puDetails.winner.id;
                   const isWatched = user?.watchCandidateId === c.id;
                   return (
-                    <View key={c.id} style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.xs, paddingVertical: spacing.xs, borderBottomWidth: 1, borderBottomColor: colors.border, backgroundColor: isWinner ? colors.success + '12' : isWatched ? colors.accent + '12' : 'transparent', paddingHorizontal: isWinner || isWatched ? spacing.sm : 0, borderRadius: radius.sm }}>
+                    <View key={c.id} style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.xs, paddingVertical: spacing.xs, borderBottomWidth: 1, borderBottomColor: colors.border, backgroundColor: isWinner ? colors.verified + '12' : isWatched ? colors.accent + '12' : 'transparent', paddingHorizontal: isWinner || isWatched ? spacing.sm : 0, borderRadius: radius.sm }}>
                       <ThemedText variant="body" style={{ flex: 1, fontWeight: isWinner || isWatched ? '700' : '400' }}>{c.fullName}</ThemedText>
                       <ThemedText variant="caption" color="textSecondary">{c.partyAcronym}</ThemedText>
-                      <ThemedText variant="body" style={{ fontWeight: '700', color: isWinner ? colors.success : undefined }}>{c.votes.toLocaleString()}</ThemedText>
-                      {isWinner && <ThemedText variant="caption" style={{ color: colors.success, fontWeight: '700' }}>WINNER</ThemedText>}
+                      <ThemedText variant="body" style={{ fontWeight: '700', color: isWinner ? colors.verified : undefined }}>{c.votes.toLocaleString()}</ThemedText>
+                      {isWinner && <ThemedText variant="caption" style={{ color: colors.verified, fontWeight: '700' }}>WINNER</ThemedText>}
                       {isWatched && !isWinner && <ThemedText variant="caption" style={{ color: colors.accent, fontWeight: '700' }}>WATCHING</ThemedText>}
                     </View>
                   );
@@ -419,26 +424,44 @@ export default function DashboardScreen() {
         )}
 
         {!isFieldAgent && !isPollingAgent && (
-          <View>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.sm }}>
-              <View style={[styles.sectionIndicator, { backgroundColor: colors.primary }]} />
-              <ThemedText variant="h3" style={{ flex: 1 }} minFontSize={16} maxFontSize={22}>Reporting Progress</ThemedText>
-            </View>
-            <Card style={[shadows.md]}>
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: spacing.sm }}>
-                <ThemedText variant="body" style={{ fontWeight: '500' }}>{totalReportingPUs.toLocaleString()} / {totalPUs.toLocaleString()} Polling Units</ThemedText>
-                <ThemedText variant="caption" color="textSecondary" style={{ fontWeight: '600' }}>{reportingPct}%</ThemedText>
-              </View>
-              <View style={[styles.progressTrack, { backgroundColor: colors.border }]}>
-                <View style={[styles.progressFill, { width: `${reportingPct}%`, backgroundColor: colors.primary }]} />
-              </View>
-            </Card>
-          </View>
+          <EntranceView delay={200}>
+            <SectionHeader title="Reporting Progress" />
+            <CoverageHero reporting={totalReportingPUs} total={totalPUs} />
+          </EntranceView>
         )}
 
+        <EntranceView delay={260}>
         <WinnerCard candidates={candidates} results={allResults} colors={colors} />
+        </EntranceView>
 
+        <EntranceView delay={290}>
+          <SectionHeader title="Vote Share" color={colors.accent} />
+          <Card style={shadows.md}>
+            <VoteShareBar
+              entries={(() => {
+                const totals: Record<string, number> = {};
+                let grand = 0;
+                allResults.forEach((r) => {
+                  Object.entries(r.candidateVotes).forEach(([id, v]) => {
+                    totals[id] = (totals[id] ?? 0) + (v as number);
+                    grand += v as number;
+                  });
+                });
+                return candidates.map((c) => ({
+                  id: c.id,
+                  name: c.fullName,
+                  partyAcronym: c.partyAcronym,
+                  votes: totals[c.id] ?? 0,
+                  pct: grand > 0 ? ((totals[c.id] ?? 0) / grand) * 100 : 0,
+                }));
+              })()}
+            />
+          </Card>
+        </EntranceView>
+
+        <EntranceView delay={320}>
         <WatchCandidateCard candidates={candidates} colors={colors} />
+        </EntranceView>
 
         {isFieldAgent && (
           <View>
@@ -457,9 +480,9 @@ export default function DashboardScreen() {
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                     <View>
                       <ThemedText variant="body" style={{ fontWeight: '600' }}>{r.pollingUnitName}</ThemedText>
-                      <ThemedText variant="caption" color="textSecondary">{r.totalVotesCast.toLocaleString()} votes</ThemedText>
+                      <ThemedText variant="caption" color="textSecondary">{r.totalVotesCast.toLocaleString()} votes · {r.status}</ThemedText>
                     </View>
-                    <View style={[styles.statusDot, { backgroundColor: colors.success }]} />
+                    <View style={[styles.statusDot, { backgroundColor: resultStatusColor(r.status, scheme) }]} />
                   </View>
                 </Card>
               ))
@@ -467,9 +490,9 @@ export default function DashboardScreen() {
           </View>
         )}
 
-        <ThemedText variant="h3" style={{ marginBottom: spacing.sm }} minFontSize={16} maxFontSize={22}>
-          Upcoming Elections
-        </ThemedText>
+        <EntranceView delay={380}>
+        <SectionHeader title="Upcoming Elections" />
+        </EntranceView>
         {loading ? (
           <View style={{ gap: spacing.md, paddingBottom: spacing.md }}>
             <SkeletonCard />
@@ -500,9 +523,9 @@ export default function DashboardScreen() {
           </View>
         )}
 
-        <ThemedText variant="h3" style={{ marginBottom: spacing.sm }} minFontSize={16} maxFontSize={22}>
-          Recent Incidents
-        </ThemedText>
+        <EntranceView delay={440}>
+        <SectionHeader title="Recent Incidents" color={colors.accent} />
+        </EntranceView>
         {recentIncidents.length === 0 ? (
           <EmptyState icon="shield-checkmark-outline" title="No Incidents" subtitle="All clear — no incidents reported" />
         ) : (
@@ -531,7 +554,9 @@ export default function DashboardScreen() {
           })
         )}
 
+        <EntranceView delay={500}>
         <QuickActions colors={colors} electionId={elections[0]?.id} />
+        </EntranceView>
       </View>
     </ScreenView>
   );

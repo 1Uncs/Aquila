@@ -76,6 +76,22 @@ export const opacities = {
   muted: 0.7,
 };
 
+export const gradientPresets = {
+  primary: ['#0D47A1', '#1565C0'] as const,
+  accent: ['#f59e0b', '#f97316'] as const,
+  success: ['#10b981', '#059669'] as const,
+  election: ['#0D47A1', '#1565C0'] as const,
+};
+
+export const statusPalette = {
+  verified: 'verified',
+  pending: 'pending',
+  disputed: 'disputed',
+  rejected: 'rejected',
+} as const;
+
+export type ResultStatus = keyof typeof statusPalette;
+
 export const animation = {
   fast: 150,
   xfast: 200,
@@ -84,9 +100,8 @@ export const animation = {
   xslow: 800,
 };
 
-export const gradientPresets = {
-  primary: ['#4f46e5', '#7c3aed'] as const,
-  accent: ['#f59e0b', '#f97316'] as const,
-  success: ['#10b981', '#059669'] as const,
-  election: ['#4f46e5', '#4338ca'] as const,
-};
+export const spring = {
+  snappy: { tension: 220, friction: 22 },
+  bouncy: { tension: 180, friction: 14 },
+  gentle: { tension: 120, friction: 18 },
+} as const;

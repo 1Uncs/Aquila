@@ -18,7 +18,13 @@ function pushOptions(title: string) {
 
 export default function AppLayout() {
   return (
-    <Stack>
+    <Stack
+      screenOptions={{
+        contentStyle: { backgroundColor: '#0B1220' },
+        animation: 'slide_from_right',
+        animationDuration: 250,
+      }}
+    >
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       <Stack.Screen name="election-detail" options={pushOptions('Election Details')} />
       <Stack.Screen name="result-submit" options={pushOptions('Submit Result')} />

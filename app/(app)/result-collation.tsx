@@ -102,8 +102,8 @@ export default function CollationScreen() {
               </ThemedText>
             </LinearGradient>
 
-            <Card style={[{ backgroundColor: colors.warningSubtle, borderColor: colors.warning + '30', borderWidth: 1, marginTop: spacing.md, marginBottom: spacing.sm }]}>
-              <ThemedText variant="caption" style={{ color: colors.warning, fontWeight: '600' }}>
+            <Card style={[{ backgroundColor: colors.pendingSubtle, borderColor: colors.pending + '30', borderWidth: 1, marginTop: spacing.md, marginBottom: spacing.sm }]}>
+              <ThemedText variant="caption" style={{ color: colors.pending, fontWeight: '600' }}>
                 Internal projection only — not an INEC declaration. Based on submitted PU results.
               </ThemedText>
               <ThemedText variant="caption" color="textSecondary" style={{ marginTop: 4 }}>

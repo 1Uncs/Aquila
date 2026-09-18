@@ -9,3 +9,7 @@ export { FlashListItem } from './FlashListItem';
 export { Shimmer } from './Shimmer';
 export * from './Skeleton';
 export { IncidentMarquee } from './IncidentMarquee';
+export { EntranceView } from './EntranceView';
+export { SectionHeader } from './SectionHeader';
+export { VoteShareBar } from './VoteShareBar';
+export { CoverageHero } from './CoverageHero';

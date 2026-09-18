@@ -8,6 +8,7 @@ import { useIncidentsStore } from '@/features/auth/store';
 import { ROUTES } from '@/constants/routes';
 import { spacing, radius } from '@/constants/tokens';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
+import { incidentStatusColor, resultStatusSubtle } from '@/core/utils/resultStatus';
 import { useStatusBar } from '@/core/hooks/useStatusBar';
 import { useIncidentsQuery } from '@/features/elections/hooks';
 import { useRefreshControl, useForegroundRefresh } from '@/core/hooks';
@@ -85,14 +86,22 @@ export default function IncidentsScreen() {
         renderItem={({ item: incident }) => {
           const sevColorKey = SEVERITY_COLORS[incident.severity] || 'textSecondary';
           const sevColor = colors[sevColorKey as keyof typeof Colors.light] as string;
+          const statusColor = incidentStatusColor(incident.status, scheme);
           return (
             <FlashListItem id={incident.id}>
               <View style={styles.row}>
                 <View style={[styles.severityDot, { backgroundColor: sevColor }]} />
                 <View style={styles.incidentInfo}>
-                  <ThemedText variant="body" style={{ fontWeight: '600' }}>
-                    {incident.category.replace(/_/g, ' ')}
-                  </ThemedText>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
+                    <ThemedText variant="body" style={{ fontWeight: '600', flex: 1 }}>
+                      {incident.category.replace(/_/g, ' ')}
+                    </ThemedText>
+                    <View style={{ backgroundColor: resultStatusSubtle(incident.status, scheme), paddingHorizontal: spacing.sm, paddingVertical: spacing['2xs'], borderRadius: radius.full }}>
+                      <ThemedText variant="caption" style={{ color: statusColor, fontWeight: '700' }}>
+                        {incident.status.replace(/_/g, ' ')}
+                      </ThemedText>
+                    </View>
+                  </View>
                   <ThemedText variant="caption" color="textSecondary" style={{ marginTop: spacing.xs }}>
                     {incident.electoralArea}
                   </ThemedText>
@@ -100,7 +109,7 @@ export default function IncidentsScreen() {
                     {incident.description.length > 80 ? incident.description.slice(0, 80) + '...' : incident.description}
                   </ThemedText>
                   <ThemedText variant="caption" color="textMuted" style={{ marginTop: spacing.xs }}>
-                    {new Date(incident.reportedAt).toLocaleString()} · {incident.status}
+                    {new Date(incident.reportedAt).toLocaleString()}
                   </ThemedText>
                 </View>
               </View>
@@ -114,7 +123,7 @@ export default function IncidentsScreen() {
 }
 
 const styles = StyleSheet.create({
-  chipRow: { paddingHorizontal: spacing.md, gap: spacing.sm, marginBottom: spacing.lg },
+  chipRow: { gap: spacing.sm, marginBottom: spacing.lg, paddingRight: spacing.md },
   chip: { marginRight: spacing.sm },
   actionRow: { flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.lg },
   actionBtn: { flex: 1 },
