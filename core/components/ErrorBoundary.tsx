@@ -3,6 +3,7 @@ import { View, StyleSheet, Pressable } from 'react-native';
 import { ThemedText } from './ThemedText';
 import { spacing, radius } from '@/constants/tokens';
 import Colors from '@/constants/colors';
+import { formatError } from '@/core/utils/formatError';
 
 type State = { hasError: boolean; error: Error | null };
 
@@ -29,7 +30,7 @@ export class RootErrorBoundary extends React.Component<{ children: React.ReactNo
             Something went wrong
           </ThemedText>
           <ThemedText variant="body" color="textSecondary" style={{ marginBottom: spacing.lg, textAlign: 'center' }}>
-            {this.state.error?.message ?? 'An unexpected error occurred.'}
+            {formatError(this.state.error)}
           </ThemedText>
           <Pressable onPress={this.handleRetry} style={[styles.retryBtn, { backgroundColor: Colors.light.primary }]}>
             <ThemedText variant="label" style={{ color: '#fff', textAlign: 'center' }}>

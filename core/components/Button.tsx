@@ -6,8 +6,10 @@ import {
   PressableProps,
   Platform,
   FlexAlignType,
+  Animated,
 } from 'react-native';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
+import { usePressScale } from '@/core/hooks/usePressScale';
 import { DebouncedPressable } from './DebouncedPressable';
 import Colors from '@/constants/colors';
 import { ThemedText } from './ThemedText';
@@ -48,6 +50,7 @@ export function Button({
 }: ButtonProps) {
   const scheme = useColorScheme() ?? 'light';
   const colors = Colors[scheme];
+  const { scale, onPressIn: onScaleIn, onPressOut: onScaleOut } = usePressScale({ toValue: 0.97 });
 
   const sizeStyles = {
     sm: { paddingVertical: spacing.sm, paddingHorizontal: spacing.md, minHeight: 44 },
@@ -86,11 +89,7 @@ export function Button({
     sizeStyles[size],
     variantStyles[variant],
     fullWidth && { alignSelf: 'stretch' as FlexAlignType },
-    pressed && {
-      opacity: opacities.press,
-      transform: [{ scale: 0.97 }],
-      ...(size === 'lg' && { transform: [{ scale: 0.97 }, { translateY: 1 }] }),
-    },
+    pressed && { opacity: opacities.press },
     disabled && { opacity: opacities.disabled },
     Platform.OS === 'android' && styles.androidRippleContainer,
     style,
@@ -99,6 +98,8 @@ export function Button({
   return (
     <DebouncedPressable
       onPress={onPress}
+      onPressIn={onScaleIn}
+      onPressOut={onScaleOut}
       disabled={disabled || loading}
       style={pressableStyle}
       testID={testID}
@@ -112,24 +113,31 @@ export function Button({
       }}
       {...rest}
     >
-      {renderIcon(leftIcon, textColor)}
-      <ThemedText
-        variant="label"
-        style={[
-          styles.label,
-          { color: textColor },
-          size === 'lg' && { fontSize: 14 },
-        ]}
-      >
-        {loading ? 'Loading...' : label}
-      </ThemedText>
-      {renderIcon(rightIcon, textColor)}
+      <Animated.View style={[styles.row, { transform: [{ scale }] }]}>
+        {renderIcon(leftIcon, textColor)}
+        <ThemedText
+          variant="label"
+          style={[
+            styles.label,
+            { color: textColor },
+            size === 'lg' && { fontSize: 14 },
+          ]}
+        >
+          {loading ? 'Loading...' : label}
+        </ThemedText>
+        {renderIcon(rightIcon, textColor)}
+      </Animated.View>
     </DebouncedPressable>
   );
 }
 
 const styles = StyleSheet.create({
   button: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+  },
+  row: {
     alignItems: 'center',
     justifyContent: 'center',
     flexDirection: 'row',

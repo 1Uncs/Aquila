@@ -59,12 +59,27 @@ function RootLayoutNav() {
       const error = reason instanceof Error ? reason : new Error(String(reason));
       console.error('[UnhandledRejection]', error);
     };
-    if (typeof globalThis !== 'undefined' && 'addEventListener' in globalThis) {
-      (globalThis as unknown as { addEventListener: (type: string, fn: (e: { reason: unknown }) => void) => void }).addEventListener('unhandledrejection', handler);
+    if (typeof globalThis !== 'undefined') {
+      if ('addEventListener' in globalThis) {
+        (globalThis as unknown as { addEventListener: (type: string, fn: (e: { reason: unknown }) => void) => void }).addEventListener('unhandledrejection', handler);
+      }
+      const anyGlobal = globalThis as Record<string, unknown>;
+      if ('onerror' in anyGlobal) {
+        anyGlobal.onerror = (msg: string | Error, _url?: string, _line?: number, _col?: number, err?: Error) => {
+          const error = err instanceof Error ? err : msg instanceof Error ? msg : new Error(String(msg));
+          console.error('[GlobalError]', error);
+        };
+      }
     }
     return () => {
-      if (typeof globalThis !== 'undefined' && 'removeEventListener' in globalThis) {
-        (globalThis as unknown as { removeEventListener: (type: string, fn: (e: { reason: unknown }) => void) => void }).removeEventListener('unhandledrejection', handler);
+      if (typeof globalThis !== 'undefined') {
+        if ('removeEventListener' in globalThis) {
+          (globalThis as unknown as { removeEventListener: (type: string, fn: (e: { reason: unknown }) => void) => void }).removeEventListener('unhandledrejection', handler);
+        }
+        const anyGlobal = globalThis as Record<string, unknown>;
+        if ('onerror' in anyGlobal) {
+          anyGlobal.onerror = null;
+        }
       }
     };
   }, []);
@@ -97,34 +112,36 @@ function RootLayoutNav() {
   useEffect(() => {
     if (!isNavigationReady || !isAuthenticated || seededRef.current) return;
     seededRef.current = true;
+    const controller = new AbortController();
     (async () => {
-      const [cycles, elections, results, incidents, states, lgas, pus, parties, candidates] = await Promise.all([
-        mockApi.getElectionCycles(),
-        mockApi.getElections(),
-        mockApi.getResults(),
-        mockApi.getIncidents(),
-        mockApi.getStates(),
-        mockApi.getLgas(),
-        mockApi.getPollingUnits(),
-        mockApi.getParties(),
-        mockApi.getCandidates('e1'),
-      ]);
-      useElectionsStore.getState().setCycles(cycles);
-      useElectionsStore.getState().setElections(elections);
-      useResultsStore.getState().setSubmissions(results);
-      useIncidentsStore.getState().setIncidents(incidents);
-      useLocationsStore.getState().setStates(states);
-      useLocationsStore.getState().setLgas(lgas);
-      useLocationsStore.getState().setPollingUnits(pus);
-      queryClient.setQueryData(['elections', 'cycles'], cycles);
-      queryClient.setQueryData(['elections', 'list'], elections);
-      queryClient.setQueryData(['results', 'list'], results);
-      queryClient.setQueryData(['incidents', 'list'], incidents);
-      queryClient.setQueryData(['locations', 'states'], states);
-      queryClient.setQueryData(['locations', 'lgas', undefined], lgas.slice(0, 20));
-      queryClient.setQueryData(['locations', 'pollingUnits', undefined], pus.slice(0, 15));
-      queryClient.setQueryData(['parties', 'list'], parties);
-      queryClient.setQueryData(['elections', 'candidates', 'e1'], candidates);
+      try {
+        const [cycles, elections, results, incidents, states, lgas, pus, parties, candidates] = await Promise.all([
+          mockApi.getElectionCycles(),
+          mockApi.getElections(),
+          mockApi.getResults(),
+          mockApi.getIncidents(),
+          mockApi.getStates(),
+          mockApi.getLgas(),
+          mockApi.getPollingUnits(),
+          mockApi.getParties(),
+          mockApi.getCandidates('e1'),
+        ]);
+        useElectionsStore.getState().setCycles(cycles);
+        useElectionsStore.getState().setElections(elections);
+        useResultsStore.getState().setSubmissions(results);
+        useIncidentsStore.getState().setIncidents(incidents);
+        useLocationsStore.getState().setStates(states);
+        useLocationsStore.getState().setLgas(lgas);
+        useLocationsStore.getState().setPollingUnits(pus);
+        queryClient.setQueryData(['elections', 'cycles'], cycles);
+        queryClient.setQueryData(['elections', 'list'], elections);
+        queryClient.setQueryData(['results', 'list'], results);
+        queryClient.setQueryData(['incidents', 'list'], incidents);
+        queryClient.setQueryData(['locations', 'states'], states);
+        queryClient.setQueryData(['locations', 'lgas', undefined], lgas.slice(0, 20));
+        queryClient.setQueryData(['locations', 'pollingUnits', undefined], pus.slice(0, 15));
+        queryClient.setQueryData(['parties', 'list'], parties);
+        queryClient.setQueryData(['elections', 'candidates', 'e1'], candidates);
       const extraResults: import('@/features/auth/store').ResultSubmission[] = [
         {
           id: 'r-search-1',
@@ -244,8 +261,14 @@ function RootLayoutNav() {
         },
       ];
       useResultsStore.getState().setSubmissions([...results, ...demoDrafts]);
-    })();
-  }, [isNavigationReady, isAuthenticated]);
+    } catch (e) {
+      if (__DEV__) console.warn('[nav] seeding failed', e);
+    }
+  })();
+  return () => {
+    controller.abort();
+  };
+}, [isNavigationReady, isAuthenticated]);
 
   useEffect(() => {
     if (__DEV__) console.log(`[nav] check isReady=${isNavigationReady} auth=${isAuthenticated} prev=${prevAuthRef.current} segments=${segments.join('/') || '(empty)'}`);

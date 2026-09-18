@@ -1,7 +1,8 @@
-import React, { useRef, useEffect } from 'react';
+import React from 'react';
 import { StyleSheet, ViewStyle, View, PressableStateCallbackType, Platform, Animated } from 'react-native';
 import { DebouncedPressable } from './DebouncedPressable';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
+import { usePressScale } from '@/core/hooks/usePressScale';
 import Colors from '@/constants/colors';
 import { radius, shadows, opacities, border, spacing } from '@/constants/tokens';
 
@@ -93,47 +94,13 @@ function AnimatedCard({
 }) {
   const scheme = useColorScheme() ?? 'light';
   const colors = Colors[scheme];
-
-  const scale = useRef(new Animated.Value(1)).current;
-  const isPressing = useRef(false);
-  const safetyTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => {
-    return () => {
-      if (safetyTimer.current) clearTimeout(safetyTimer.current);
-    };
-  }, []);
-
-  const animateTo = (toValue: number, velocity = 0) => {
-    Animated.spring(scale, {
-      toValue,
-      velocity,
-      tension: 180,
-      friction: 14,
-      useNativeDriver: true,
-    }).start();
-  };
-
-  const handlePressIn = (_e: unknown) => {
-    if (isPressing.current) return;
-    isPressing.current = true;
-    if (safetyTimer.current) clearTimeout(safetyTimer.current);
-    animateTo(0.97, 0.8);
-  };
-
-  const handlePressOut = (_e: unknown) => {
-    isPressing.current = false;
-    if (safetyTimer.current) clearTimeout(safetyTimer.current);
-    safetyTimer.current = setTimeout(() => {
-      animateTo(1, 0.5);
-    }, 80);
-  };
+  const { scale, onPressIn, onPressOut } = usePressScale();
 
   return (
     <DebouncedPressable
       onPress={onPress}
-      onPressIn={handlePressIn}
-      onPressOut={handlePressOut}
+      onPressIn={onPressIn}
+      onPressOut={onPressOut}
       testID={testID}
       style={({ pressed }: PressableStateCallbackType) => [
         { borderRadius: radius.md },

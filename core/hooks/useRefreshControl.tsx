@@ -24,7 +24,9 @@ export function useRefreshControl( refreshing: boolean, onRefresh: () => void) {
       uniqueKeys.forEach((key) => {
         queryClient.invalidateQueries({ queryKey: key as never });
       });
-      onRefresh();
+      Promise.resolve(onRefresh()).catch((e) => {
+        if (__DEV__) console.warn('[refreshControl] onRefresh failed', e);
+      });
     },
     [queryClient, onRefresh]
   );

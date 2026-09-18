@@ -5,5 +5,10 @@ module.exports = function (api) {
     plugins: [
       'react-compiler',
     ],
+    env: {
+      production: {
+        plugins: ['transform-remove-console'],
+      },
+    },
   };
 };

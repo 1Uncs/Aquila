@@ -96,23 +96,29 @@ export default function ReportIncidentScreen() {
   }, [recordingDuration, isRecording]);
 
   const requestPermission = async (type: 'camera' | 'mediaLibrary') => {
-    if (Platform.OS !== 'web') {
-      if (type === 'camera') {
-        const { status } = await ImagePicker.requestCameraPermissionsAsync();
-        if (status !== 'granted') {
-          Alert.alert('Permission needed', 'Camera permission is required to take photos or videos.');
-          return false;
+    try {
+      if (Platform.OS !== 'web') {
+        if (type === 'camera') {
+          const { status } = await ImagePicker.requestCameraPermissionsAsync();
+          if (status !== 'granted') {
+            Alert.alert('Permission needed', 'Camera permission is required to take photos or videos.');
+            return false;
+          }
+        }
+        if (type === 'mediaLibrary') {
+          const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+          if (status !== 'granted') {
+            Alert.alert('Permission needed', 'Media library permission is required to attach files.');
+            return false;
+          }
         }
       }
-      if (type === 'mediaLibrary') {
-        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-        if (status !== 'granted') {
-          Alert.alert('Permission needed', 'Media library permission is required to attach files.');
-          return false;
-        }
-      }
+      return true;
+    } catch (e) {
+      console.error('Permission request failed:', e);
+      Alert.alert('Error', 'Failed to request permission.');
+      return false;
     }
-    return true;
   };
 
   const handleAttachAudio = async () => {
@@ -216,35 +222,50 @@ export default function ReportIncidentScreen() {
   const handleAddPhoto = async () => {
     const ok = await requestPermission('camera');
     if (!ok) return;
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
-      quality: 0.8,
-      allowsMultipleSelection: true,
-    });
-    if (!result.canceled) {
-      setMediaUris((prev) => [...prev, ...result.assets.map((a) => a.uri)]);
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        quality: 0.8,
+        allowsMultipleSelection: true,
+      });
+      if (!result.canceled) {
+        setMediaUris((prev) => [...prev, ...result.assets.map((a) => a.uri)]);
+      }
+    } catch (error) {
+      console.error('Error picking photo:', error);
+      Alert.alert('Error', 'Failed to attach photo.');
     }
   };
 
   const handleTakePhoto = async () => {
     const ok = await requestPermission('camera');
     if (!ok) return;
-    const result = await ImagePicker.launchCameraAsync({ quality: 0.8 });
-    if (!result.canceled) {
-      setMediaUris((prev) => [...prev, ...result.assets.map((a) => a.uri)]);
+    try {
+      const result = await ImagePicker.launchCameraAsync({ quality: 0.8 });
+      if (!result.canceled) {
+        setMediaUris((prev) => [...prev, ...result.assets.map((a) => a.uri)]);
+      }
+    } catch (error) {
+      console.error('Error taking photo:', error);
+      Alert.alert('Error', 'Failed to take photo.');
     }
   };
 
   const handleRecordVideo = async () => {
     const ok = await requestPermission('camera');
     if (!ok) return;
-    const result = await ImagePicker.launchCameraAsync({
-      mediaTypes: ['videos'],
-      videoMaxDuration: 60,
-      quality: 0.8,
-    });
-    if (!result.canceled) {
-      setMediaUris((prev) => [...prev, ...result.assets.map((a) => a.uri)]);
+    try {
+      const result = await ImagePicker.launchCameraAsync({
+        mediaTypes: ['videos'],
+        videoMaxDuration: 60,
+        quality: 0.8,
+      });
+      if (!result.canceled) {
+        setMediaUris((prev) => [...prev, ...result.assets.map((a) => a.uri)]);
+      }
+    } catch (error) {
+      console.error('Error recording video:', error);
+      Alert.alert('Error', 'Failed to record video.');
     }
   };
 
