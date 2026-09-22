@@ -173,7 +173,9 @@ export default function ProfileTabScreen() {
             { label: 'Electoral Geography & Autocomplete', icon: 'map-outline', route: ROUTES.LOCATIONS },
             { label: 'Political Parties & Candidate Directory', icon: 'people-outline', route: ROUTES.PARTIES },
             { label: 'National Result Collation Room', icon: 'bar-chart-outline', route: ROUTES.RESULT_COLLATION },
-            { label: 'Draft Results Queue', icon: 'save-outline', route: ROUTES.RESULT_DRAFTS },
+            ...(user?.role === 'ELECTION_OFFICER'
+              ? [{ label: 'Audit & Search Results', icon: 'search-outline', route: ROUTES.RESULT_SEARCH }]
+              : [{ label: 'Draft Results Queue', icon: 'save-outline', route: ROUTES.RESULT_DRAFTS }]),
           ].map((item) => (
             <Card
               key={item.label}

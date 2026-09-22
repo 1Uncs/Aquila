@@ -400,7 +400,10 @@ export const mockApi = {
         description: 'Suspected vote buying observed near the PU entrance',
         latitude: 6.6,
         longitude: 3.35,
-        mediaUrls: [],
+        mediaUrls: [
+          'https://images.unsplash.com/photo-1540910419892-4a36d2c3266c?q=80&w=1000',
+          'evidence-recording-001.m4a',
+        ],
         reportedBy: 'u2',
         reportedAt: '2027-02-25T12:15:00Z',
       },

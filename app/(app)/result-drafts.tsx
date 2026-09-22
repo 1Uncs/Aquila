@@ -8,16 +8,43 @@ import { spacing, radius, shadows } from '@/constants/tokens';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
 import { useStatusBar } from '@/core/hooks/useStatusBar';
 import Colors from '@/constants/colors';
-import { useResultsStore } from '@/features/auth/store';
+import { useResultsStore, useAuthStore } from '@/features/auth/store';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 
 export default function ResultDraftsScreen() {
   const scheme = useColorScheme() ?? 'light';
   const colors = Colors[scheme];
+  const { user } = useAuthStore();
   useStatusBar({ barStyle: scheme === 'dark' ? 'light' : 'dark' });
 
   const { submissions, updateSubmission, removeSubmission } = useResultsStore();
+  const isElectionOfficer = user?.role === 'ELECTION_OFFICER';
+
+  if (isElectionOfficer) {
+    return (
+      <ScreenView>
+        <View style={{ padding: spacing.lg, alignItems: 'center', marginTop: spacing.xxl }}>
+          <Card style={{ padding: spacing.xl, width: '100%', alignItems: 'center' }}>
+            <View style={[styles.restrictedIcon, { backgroundColor: colors.primarySubtle }]}>
+              <Ionicons name="shield-outline" size={32} color={colors.primary} />
+            </View>
+            <ThemedText variant="h3" color="primary" fontFamily="bold" style={{ textAlign: 'center', marginTop: spacing.sm }}>
+              Supervisory Access Restricted
+            </ThemedText>
+            <ThemedText variant="body" color="textSecondary" style={{ textAlign: 'center', marginVertical: spacing.sm }}>
+              As an Election Officer, your console is dedicated to monitoring, verification, and collation audit. Draft ballot return queues are strictly managed by Polling Unit Agents.
+            </ThemedText>
+            <Button
+              label="Go to Collation Room"
+              variant="primary"
+              onPress={() => router.replace(ROUTES.RESULT_COLLATION as any)}
+            />
+          </Card>
+        </View>
+      </ScreenView>
+    );
+  }
 
   // Active drafts from persistent store (Audio Part 3)
   const drafts = submissions.filter((s) => s.status === 'DRAFT');
@@ -199,6 +226,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: radius.full,
+  },
+  draftMetaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingTop: spacing.xs,
+  },
+  restrictedIcon: {
+    width: 56,
+    height: 56,
+    borderRadius: radius.full,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   statsStrip: {
     flexDirection: 'row',

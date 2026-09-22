@@ -42,7 +42,8 @@ export default function ResultsScreen() {
     return submissions.filter((s) => s.status === 'DRAFT');
   }, [submissions]);
 
-  const activeList = activeTab === 'published' ? publishedResults : draftResults;
+  const isOfficer = user?.role === 'ELECTION_OFFICER';
+  const activeList = isOfficer || activeTab === 'published' ? publishedResults : draftResults;
 
   const totalVotes = publishedResults.reduce((sum, r) => sum + (r.totalVotesCast || 0), 0);
 
@@ -192,55 +193,57 @@ export default function ResultsScreen() {
           )}
         </View>
 
-        {/* Tab Switcher: Published Results vs Drafts (Audio Part 3) */}
-        <View style={[styles.tabBar, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }]}>
-          <Pressable
-            onPress={() => {
-              impact(Haptics.ImpactFeedbackStyle.Light);
-              setActiveTab('published');
-            }}
-            style={[
-              styles.tabBtn,
-              activeTab === 'published' && [styles.activeTabBtn, { backgroundColor: colors.primary }],
-            ]}
-          >
-            <ThemedText
-              variant="caption"
-              color={activeTab === 'published' ? '#FFFFFF' : 'textSecondary'}
-              fontFamily={activeTab === 'published' ? 'bold' : 'medium'}
+        {/* Tab Switcher: Published Results vs Drafts (Polling Agents only) */}
+        {!isOfficer && (
+          <View style={[styles.tabBar, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }]}>
+            <Pressable
+              onPress={() => {
+                impact(Haptics.ImpactFeedbackStyle.Light);
+                setActiveTab('published');
+              }}
+              style={[
+                styles.tabBtn,
+                activeTab === 'published' && [styles.activeTabBtn, { backgroundColor: colors.primary }],
+              ]}
             >
-              Published ({publishedResults.length})
-            </ThemedText>
-          </Pressable>
-
-          <Pressable
-            onPress={() => {
-              impact(Haptics.ImpactFeedbackStyle.Light);
-              setActiveTab('drafts');
-            }}
-            style={[
-              styles.tabBtn,
-              activeTab === 'drafts' && [styles.activeTabBtn, { backgroundColor: colors.primary }],
-            ]}
-          >
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
               <ThemedText
                 variant="caption"
-                color={activeTab === 'drafts' ? '#FFFFFF' : 'textSecondary'}
-                fontFamily={activeTab === 'drafts' ? 'bold' : 'medium'}
+                color={activeTab === 'published' ? '#FFFFFF' : 'textSecondary'}
+                fontFamily={activeTab === 'published' ? 'bold' : 'medium'}
               >
-                Drafts ({draftResults.length})
+                Published ({publishedResults.length})
               </ThemedText>
-              {draftResults.length > 0 && (
-                <View style={[styles.tabBadge, { backgroundColor: colors.warning }]}>
-                  <ThemedText variant="label" color="#FFFFFF" fontFamily="bold" style={{ fontSize: 9 }}>
-                    {draftResults.length}
-                  </ThemedText>
-                </View>
-              )}
-            </View>
-          </Pressable>
-        </View>
+            </Pressable>
+
+            <Pressable
+              onPress={() => {
+                impact(Haptics.ImpactFeedbackStyle.Light);
+                setActiveTab('drafts');
+              }}
+              style={[
+                styles.tabBtn,
+                activeTab === 'drafts' && [styles.activeTabBtn, { backgroundColor: colors.primary }],
+              ]}
+            >
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                <ThemedText
+                  variant="caption"
+                  color={activeTab === 'drafts' ? '#FFFFFF' : 'textSecondary'}
+                  fontFamily={activeTab === 'drafts' ? 'bold' : 'medium'}
+                >
+                  Drafts ({draftResults.length})
+                </ThemedText>
+                {draftResults.length > 0 && (
+                  <View style={[styles.tabBadge, { backgroundColor: colors.warning }]}>
+                    <ThemedText variant="label" color="#FFFFFF" fontFamily="bold" style={{ fontSize: 9 }}>
+                      {draftResults.length}
+                    </ThemedText>
+                  </View>
+                )}
+              </View>
+            </Pressable>
+          </View>
+        )}
 
         {/* Native FlatList */}
         <FlatList

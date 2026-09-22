@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { ScrollView, View, Platform, KeyboardAvoidingView, Alert, Pressable } from 'react-native';
+import { View, Platform, Alert, Pressable, StyleSheet } from 'react-native';
 import { useAudioRecorder, useAudioRecorderState, AudioModule, RecordingPresets, setAudioModeAsync } from 'expo-audio';
 import * as ImagePicker from 'expo-image-picker';
 import { ScreenView } from '@/core/components/ScreenView';
@@ -185,8 +185,7 @@ export default function ReportIncidentScreen() {
         allowsRecording: true,
         allowsBackgroundRecording: true,
       });
-      chunkIndexRef.current = 0;
-      setAudioChunks([]);
+      chunkIndexRef.current = audioChunks.length;
       await audioRecorder.prepareToRecordAsync();
       audioRecorder.record();
       isRecordingRef.current = true;
@@ -268,6 +267,7 @@ export default function ReportIncidentScreen() {
 
   const handleRemoveMedia = (uri: string) => {
     setMediaUris((prev) => prev.filter((u) => u !== uri));
+    setAudioChunks((prev) => prev.filter((c) => c.uri !== uri));
   };
 
   const handleSubmit = async () => {
@@ -333,24 +333,29 @@ export default function ReportIncidentScreen() {
   }
 
   return (
-    <ScreenView>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        enabled={Platform.OS === 'ios'}
-        style={{ flex: 1 }}
-      >
-        <ScrollView
-          keyboardShouldPersistTaps="handled"
-          keyboardDismissMode="on-drag"
-          contentInsetAdjustmentBehavior="automatic"
-          automaticallyAdjustKeyboardInsets={true}
-          contentContainerStyle={{ paddingBottom: spacing.xxl, paddingTop: spacing.xs }}
-        >
-          {/* Location Scope: Specific Polling Unit vs Area-Wide Incident */}
-          <ThemedText variant="label" style={{ marginBottom: spacing.xs }}>
-            Incident Location Scope
-          </ThemedText>
-          {selectedPuId ? (
+    <ScreenView scrollable contentContainerStyle={styles.scrollContent}>
+      {/* 1. Situation Room Command Header */}
+      <Card style={[styles.heroCard, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }]}>
+        <View style={styles.heroRow}>
+          <View style={[styles.heroIconBadge, { backgroundColor: colors.critical + '18' }]}>
+            <Ionicons name="warning" size={24} color={colors.critical} />
+          </View>
+          <View style={{ flex: 1, marginLeft: spacing.sm }}>
+            <ThemedText variant="title" color="text" fontFamily="bold">
+              Field Incident Dispatch
+            </ThemedText>
+            <ThemedText variant="caption" color="textSecondary">
+              Real-time Situation Room logging with encrypted GPS telemetry
+            </ThemedText>
+          </View>
+        </View>
+      </Card>
+
+      {/* Location Scope: Specific Polling Unit vs Area-Wide Incident */}
+      <ThemedText variant="label" style={{ marginBottom: spacing.xs }}>
+        Incident Location Scope
+      </ThemedText>
+      {selectedPuId ? (
             <Card style={[shadows.sm, { marginBottom: spacing.md, borderColor: colors.primary, borderWidth: 1 }]}>
               <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                 <View style={{ flex: 1, marginRight: spacing.xs }}>
@@ -532,13 +537,35 @@ export default function ReportIncidentScreen() {
             </View>
           )}
 
-          <View style={{ flexDirection: 'row', gap: spacing.md, marginTop: spacing.lg }}>
-            <Button label="Cancel" variant="outline" onPress={() => router.back()} fullWidth />
-            <Button label="Submit" onPress={handleSubmit} loading={submitting} fullWidth />
+          <View style={{ marginTop: spacing.md }}>
+            <Button label="Submit Incident Report" onPress={handleSubmit} loading={submitting} fullWidth />
           </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
     </ScreenView>
   );
 }
+
+const styles = StyleSheet.create({
+  scrollContent: {
+    paddingHorizontal: spacing.md,
+    paddingTop: spacing.xs,
+    paddingBottom: spacing.xxl,
+    gap: spacing.md,
+  },
+  heroCard: {
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    padding: spacing.md,
+  },
+  heroRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  heroIconBadge: {
+    width: 44,
+    height: 44,
+    borderRadius: radius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+});
 

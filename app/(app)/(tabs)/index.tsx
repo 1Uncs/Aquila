@@ -252,7 +252,7 @@ export default function DashboardScreen() {
       </EntranceView>
 
       {/* 2. Drafts Alert Banner (Audio Part 3) */}
-      {draftSubmissions.length > 0 && (
+      {!isElectionOfficer && draftSubmissions.length > 0 && (
         <EntranceView delay={100}>
           <Card
             pressable
@@ -696,102 +696,106 @@ export default function DashboardScreen() {
       {/* 6. Quick Actions Grid */}
       <EntranceView delay={300}>
         <View style={styles.quickGrid}>
-          {isElectionOfficer ? (
+          <View style={styles.quickRow}>
+            {isElectionOfficer ? (
+              <Card
+                pressable
+                onPress={() => {
+                  impact(Haptics.ImpactFeedbackStyle.Medium);
+                  router.push(ROUTES.RESULT_SEARCH);
+                }}
+                style={[styles.quickCard, { borderColor: colors.border }]}
+              >
+                <View style={[styles.quickIconWrap, { backgroundColor: colors.primary + '18' }]}>
+                  <Ionicons name="search" size={22} color={colors.primary} />
+                </View>
+                <ThemedText variant="body" color="text" fontFamily="bold" style={{ marginTop: spacing.xs }}>
+                  Search Results
+                </ThemedText>
+                <ThemedText variant="caption" color="textSecondary">
+                  Audit returns
+                </ThemedText>
+              </Card>
+            ) : (
+              <Card
+                pressable
+                onPress={() => {
+                  impact(Haptics.ImpactFeedbackStyle.Medium);
+                  router.push(ROUTES.RESULT_SUBMIT);
+                }}
+                style={[styles.quickCard, { borderColor: colors.border }]}
+              >
+                <View style={[styles.quickIconWrap, { backgroundColor: colors.primary + '18' }]}>
+                  <Ionicons name="add-circle" size={22} color={colors.primary} />
+                </View>
+                <ThemedText variant="body" color="text" fontFamily="bold" style={{ marginTop: spacing.xs }}>
+                  Enter Results
+                </ThemedText>
+                <ThemedText variant="caption" color="textSecondary">
+                  PU ballot return
+                </ThemedText>
+              </Card>
+            )}
+
             <Card
               pressable
               onPress={() => {
                 impact(Haptics.ImpactFeedbackStyle.Medium);
-                router.push(ROUTES.RESULT_SEARCH);
+                router.push(ROUTES.INCIDENT_REPORT);
               }}
               style={[styles.quickCard, { borderColor: colors.border }]}
             >
-              <View style={[styles.quickIconWrap, { backgroundColor: colors.primary + '18' }]}>
-                <Ionicons name="search" size={22} color={colors.primary} />
+              <View style={[styles.quickIconWrap, { backgroundColor: colors.critical + '18' }]}>
+                <Ionicons name="warning" size={22} color={colors.critical} />
               </View>
               <ThemedText variant="body" color="text" fontFamily="bold" style={{ marginTop: spacing.xs }}>
-                Search Results
+                Report Incident
               </ThemedText>
               <ThemedText variant="caption" color="textSecondary">
-                Audit returns
+                Live covert filing
               </ThemedText>
             </Card>
-          ) : (
+          </View>
+
+          <View style={styles.quickRow}>
             <Card
               pressable
               onPress={() => {
                 impact(Haptics.ImpactFeedbackStyle.Medium);
-                router.push(ROUTES.RESULT_SUBMIT);
+                router.push(ROUTES.RESULT_COLLATION);
+              }}
+              style={[styles.quickCard, { borderColor: colors.border }]}
+            >
+              <View style={[styles.quickIconWrap, { backgroundColor: colors.accent + '18' }]}>
+                <Ionicons name="bar-chart" size={22} color={colors.accentDark} />
+              </View>
+              <ThemedText variant="body" color="text" fontFamily="bold" style={{ marginTop: spacing.xs }}>
+                Collation Room
+              </ThemedText>
+              <ThemedText variant="caption" color="textSecondary">
+                Wards & LGA summary
+              </ThemedText>
+            </Card>
+
+            <Card
+              pressable
+              onPress={() => {
+                impact(Haptics.ImpactFeedbackStyle.Medium);
+                router.push(ROUTES.LOCATIONS);
               }}
               style={[styles.quickCard, { borderColor: colors.border }]}
             >
               <View style={[styles.quickIconWrap, { backgroundColor: colors.primary + '18' }]}>
-                <Ionicons name="add-circle" size={22} color={colors.primary} />
+                <Ionicons name="map" size={22} color={colors.primary} />
               </View>
               <ThemedText variant="body" color="text" fontFamily="bold" style={{ marginTop: spacing.xs }}>
-                Enter Results
+                Locations
               </ThemedText>
               <ThemedText variant="caption" color="textSecondary">
-                PU ballot return
+                National registry
               </ThemedText>
             </Card>
-          )}
-
-          <Card
-            pressable
-            onPress={() => {
-              impact(Haptics.ImpactFeedbackStyle.Medium);
-              router.push(ROUTES.INCIDENT_REPORT);
-            }}
-            style={[styles.quickCard, { borderColor: colors.border }]}
-          >
-            <View style={[styles.quickIconWrap, { backgroundColor: colors.critical + '18' }]}>
-              <Ionicons name="warning" size={22} color={colors.critical} />
-            </View>
-            <ThemedText variant="body" color="text" fontFamily="bold" style={{ marginTop: spacing.xs }}>
-              Report Incident
-            </ThemedText>
-            <ThemedText variant="caption" color="textSecondary">
-              Live covert filing
-            </ThemedText>
-          </Card>
-
-          <Card
-            pressable
-            onPress={() => {
-              impact(Haptics.ImpactFeedbackStyle.Medium);
-              router.push(ROUTES.RESULT_COLLATION);
-            }}
-            style={[styles.quickCard, { borderColor: colors.border }]}
-          >
-            <View style={[styles.quickIconWrap, { backgroundColor: colors.accent + '18' }]}>
-              <Ionicons name="bar-chart" size={22} color={colors.accentDark} />
-            </View>
-            <ThemedText variant="body" color="text" fontFamily="bold" style={{ marginTop: spacing.xs }}>
-              Collation Room
-            </ThemedText>
-            <ThemedText variant="caption" color="textSecondary">
-              Wards & LGA summary
-            </ThemedText>
-          </Card>
-
-          <Card
-            pressable
-            onPress={() => {
-              impact(Haptics.ImpactFeedbackStyle.Medium);
-              router.push(ROUTES.LOCATIONS);
-            }}
-            style={[styles.quickCard, { borderColor: colors.border }]}
-          >
-            <View style={[styles.quickIconWrap, { backgroundColor: colors.primary + '18' }]}>
-              <Ionicons name="map" size={22} color={colors.primary} />
-            </View>
-            <ThemedText variant="body" color="text" fontFamily="bold" style={{ marginTop: spacing.xs }}>
-              Locations
-            </ThemedText>
-            <ThemedText variant="caption" color="textSecondary">
-              National registry
-            </ThemedText>
-          </Card>
+          </View>
         </View>
       </EntranceView>
 
@@ -1117,22 +1121,25 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   quickGrid: {
+    gap: spacing.sm,
+  },
+  quickRow: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
     gap: spacing.sm,
   },
   quickCard: {
-    width: '48%',
+    flex: 1,
     padding: spacing.md,
     borderRadius: radius.lg,
     borderWidth: 1,
     ...shadows.sm,
   },
   quickIconWrap: {
-    width: 40,
-    height: 40,
+    width: 44,
+    height: 44,
     borderRadius: radius.md,
     alignItems: 'center',
     justifyContent: 'center',
+    marginBottom: spacing.xs,
   },
 });

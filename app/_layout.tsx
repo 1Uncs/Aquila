@@ -196,7 +196,9 @@ function RootLayoutNav() {
           description: 'Suspected vote buying near Victoria Island PU',
           latitude: 6.428,
           longitude: 3.421,
-          mediaUrls: [],
+          mediaUrls: [
+            'https://images.unsplash.com/photo-1540910419892-4a36d2c3266c?q=80&w=1000',
+          ],
           reportedBy: 'u-demo',
           reportedAt: '2027-02-25T13:00:00Z',
         },

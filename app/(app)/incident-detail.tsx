@@ -1,5 +1,7 @@
 import React, { useMemo, useState } from 'react';
-import { StyleSheet, View, Pressable, Linking, Alert, TextInput } from 'react-native';
+import { StyleSheet, View, Pressable, Alert, TextInput, Image, Modal, Linking } from 'react-native';
+import { useAudioPlayer, useAudioPlayerStatus } from 'expo-audio';
+import { useVideoPlayer, VideoView } from 'expo-video';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useLocalSearchParams, router } from 'expo-router';
 import { ScreenView } from '@/core/components/ScreenView';
@@ -46,7 +48,7 @@ export default function IncidentDetailScreen() {
 
   // Officer Notes state
   const [officerNotes, setOfficerNotes] = useState('');
-  const [isPlayingAudio, setIsPlayingAudio] = useState(false);
+  const [previewImageUri, setPreviewImageUri] = useState<string | null>(null);
 
   const incident = useMemo(() => {
     return storeIncidents.find((i) => i.id === id) ?? apiIncidents.find((i) => i.id === id) ?? null;
@@ -269,44 +271,69 @@ export default function IncidentDetailScreen() {
         {incident.mediaUrls && incident.mediaUrls.length > 0 ? (
           <View style={{ gap: spacing.sm }}>
             {incident.mediaUrls.map((uri, idx) => {
-              const isAudio = uri.includes('.m4a') || uri.includes('audio') || uri.includes('recording');
-              return (
-                <View
-                  key={idx}
-                  style={[styles.evidenceItem, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }]}
-                >
-                  <View style={[styles.evidenceIconWrap, { backgroundColor: isAudio ? colors.primary + '18' : colors.accentDark + '18' }]}>
-                    <Ionicons
-                      name={isAudio ? 'mic-outline' : 'image-outline'}
-                      size={20}
-                      color={isAudio ? colors.primary : colors.accentDark}
-                    />
-                  </View>
+              const isAudio = uri.includes('.m4a') || uri.includes('audio') || uri.includes('recording') || uri.endsWith('.mp3');
+              const isVideo = uri.includes('.mp4') || uri.includes('.mov') || uri.includes('video');
+              const isPhoto = !isAudio && !isVideo;
+              const fileName = typeof uri === 'string' && uri.includes('/') ? uri.split('/').pop()?.split('?')[0] : `evidence-${idx + 1}`;
 
-                  <View style={{ flex: 1, marginLeft: spacing.sm }}>
-                    <ThemedText variant="body" color="text" fontFamily="medium" numberOfLines={1}>
-                      {isAudio ? `Evidence Audio Memo #${idx + 1}` : `Geotagged Photo #${idx + 1}`}
-                    </ThemedText>
-                    <ThemedText variant="caption" color="textSecondary">
-                      {isAudio ? 'Encrypted Field Recording · 2-min chunk' : 'Raw Image Sensor Capture'}
-                    </ThemedText>
-                  </View>
-
-                  {isAudio ? (
-                    <Button
-                      label={isPlayingAudio ? 'Pause' : 'Play'}
-                      variant={isPlayingAudio ? 'primary' : 'outline'}
-                      size="sm"
-                      leftIcon={isPlayingAudio ? 'pause' : 'play'}
+              if (isPhoto) {
+                return (
+                  <View
+                    key={idx}
+                    style={[styles.evidenceMediaCard, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }]}
+                  >
+                    <Pressable
                       onPress={() => {
                         impact(Haptics.ImpactFeedbackStyle.Light);
-                        setIsPlayingAudio(!isPlayingAudio);
+                        setPreviewImageUri(uri);
                       }}
-                    />
-                  ) : (
-                    <Ionicons name="checkmark-circle" size={18} color={colors.verified} />
-                  )}
-                </View>
+                      style={styles.evidenceImagePressable}
+                    >
+                      <Image
+                        source={{ uri }}
+                        style={styles.evidenceImageThumb}
+                        resizeMode="cover"
+                      />
+                      <View style={styles.evidenceExpandOverlay}>
+                        <Ionicons name="expand" size={14} color="#FFFFFF" />
+                        <ThemedText variant="caption" color="#FFFFFF" fontFamily="bold" style={{ marginLeft: 4, fontSize: 11 }}>
+                          Inspect
+                        </ThemedText>
+                      </View>
+                    </Pressable>
+
+                    <View style={styles.evidenceMediaMeta}>
+                      <View style={{ flex: 1 }}>
+                        <ThemedText variant="body" color="text" fontFamily="bold" numberOfLines={1}>
+                          Geotagged Photo #{idx + 1}
+                        </ThemedText>
+                        <ThemedText variant="caption" color="textSecondary" numberOfLines={1}>
+                          {fileName} · Field Camera
+                        </ThemedText>
+                      </View>
+                      <Button
+                        label="Full View"
+                        variant="outline"
+                        size="sm"
+                        leftIcon="scan-outline"
+                        onPress={() => {
+                          impact(Haptics.ImpactFeedbackStyle.Light);
+                          setPreviewImageUri(uri);
+                        }}
+                      />
+                    </View>
+                  </View>
+                );
+              }
+
+              if (isVideo) {
+                return (
+                  <VideoEvidencePlayer key={idx} uri={uri} index={idx} fileName={fileName} />
+                );
+              }
+
+              return (
+                <AudioEvidencePlayer key={idx} uri={uri} index={idx} />
               );
             })}
           </View>
@@ -504,7 +531,156 @@ export default function IncidentDetailScreen() {
           </View>
         </Card>
       )}
+
+      {/* Lightbox Fullscreen Image Inspection Modal */}
+      <Modal
+        visible={previewImageUri !== null}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setPreviewImageUri(null)}
+      >
+        <View style={styles.lightboxBackdrop}>
+          <View style={styles.lightboxHeader}>
+            <View style={{ flex: 1 }}>
+              <ThemedText variant="body" color="#FFFFFF" fontFamily="bold">
+                Evidence Photo Inspection
+              </ThemedText>
+              <ThemedText variant="caption" color="#9CA3AF">
+                Incident #{incident.id} · {incident.electoralArea}
+              </ThemedText>
+            </View>
+            <Pressable
+              onPress={() => setPreviewImageUri(null)}
+              hitSlop={12}
+              style={styles.lightboxCloseBtn}
+            >
+              <Ionicons name="close" size={22} color="#FFFFFF" />
+            </Pressable>
+          </View>
+
+          {previewImageUri ? (
+            <View style={styles.lightboxImageContainer}>
+              <Image
+                source={{ uri: previewImageUri }}
+                style={styles.lightboxImage}
+                resizeMode="contain"
+              />
+            </View>
+          ) : null}
+
+          <View style={styles.lightboxFooter}>
+            <ThemedText variant="caption" color="#D1D5DB" style={{ textAlign: 'center' }}>
+              Chain of custody verified · High-resolution operative capture
+            </ThemedText>
+          </View>
+        </View>
+      </Modal>
     </ScreenView>
+  );
+}
+
+function AudioEvidencePlayer({ uri, index }: { uri: string; index: number }) {
+  const scheme = useColorScheme() ?? 'light';
+  const colors = Colors[scheme];
+  const { impact } = useHaptics();
+
+  const isRealSource = uri.startsWith('file://') || uri.startsWith('http://') || uri.startsWith('https://');
+  const player = useAudioPlayer(isRealSource ? uri : null);
+  const status = useAudioPlayerStatus(player);
+
+  const isPlaying = status?.playing ?? false;
+  const currentTime = Math.round(status?.currentTime ?? 0);
+  const duration = Math.round(status?.duration ?? 0);
+
+  const togglePlay = () => {
+    impact(Haptics.ImpactFeedbackStyle.Light);
+    if (!isRealSource) {
+      Alert.alert(
+        'Simulated Audio Evidence',
+        'This mock incident contains simulated offline metadata. Live audio recorded in "Report Incident" plays through this player.'
+      );
+      return;
+    }
+    if (isPlaying) {
+      player.pause();
+    } else {
+      player.play();
+    }
+  };
+
+  return (
+    <View style={[styles.evidenceItem, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }]}>
+      <View style={[styles.evidenceIconWrap, { backgroundColor: colors.primary + '18' }]}>
+        <Ionicons name={isPlaying ? 'volume-high' : 'mic-outline'} size={20} color={colors.primary} />
+      </View>
+
+      <View style={{ flex: 1, marginLeft: spacing.sm }}>
+        <ThemedText variant="body" color="text" fontFamily="medium" numberOfLines={1}>
+          Evidence Audio Memo #{index + 1}
+        </ThemedText>
+        <ThemedText variant="caption" color="textSecondary">
+          {duration > 0
+            ? `${currentTime}s / ${duration}s · Audio Recording`
+            : isRealSource
+            ? 'Encrypted Field Recording · Tap to listen'
+            : 'Simulated Audio Recording'}
+        </ThemedText>
+      </View>
+
+      <Button
+        label={isPlaying ? 'Pause' : 'Play'}
+        variant={isPlaying ? 'primary' : 'outline'}
+        size="sm"
+        leftIcon={isPlaying ? 'pause' : 'play'}
+        onPress={togglePlay}
+      />
+    </View>
+  );
+}
+
+function VideoEvidencePlayer({ uri, index, fileName }: { uri: string; index: number; fileName?: string }) {
+  const scheme = useColorScheme() ?? 'light';
+  const colors = Colors[scheme];
+
+  const isValidVideoSource = uri.startsWith('file://') || uri.startsWith('http://') || uri.startsWith('https://');
+  const player = useVideoPlayer(isValidVideoSource ? uri : null, (p) => {
+    p.loop = false;
+  });
+
+  return (
+    <View style={[styles.evidenceMediaCard, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }]}>
+      {isValidVideoSource ? (
+        <View style={styles.videoPlayerContainer}>
+          <VideoView
+            player={player}
+            style={styles.videoView}
+            nativeControls
+            contentFit="contain"
+            allowsPictureInPicture
+            startsPictureInPictureAutomatically={false}
+          />
+        </View>
+      ) : (
+        <View style={[styles.evidenceVideoThumb, { backgroundColor: colors.background }]}>
+          <Ionicons name="videocam-outline" size={40} color={colors.primary} />
+          <ThemedText variant="caption" color="textSecondary" style={{ marginTop: 4 }}>
+            Simulated Video Evidence
+          </ThemedText>
+        </View>
+      )}
+
+      <View style={styles.evidenceMediaMeta}>
+        <View style={{ flex: 1 }}>
+          <ThemedText variant="body" color="text" fontFamily="bold" numberOfLines={1}>
+            Live Video Recording #{index + 1}
+          </ThemedText>
+          <ThemedText variant="caption" color="textSecondary" numberOfLines={1}>
+            {fileName || `video-${index + 1}`} · Field Recording
+          </ThemedText>
+        </View>
+        <Ionicons name="videocam" size={20} color={colors.primary} />
+      </View>
+    </View>
   );
 }
 
@@ -647,5 +823,88 @@ const styles = StyleSheet.create({
     fontSize: 14,
     minHeight: 70,
     textAlignVertical: 'top',
+  },
+  evidenceMediaCard: {
+    borderRadius: radius.md,
+    borderWidth: 1,
+    overflow: 'hidden',
+  },
+  evidenceImagePressable: {
+    width: '100%',
+    height: 180,
+    position: 'relative',
+    backgroundColor: '#000000',
+  },
+  evidenceImageThumb: {
+    width: '100%',
+    height: '100%',
+  },
+  evidenceExpandOverlay: {
+    position: 'absolute',
+    bottom: 8,
+    right: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.65)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: radius.sm,
+  },
+  evidenceVideoThumb: {
+    width: '100%',
+    height: 120,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  evidenceMediaMeta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: spacing.sm,
+    gap: spacing.sm,
+  },
+  lightboxBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.95)',
+    justifyContent: 'space-between',
+    paddingTop: 50,
+    paddingBottom: 30,
+    paddingHorizontal: spacing.md,
+  },
+  lightboxHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: spacing.md,
+  },
+  lightboxCloseBtn: {
+    width: 38,
+    height: 38,
+    borderRadius: radius.full,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  lightboxImageContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  lightboxImage: {
+    width: '100%',
+    height: '100%',
+  },
+  lightboxFooter: {
+    paddingTop: spacing.md,
+    alignItems: 'center',
+  },
+  videoPlayerContainer: {
+    width: '100%',
+    height: 220,
+    backgroundColor: '#000000',
+  },
+  videoView: {
+    width: '100%',
+    height: '100%',
   },
 });

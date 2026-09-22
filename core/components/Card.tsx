@@ -48,7 +48,47 @@ export function Card({
 
   const mergedStyle = Array.isArray(style)
     ? Object.assign({}, ...style)
-    : style;
+    : (style ?? {});
+
+  const layoutStyle: ViewStyle = {};
+  const innerCustomStyle: ViewStyle = {};
+
+  const LAYOUT_PROPS = new Set([
+    'flex',
+    'flexGrow',
+    'flexShrink',
+    'flexBasis',
+    'width',
+    'height',
+    'minWidth',
+    'maxWidth',
+    'minHeight',
+    'maxHeight',
+    'margin',
+    'marginTop',
+    'marginBottom',
+    'marginLeft',
+    'marginRight',
+    'marginHorizontal',
+    'marginVertical',
+    'alignSelf',
+    'position',
+    'top',
+    'bottom',
+    'left',
+    'right',
+    'zIndex',
+  ]);
+
+  for (const [key, value] of Object.entries(mergedStyle)) {
+    if (LAYOUT_PROPS.has(key)) {
+      (layoutStyle as any)[key] = value;
+    } else {
+      (innerCustomStyle as any)[key] = value;
+    }
+  }
+
+  const hasFlex = layoutStyle.flex !== undefined || layoutStyle.flexGrow !== undefined;
 
   const cardStyle = [
     styles.card,
@@ -59,18 +99,25 @@ export function Card({
       padding: spacing.screen.cardPadding,
     },
     shadow,
-    mergedStyle,
+    innerCustomStyle,
+    hasFlex ? { flex: 1 } : null,
   ];
 
   const content = (
-    <View style={cardStyle} testID={testID}>
+    <View style={[layoutStyle, cardStyle]} testID={testID}>
       {children}
     </View>
   );
 
   if (pressable && onPress) {
     return (
-      <AnimatedCard onPress={onPress} accessibilityLabel={accessibilityLabel} testID={testID}>
+      <AnimatedCard
+        onPress={onPress}
+        accessibilityLabel={accessibilityLabel}
+        testID={testID}
+        containerStyle={layoutStyle}
+        hasFlex={hasFlex}
+      >
         <View style={cardStyle} accessible accessibilityRole="button" accessibilityLabel={accessibilityLabel}>
           {children}
         </View>
@@ -85,11 +132,15 @@ function AnimatedCard({
   onPress,
   accessibilityLabel,
   testID,
+  containerStyle,
+  hasFlex,
   children,
 }: {
   onPress: () => void;
   accessibilityLabel?: string;
   testID?: string;
+  containerStyle?: ViewStyle;
+  hasFlex?: boolean;
   children: React.ReactNode;
 }) {
   const { scale, onPressIn, onPressOut } = usePressScale({ toValue: 0.97 });
@@ -100,12 +151,12 @@ function AnimatedCard({
       onPressIn={onPressIn}
       onPressOut={onPressOut}
       testID={testID}
-      style={{ borderRadius: radius.md }}
+      style={[{ borderRadius: radius.md }, containerStyle]}
       accessible
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
     >
-      <Animated.View style={[{ transform: [{ scale }] }]}>
+      <Animated.View style={[{ transform: [{ scale }] }, hasFlex ? { flex: 1 } : null]}>
         {children}
       </Animated.View>
     </DebouncedPressable>
