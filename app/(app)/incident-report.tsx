@@ -15,6 +15,7 @@ import { ROUTES } from '@/constants/routes';
 import Colors from '@/constants/colors';
 import { FEATURES } from '@/constants/features';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Ionicons } from '@expo/vector-icons';
 
 const CATEGORIES = [
   'VIOLENCE', 'BALLOT_SNATCHING', 'VOTE_BUYING', 'VOTER_INTIMIDATION',
@@ -335,33 +336,54 @@ export default function ReportIncidentScreen() {
             <ThemedText variant="h2" style={{ flex: 1 }}>Report Incident</ThemedText>
           </View>
 
-          <Input
-            label="Electoral Area"
-            placeholder="e.g. Ikeja LGA"
-            value={electoralArea}
-            onChangeText={setElectoralArea}
-            leftIcon="location-outline"
-          />
-
-          <ThemedText variant="label" style={{ marginBottom: spacing.xs, marginTop: spacing.md }}>
-            Tie to Polling Unit (optional)
+          {/* Location Scope: Specific Polling Unit vs Area-Wide Incident */}
+          <ThemedText variant="label" style={{ marginBottom: spacing.xs }}>
+            Incident Location Scope
           </ThemedText>
           {selectedPuId ? (
-            <Card style={[shadows.sm, { marginBottom: spacing.md }]}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
-                <ThemedText variant="body" style={{ fontWeight: '600', flex: 1 }}>{selectedPuName}</ThemedText>
-                <Button label="Remove" size="sm" variant="ghost" onPress={() => { setSelectedPuId(''); setSelectedPuName(''); }} />
+            <Card style={[shadows.sm, { marginBottom: spacing.md, borderColor: colors.primary, borderWidth: 1 }]}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                <View style={{ flex: 1, marginRight: spacing.xs }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                    <Ionicons name="location" size={15} color={colors.primary} />
+                    <ThemedText variant="caption" color="primary" fontFamily="bold">
+                      POLLING UNIT INCIDENT
+                    </ThemedText>
+                  </View>
+                  <ThemedText variant="body" fontFamily="bold" style={{ marginTop: 2 }}>
+                    {selectedPuName}
+                  </ThemedText>
+                  <ThemedText variant="caption" color="textSecondary" style={{ marginTop: 2 }}>
+                    Operational Sector: {electoralArea || 'Ikeja LGA · Lagos State'}
+                  </ThemedText>
+                </View>
+                <Button
+                  label="Change"
+                  size="sm"
+                  variant="outline"
+                  onPress={() => router.push({ pathname: ROUTES.PU_PICKER, params: { mode: 'incident', ...(electionId ? { electionId } : {}) } })}
+                />
               </View>
             </Card>
           ) : (
-            <Button
-              label="Select Polling Unit"
-              variant="outline"
-              size="sm"
-              onPress={() => router.push({ pathname: ROUTES.PU_PICKER, params: { mode: 'incident', ...(electionId ? { electionId } : {}) } })}
-              style={{ marginBottom: spacing.md }}
-              leftIcon="location-outline"
-            />
+            <View style={{ gap: spacing.xs, marginBottom: spacing.md }}>
+              <Button
+                label="Tie to Specific Polling Unit"
+                variant="outline"
+                size="sm"
+                onPress={() => router.push({ pathname: ROUTES.PU_PICKER, params: { mode: 'incident', ...(electionId ? { electionId } : {}) } })}
+                leftIcon="location-outline"
+              />
+              <ThemedText variant="caption" color="textMuted" style={{ marginHorizontal: 2 }}>
+                Or report an area-wide incident (collation center, highway in-transit, or general sector):
+              </ThemedText>
+              <Input
+                placeholder="e.g. Ikeja LGA Collation Center / Transit Route"
+                value={electoralArea}
+                onChangeText={setElectoralArea}
+                leftIcon="business-outline"
+              />
+            </View>
           )}
 
           <ThemedText variant="label" style={{ marginBottom: spacing.xs }}>

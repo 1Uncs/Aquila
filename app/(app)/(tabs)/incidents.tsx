@@ -272,6 +272,7 @@ export default function IncidentsScreen() {
         <FlashList
           data={filtered}
           keyExtractor={(item) => item.id}
+          contentInsetAdjustmentBehavior="never"
           renderItem={renderIncidentCard}
           refreshControl={refreshControl}
           contentContainerStyle={styles.listContent}

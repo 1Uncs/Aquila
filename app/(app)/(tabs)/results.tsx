@@ -247,6 +247,7 @@ export default function ResultsScreen() {
         <FlashList
           data={activeList}
           keyExtractor={(item) => item.id}
+          contentInsetAdjustmentBehavior="never"
           renderItem={renderResultItem}
           refreshControl={refreshControl}
           contentContainerStyle={styles.listContent}

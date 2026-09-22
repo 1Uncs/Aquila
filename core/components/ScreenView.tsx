@@ -75,7 +75,7 @@ export function ScreenView({
 
     const scrollViewProps: ScrollViewProps = {
       contentContainerStyle: scrollContentStyle,
-      contentInsetAdjustmentBehavior: 'automatic',
+      contentInsetAdjustmentBehavior: hasNoNativeHeader ? 'never' : 'automatic',
       keyboardShouldPersistTaps: keyboardShouldPersistTaps,
       bounces: true,
       overScrollMode: 'always',
