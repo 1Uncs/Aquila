@@ -289,7 +289,7 @@ export default function DashboardScreen() {
       <EntranceView delay={150}>
         <Card style={styles.sectionCard}>
           <View style={styles.sectionHeaderRow}>
-            <View>
+            <View style={styles.sectionHeaderLeft}>
               <ThemedText variant="title" color="text" fontFamily="bold">
                 Snapshot Performance
               </ThemedText>
@@ -564,7 +564,7 @@ export default function DashboardScreen() {
       <EntranceView delay={250}>
         <Card style={styles.sectionCard}>
           <View style={styles.sectionHeaderRow}>
-            <View>
+            <View style={styles.sectionHeaderLeft}>
               <ThemedText variant="title" color="text" fontFamily="bold">
                 {user?.role === 'POLLING_AGENT'
                   ? 'My Assigned Polling Unit'
@@ -585,6 +585,7 @@ export default function DashboardScreen() {
                 impact(Haptics.ImpactFeedbackStyle.Light);
                 router.push(ROUTES.LOCATIONS);
               }}
+              style={styles.viewAllBtn}
             >
               <ThemedText variant="caption" color="primary" fontFamily="bold">
                 View All
@@ -790,7 +791,7 @@ export default function DashboardScreen() {
         <EntranceView delay={350}>
           <Card style={styles.sectionCard}>
             <View style={styles.sectionHeaderRow}>
-              <View>
+              <View style={styles.sectionHeaderLeft}>
                 <ThemedText variant="title" color="text" fontFamily="bold">
                   Field Incident Stream
                 </ThemedText>
@@ -803,6 +804,7 @@ export default function DashboardScreen() {
                   impact(Haptics.ImpactFeedbackStyle.Light);
                   router.push(ROUTES.INCIDENTS_TAB);
                 }}
+                style={styles.viewAllBtn}
               >
                 <ThemedText variant="caption" color="primary" fontFamily="bold">
                   View All
@@ -916,6 +918,15 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: spacing.xs,
+  },
+  sectionHeaderLeft: {
+    flex: 1,
+    marginRight: spacing.sm,
+  },
+  viewAllBtn: {
+    flexShrink: 0,
+    paddingVertical: 4,
+    paddingHorizontal: 6,
   },
   winnerBadge: {
     flexDirection: 'row',
