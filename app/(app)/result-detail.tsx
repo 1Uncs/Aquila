@@ -8,6 +8,7 @@ import { useResultsQuery, useCandidatesQuery, usePollingUnitsQuery } from '@/fea
 import { spacing, radius, shadows } from '@/constants/tokens';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
 import { useStatusBar } from '@/core/hooks/useStatusBar';
+import { useRefreshControl } from '@/core/hooks';
 import Colors from '@/constants/colors';
 import { useResultsStore } from '@/features/auth/store';
 import { Ionicons } from '@expo/vector-icons';
@@ -15,7 +16,8 @@ import { ROUTES } from '@/constants/routes';
 
 export default function ResultDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { data: apiResults = [], isLoading: loading } = useResultsQuery();
+  const { data: apiResults = [], isLoading: loading, refetch } = useResultsQuery();
+  const { refreshControl } = useRefreshControl(loading, refetch);
   const { submissions } = useResultsStore();
   const { data: candidates = [] } = useCandidatesQuery('e1');
   const { data: pollingUnits = [] } = usePollingUnitsQuery();
@@ -103,7 +105,7 @@ export default function ResultDetailScreen() {
   const isVerified = result.status === 'PUBLISHED';
 
   return (
-    <ScreenView scrollable contentContainerStyle={styles.scrollContent}>
+    <ScreenView scrollable refreshControl={refreshControl} contentContainerStyle={styles.scrollContent}>
       {/* 1. Header Hero Card */}
       <LinearGradient
         colors={['#0D6338', '#0A4A2A']}

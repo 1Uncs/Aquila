@@ -33,7 +33,7 @@ export function useRefreshControl( refreshing: boolean, onRefresh: () => void) {
 
   const refreshControl = (
     <RefreshControl
-      refreshing={refreshingRef.current}
+      refreshing={refreshing}
       onRefresh={() => handleRefresh()}
       tintColor={colors.primary}
       title="Refreshing..."

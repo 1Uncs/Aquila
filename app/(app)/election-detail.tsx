@@ -10,7 +10,7 @@ import { useColorScheme } from '@/core/hooks/useColorScheme';
 import { useStatusBar } from '@/core/hooks/useStatusBar';
 import { useElectionDetailQuery, useCandidatesQuery } from '@/features/elections/hooks';
 import Colors from '@/constants/colors';
-import { useForegroundRefresh } from '@/core/hooks';
+import { useForegroundRefresh, useRefreshControl } from '@/core/hooks';
 
 const PARTY_COLORS: Record<string, { bg: string; text: string }> = {
   APC: { bg: '#0D9488', text: '#FFFFFF' },
@@ -22,11 +22,15 @@ const PARTY_COLORS: Record<string, { bg: string; text: string }> = {
 
 export default function ElectionDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { data: election, isLoading: electionLoading } = useElectionDetailQuery(id);
-  const { data: candidates = [], isLoading: candidatesLoading } = useCandidatesQuery(id);
+  const { data: election, isLoading: electionLoading, refetch: refetchElection } = useElectionDetailQuery(id);
+  const { data: candidates = [], isLoading: candidatesLoading, refetch: refetchCandidates } = useCandidatesQuery(id);
   const loading = electionLoading || candidatesLoading;
   const scheme = useColorScheme() ?? 'light';
   const colors = Colors[scheme];
+  const { refreshControl } = useRefreshControl(loading, () => {
+    refetchElection();
+    refetchCandidates();
+  });
   useStatusBar({ barStyle: scheme === 'dark' ? 'light' : 'dark' });
   useForegroundRefresh([['elections', 'detail', id], ['elections', 'candidates', id]], 5 * 60 * 1000);
 
@@ -73,7 +77,7 @@ export default function ElectionDetailScreen() {
   }
 
   return (
-    <ScreenView scrollable contentContainerStyle={styles.listContent}>
+    <ScreenView scrollable refreshControl={refreshControl} contentContainerStyle={styles.listContent}>
       {/* 1. Electoral Contest Hero */}
       <LinearGradient
         colors={['#0D6338', '#0A4A2A']}

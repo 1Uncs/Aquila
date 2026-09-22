@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { View, StyleSheet, Pressable, Animated, TextInput } from 'react-native';
 import { ScreenView } from '@/core/components/ScreenView';
-import { ThemedText, Card, IncidentMarquee, Shimmer } from '@/core/components';
+import { ThemedText, Card, IncidentMarquee, Shimmer, SkeletonCard } from '@/core/components';
 import { EntranceView } from '@/core/components/EntranceView';
 import { useAuthStore, useResultsStore } from '@/features/auth/store';
 import { ROUTES } from '@/constants/routes';
@@ -74,7 +74,7 @@ export default function DashboardScreen() {
   const { isLoading: electionsLoading, refetch: refetchElections } = useElectionsQuery();
   const { data: incidents = [], isLoading: incidentsLoading, refetch: refetchIncidents } = useIncidentsQuery();
   const { data: candidates = [] } = useCandidatesQuery('e1');
-  const { data: allResults = [], refetch: refetchResults } = useResultsQuery();
+  const { data: allResults = [], isLoading: resultsLoading, refetch: refetchResults } = useResultsQuery();
   const { user } = useAuthStore();
   const { submissions } = useResultsStore();
   const { impact } = useHaptics();
@@ -199,6 +199,29 @@ export default function DashboardScreen() {
   const winningCandidate = candidateScores[0];
   const myCandidate = candidateScores.find((c) => c.id === myCandidateId) ?? candidateScores[0];
   const myCandidateRank = candidateScores.findIndex((c) => c.id === myCandidate?.id) + 1;
+  if ((electionsLoading || resultsLoading) && liveResults.length === 0) {
+    return (
+      <ScreenView scrollable={false} contentContainerStyle={styles.scrollContent}>
+        {/* Situation Console Header Skeleton */}
+        <View style={[styles.consoleHeader, { backgroundColor: colors.surface, borderColor: colors.border, padding: spacing.md, gap: spacing.sm }]}>
+          <Shimmer width={180} height={12} borderRadius={radius.sm} />
+          <Shimmer width="60%" height={24} borderRadius={radius.sm} style={{ marginTop: 4 }} />
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: spacing.md }}>
+            <Shimmer width="28%" height={32} borderRadius={radius.sm} />
+            <Shimmer width="28%" height={32} borderRadius={radius.sm} />
+            <Shimmer width="28%" height={32} borderRadius={radius.sm} />
+          </View>
+        </View>
+
+        {/* Snapshot Performance Skeleton Cards */}
+        <View style={{ gap: spacing.sm, marginTop: spacing.sm }}>
+          <SkeletonCard lines={2} />
+          <SkeletonCard lines={3} />
+        </View>
+      </ScreenView>
+    );
+  }
+
   const otherCandidates = candidateScores.filter((c) => c.id !== myCandidate?.id).slice(0, 3);
 
   return (

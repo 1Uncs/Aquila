@@ -11,7 +11,7 @@ import { useIncidentsQuery, usePollingUnitsQuery } from '@/features/elections/ho
 import { spacing, radius, shadows, border } from '@/constants/tokens';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
 import { useStatusBar } from '@/core/hooks/useStatusBar';
-import { useHaptics } from '@/core/hooks';
+import { useHaptics, useRefreshControl } from '@/core/hooks';
 import Colors from '@/constants/colors';
 import { useIncidentsStore, useAuthStore } from '@/features/auth/store';
 import { IncidentStatus, IncidentSeverity } from '@/types';
@@ -28,10 +28,9 @@ const SEVERITY_COLORS: Record<string, string> = {
 const CATEGORY_ICONS: Record<string, keyof typeof Ionicons.glyphMap> = {
   VOTE_BUYING: 'cash-outline',
   BVAS_FAILURE: 'hardware-chip-outline',
+  VIOLENCE: 'warning-outline',
+  LOGISTICS: 'car-outline',
   BALLOT_SNATCHING: 'hand-left-outline',
-  VIOLENCE: 'flame-outline',
-  INTIMIDATION: 'warning-outline',
-  LOGISTICS_DELAY: 'time-outline',
   OTHER: 'alert-circle-outline',
 };
 
@@ -39,7 +38,8 @@ export default function IncidentDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { user } = useAuthStore();
   const { incidents: storeIncidents, updateIncident } = useIncidentsStore();
-  const { data: apiIncidents = [], isLoading } = useIncidentsQuery();
+  const { data: apiIncidents = [], isLoading, refetch } = useIncidentsQuery();
+  const { refreshControl } = useRefreshControl(isLoading, refetch);
   const { data: pollingUnits = [] } = usePollingUnitsQuery();
   const { impact } = useHaptics();
 
@@ -146,7 +146,7 @@ export default function IncidentDetailScreen() {
   }
 
   return (
-    <ScreenView scrollable contentContainerStyle={styles.scrollContent}>
+    <ScreenView scrollable refreshControl={refreshControl} contentContainerStyle={styles.scrollContent}>
       {/* 1. Hero Status Card */}
       <LinearGradient
         colors={
