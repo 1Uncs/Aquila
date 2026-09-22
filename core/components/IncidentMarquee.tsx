@@ -6,6 +6,13 @@ import Colors from '@/constants/colors';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
 import type { IncidentReport } from '@/features/auth/store';
 
+import { router } from 'expo-router';
+import { ROUTES } from '@/constants/routes';
+import * as Haptics from 'expo-haptics';
+import { useHaptics } from '@/core/hooks';
+import { Ionicons } from '@expo/vector-icons';
+import { Pressable } from 'react-native';
+
 type Props = {
   incidents: IncidentReport[];
   style?: import('react-native').ViewStyle;
@@ -14,27 +21,21 @@ type Props = {
 export function IncidentMarquee({ incidents, style }: Props) {
   const scheme = useColorScheme() ?? 'light';
   const colors = Colors[scheme];
+  const { impact } = useHaptics();
   const translateX = useRef(new Animated.Value(0)).current;
-  const contentWidthRef = useRef(0);
-  const containerWidthRef = useRef(0);
+  const [containerWidth, setContainerWidth] = React.useState(0);
+  const [contentWidth, setContentWidth] = React.useState(0);
 
-  // Build ticker text: "Ballot snatching at Street X — They are beating people at Apapa — ..."
-  const tickerText =
-    incidents.length === 0
-      ? ''
-      : incidents
-          .slice(0, 10)
-          .map((i) => `${i.category.replace(/_/g, ' ')} @ ${i.electoralArea}: ${i.description.slice(0, 48)}`)
-          .join('  \u2022  ');
+  const activeIncidents = incidents.slice(0, 8);
 
   useEffect(() => {
-    if (!tickerText || contentWidthRef.current === 0 || containerWidthRef.current === 0) return;
-    const distance = contentWidthRef.current + containerWidthRef.current;
-    const duration = Math.max(12_000, (distance / 60) * 1000);
-    translateX.setValue(containerWidthRef.current);
+    if (activeIncidents.length === 0 || contentWidth === 0 || containerWidth === 0) return;
+    const distance = contentWidth + containerWidth;
+    const duration = Math.max(14_000, (distance / 45) * 1000);
+    translateX.setValue(containerWidth);
     const anim = Animated.loop(
       Animated.timing(translateX, {
-        toValue: -contentWidthRef.current,
+        toValue: -contentWidth,
         duration,
         easing: Easing.linear,
         useNativeDriver: true,
@@ -42,18 +43,18 @@ export function IncidentMarquee({ incidents, style }: Props) {
     );
     anim.start();
     return () => anim.stop();
-  }, [tickerText, translateX]);
+  }, [activeIncidents.length, contentWidth, containerWidth, translateX]);
 
-  if (incidents.length === 0 || !tickerText) return null;
+  if (activeIncidents.length === 0) return null;
 
   return (
     <View
       style={[styles.container, { backgroundColor: colors.critical + '14', borderColor: colors.critical + '30' }, style]}
       onLayout={(e) => {
-        containerWidthRef.current = e.nativeEvent.layout.width;
+        const w = e.nativeEvent.layout.width;
+        if (w > 0 && w !== containerWidth) setContainerWidth(w);
       }}
       accessibilityRole="text"
-      accessibilityLabel={`Live incidents: ${tickerText}`}
     >
       <View style={[styles.label, { backgroundColor: colors.critical }]}>
         <ThemedText variant="caption" style={{ color: '#fff', fontWeight: '700' }}>
@@ -62,14 +63,33 @@ export function IncidentMarquee({ incidents, style }: Props) {
       </View>
       <View style={styles.track}>
         <Animated.View
-          style={{ transform: [{ translateX }] }}
+          style={[{ flexDirection: 'row', alignItems: 'center' }, { transform: [{ translateX }] }]}
           onLayout={(e) => {
-            contentWidthRef.current = e.nativeEvent.layout.width;
+            const w = e.nativeEvent.layout.width;
+            if (w > 0 && w !== contentWidth) setContentWidth(w);
           }}
         >
-          <ThemedText variant="caption" style={{ color: colors.critical, fontWeight: '500' }} numberOfLines={1}>
-            {tickerText}
-          </ThemedText>
+          {activeIncidents.map((i) => (
+            <Pressable
+              key={i.id}
+              onPress={() => {
+                impact(Haptics.ImpactFeedbackStyle.Light);
+                router.push({ pathname: ROUTES.INCIDENT_DETAIL, params: { id: i.id } });
+              }}
+              style={styles.incidentPill}
+            >
+              <ThemedText variant="caption" style={{ color: colors.critical, fontWeight: '700' }}>
+                {i.category.replace(/_/g, ' ')}
+              </ThemedText>
+              <ThemedText variant="caption" color="textSecondary" style={{ marginLeft: 4 }}>
+                @{i.electoralArea}: {i.description.slice(0, 42)}
+              </ThemedText>
+              <Ionicons name="chevron-forward" size={12} color={colors.critical} style={{ marginLeft: 2 }} />
+              <ThemedText variant="caption" color="textMuted" style={{ marginHorizontal: spacing.sm }}>
+                •
+              </ThemedText>
+            </Pressable>
+          ))}
         </Animated.View>
       </View>
     </View>
@@ -118,5 +138,9 @@ const styles = StyleSheet.create({
   track: {
     flex: 1,
     overflow: 'hidden',
+  },
+  incidentPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
 });
