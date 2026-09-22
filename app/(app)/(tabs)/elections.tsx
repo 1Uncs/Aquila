@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, View, ScrollView, LayoutAnimation, Pressable } from 'react-native';
+import { StyleSheet, View, LayoutAnimation, Pressable } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
 import { ScreenView } from '@/core/components/ScreenView';
-import { ThemedText, EmptyState, Button, SkeletonCard, Card } from '@/core/components';
+import { ThemedText, EmptyState, SkeletonCard, Card } from '@/core/components';
 import { ROUTES } from '@/constants/routes';
 import { spacing, radius, shadows, border } from '@/constants/tokens';
 import { useRefreshControl, useForegroundRefresh } from '@/core/hooks';
@@ -73,35 +73,39 @@ export default function ElectionsScreen() {
         </ThemedText>
       </View>
 
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipRow} keyboardShouldPersistTaps="handled">
+      {/* Election Cycle Segmented Control */}
+      <View style={[styles.tabBar, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }]}>
         {cycles.map((cycle) => {
           const isSelected = selectedCycle === cycle.id;
+          const shortName = cycle.name
+            .replace(' Election', '')
+            .replace('Governorship - ', '')
+            .trim();
           return (
             <Pressable
               key={cycle.id}
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                setSelectedCycle(isSelected ? null : cycle.id);
+                setSelectedCycle(cycle.id);
               }}
               style={[
-                styles.cycleChip,
-                {
-                  backgroundColor: isSelected ? colors.primary : colors.surface,
-                  borderColor: isSelected ? colors.primary : colors.border,
-                },
+                styles.tabBtn,
+                isSelected && [styles.activeTabBtn, { backgroundColor: colors.primary }],
               ]}
             >
               <ThemedText
-                variant="caption"
+                variant="label"
+                color={isSelected ? '#FFFFFF' : 'textSecondary'}
                 fontFamily={isSelected ? 'bold' : 'medium'}
-                style={{ color: isSelected ? '#FFFFFF' : colors.text }}
+                numberOfLines={1}
+                style={{ fontSize: 12, letterSpacing: 0.2 }}
               >
-                {cycle.name}
+                {shortName}
               </ThemedText>
             </Pressable>
           );
         })}
-      </ScrollView>
+      </View>
 
         {loading ? (
           <View style={{ gap: spacing.md, paddingBottom: spacing.md, marginTop: spacing.md }}>
@@ -161,16 +165,23 @@ const styles = StyleSheet.create({
     paddingTop: spacing.xs,
     paddingBottom: 110,
   },
-  chipRow: { gap: spacing.sm, marginBottom: spacing.md, paddingRight: spacing.md },
-  cycleChip: {
-    paddingVertical: 7,
-    paddingHorizontal: 14,
-    borderRadius: radius.full,
+  tabBar: {
+    flexDirection: 'row',
+    marginBottom: spacing.md,
+    padding: 4,
+    borderRadius: radius.md,
     borderWidth: 1,
+  },
+  tabBtn: {
+    flex: 1,
+    paddingVertical: 8,
     alignItems: 'center',
     justifyContent: 'center',
+    borderRadius: radius.sm,
   },
-  chip: { marginRight: spacing.sm },
+  activeTabBtn: {
+    ...shadows.sm,
+  },
   electionCard: { marginBottom: spacing.md, padding: spacing.md },
   titleIndicator: { width: 4, height: 16, borderRadius: radius.full },
   electionIcon: { width: 40, height: 40, borderRadius: radius.md, alignItems: 'center', justifyContent: 'center' },
