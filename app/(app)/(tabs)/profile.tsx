@@ -109,7 +109,7 @@ export default function ProfileTabScreen() {
               {user?.organizationName ?? 'Aquila Situation Room HQ'}
             </ThemedText>
             <ThemedText variant="caption" color="textSecondary">
-              Tenant ID: {user?.organizationId ?? 'org-aquila'} · Multi-Tenant SaaS
+              Mission ID: {user?.organizationId ?? 'org-aquila'} · Accredited Observer Mission
             </ThemedText>
           </View>
         </View>

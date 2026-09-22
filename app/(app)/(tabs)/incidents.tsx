@@ -117,7 +117,7 @@ export default function IncidentsScreen() {
           <View style={styles.metaItem}>
             <Ionicons name="location-outline" size={13} color={colors.primary} />
             <ThemedText variant="label" color="primary" fontFamily="medium" style={{ marginLeft: 4 }}>
-              {item.electoralArea} {item.pollingUnitId ? `· ${item.pollingUnitId}` : ''}
+              {item.electoralArea}
             </ThemedText>
           </View>
 

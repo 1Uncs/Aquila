@@ -102,7 +102,7 @@ export default function IncidentSearchScreen() {
                 <View style={styles.metaRow}>
                   <Ionicons name="location-outline" size={12} color={colors.primary} />
                   <ThemedText variant="label" color="primary" style={{ marginLeft: 4 }}>
-                    {item.electoralArea} {item.pollingUnitId ? `· ${item.pollingUnitId}` : ''}
+                    {item.electoralArea}
                   </ThemedText>
                 </View>
               </Card>

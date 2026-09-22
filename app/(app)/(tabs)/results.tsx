@@ -89,7 +89,7 @@ export default function ResultsScreen() {
               {item.pollingUnitName}
             </ThemedText>
             <ThemedText variant="caption" color="textSecondary">
-              {item.pollingUnitId} · {new Date(item.submittedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              {isPublished ? 'Official Return' : 'Draft Return'} · {new Date(item.submittedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
             </ThemedText>
           </View>
 

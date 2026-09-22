@@ -330,11 +330,6 @@ export default function DashboardScreen() {
                             {myCandidate.partyAcronym}
                           </ThemedText>
                         </View>
-                        {myCandidate.candidateNumber ? (
-                          <ThemedText variant="label" color="textMuted" style={{ marginLeft: 6 }}>
-                            ID #{myCandidate.candidateNumber}
-                          </ThemedText>
-                        ) : null}
                       </View>
                     </View>
                   </View>
@@ -399,11 +394,6 @@ export default function DashboardScreen() {
                               {cand.partyAcronym}
                             </ThemedText>
                           </View>
-                          {cand.candidateNumber ? (
-                            <ThemedText variant="label" color="textMuted" style={{ marginLeft: 6 }}>
-                              ID #{cand.candidateNumber}
-                            </ThemedText>
-                          ) : null}
                         </View>
                       </View>
                     </View>

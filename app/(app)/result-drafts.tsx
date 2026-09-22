@@ -101,7 +101,7 @@ export default function ResultDraftsScreen() {
                       {draft.pollingUnitName}
                     </ThemedText>
                     <ThemedText variant="caption" color="textSecondary">
-                      PU ID: {draft.pollingUnitId} · Saved {new Date(draft.submittedAt).toLocaleTimeString()}
+                      Draft Return · Saved {new Date(draft.submittedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </ThemedText>
                   </View>
                   <View style={[styles.draftBadge, { backgroundColor: colors.warningSubtle }]}>

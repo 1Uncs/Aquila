@@ -180,11 +180,6 @@ export default function ResultCollationScreen() {
                             {c.partyAcronym}
                           </ThemedText>
                         </View>
-                        {c.candidateNumber ? (
-                          <ThemedText variant="label" color="textMuted" style={{ marginLeft: 6 }}>
-                            Candidate #{c.candidateNumber}
-                          </ThemedText>
-                        ) : null}
                       </View>
                     </View>
                   </View>
