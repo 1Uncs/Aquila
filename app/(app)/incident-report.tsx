@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ScrollView, View, Platform, KeyboardAvoidingView, Alert, StyleSheet } from 'react-native';
+import { ScrollView, View, Platform, KeyboardAvoidingView, Alert, StyleSheet, Pressable } from 'react-native';
 import { useAudioRecorder, useAudioRecorderState, AudioModule, RecordingPresets, setAudioModeAsync } from 'expo-audio';
 import * as ImagePicker from 'expo-image-picker';
 import { ScreenView } from '@/core/components/ScreenView';
@@ -489,14 +489,32 @@ export default function ReportIncidentScreen() {
                 {mediaUris.length} file{mediaUris.length !== 1 ? 's' : ''} attached
               </ThemedText>
               <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm }}>
-                {mediaUris.map((uri, idx) => (
-                  <View key={uri} style={{ backgroundColor: 'rgba(0,0,0,0.05)', borderRadius: 8, padding: spacing.xs, paddingHorizontal: spacing.sm, flexDirection: 'row', alignItems: 'center', gap: spacing.xs }}>
-                    <ThemedText variant="caption" color="textSecondary" numberOfLines={1} style={{ maxWidth: 120 }}>
-                      {uri.split('/').pop() ?? `file-${idx}`}
-                    </ThemedText>
-                    <Button label="✕" size="sm" variant="ghost" onPress={() => handleRemoveMedia(uri)} />
-                  </View>
-                ))}
+                {mediaUris
+                  .filter((u): u is string => typeof u === 'string' && u.length > 0)
+                  .map((uri, idx) => {
+                    const fileName = uri.includes('/') ? uri.split('/').pop() || `file-${idx + 1}` : uri;
+                    return (
+                      <View
+                        key={`media-${idx}-${uri.slice(-16)}`}
+                        style={[
+                          styles.mediaChip,
+                          { backgroundColor: colors.surfaceElevated, borderColor: colors.border },
+                        ]}
+                      >
+                        <Ionicons name="document-attach-outline" size={14} color={colors.primary} />
+                        <ThemedText variant="caption" color="textSecondary" numberOfLines={1} style={{ maxWidth: 120 }}>
+                          {fileName}
+                        </ThemedText>
+                        <Pressable
+                          hitSlop={8}
+                          onPress={() => handleRemoveMedia(uri)}
+                          style={{ padding: 2 }}
+                        >
+                          <Ionicons name="close-circle" size={16} color={colors.textMuted} />
+                        </Pressable>
+                      </View>
+                    );
+                  })}
               </View>
             </View>
           )}
@@ -513,4 +531,13 @@ export default function ReportIncidentScreen() {
 
 const styles = StyleSheet.create({
   titleIndicator: { width: 4, height: 20, borderRadius: radius.full },
+  mediaChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    borderRadius: radius.full,
+    borderWidth: 1,
+  },
 });
