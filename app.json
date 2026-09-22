@@ -7,11 +7,6 @@
     "scheme": "aquila",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "splash": {
-      "image": "./assets/splash.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#0D6338"
-    },
     "userInterfaceStyle": "automatic",
     "assetBundlePatterns": [
       "**/*"
@@ -58,7 +53,10 @@
           "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone.",
           "enableBackgroundRecording": true
         }
-      ]
+      ],
+      "expo-build-properties",
+      "expo-secure-store",
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true
