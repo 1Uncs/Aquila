@@ -64,6 +64,18 @@ export default function ReportIncidentScreen() {
   }, [audioRecorder]);
 
   useEffect(() => {
+    if (!electoralArea) {
+      if (selectedPuName) {
+        setElectoralArea(selectedPuName);
+      } else if (user?.selectedPollingUnitName) {
+        setElectoralArea(user.selectedPollingUnitName);
+      } else if (user?.assignedLocations?.[0]) {
+        setElectoralArea('Ikeja LGA (Operational Sector)');
+      }
+    }
+  }, [user, selectedPuName, electoralArea]);
+
+  useEffect(() => {
     if (!FEATURES.ENABLE_STEALTH_RECORDING) return;
     if (!isRecording) return;
     if (recordingDuration < CHUNK_SECONDS) return;
@@ -243,26 +255,43 @@ export default function ReportIncidentScreen() {
   };
 
   const handleSubmit = async () => {
-    if (!description.trim() || !electoralArea.trim()) return;
+    const area = electoralArea.trim() || selectedPuName || 'Assigned Operational Sector';
+    let desc = description.trim();
+    if (!desc && mediaUris.length > 0) {
+      desc = `Field evidence logged with ${mediaUris.length} live attachment(s) (${category.replace(/_/g, ' ')}).`;
+    }
+
+    if (!desc) {
+      Alert.alert(
+        'Description Required',
+        'Please describe what occurred at the polling unit, or capture live audio/photo evidence.'
+      );
+      return;
+    }
+
     setSubmitting(true);
     const incident: IncidentReport = {
       id: `i-${Date.now()}`,
       electionId: electionId ?? 'e1',
       pollingUnitId: selectedPuId || undefined,
-      electoralArea,
+      electoralArea: area,
       category,
       severity,
       status: 'SUBMITTED',
-      description,
-      latitude: 6.5 + Math.random() * 2,
-      longitude: 3.3 + Math.random() * 2,
+      description: desc,
+      latitude: 6.5244 + (Math.random() - 0.5) * 0.05,
+      longitude: 3.3792 + (Math.random() - 0.5) * 0.05,
       mediaUrls: mediaUris,
       reportedBy: user?.id ?? 'current-user',
       reportedAt: new Date().toISOString(),
     };
     addIncident(incident);
     setSubmitting(false);
-    router.back();
+    Alert.alert(
+      'Incident Dispatched',
+      'Incident report transmitted successfully to the Aquila Incident Control Room.',
+      [{ text: 'OK', onPress: () => router.back() }]
+    );
   };
 
   if (user?.role === 'ELECTION_OFFICER') {
@@ -335,10 +364,10 @@ export default function ReportIncidentScreen() {
             />
           )}
 
-          <ThemedText variant="label" style={{ marginBottom: spacing.sm }}>
+          <ThemedText variant="label" style={{ marginBottom: spacing.xs }}>
             Category
           </ThemedText>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: spacing.sm, marginBottom: spacing.lg }} keyboardShouldPersistTaps="handled">
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.xs, marginBottom: spacing.md }}>
             {CATEGORIES.map((cat) => (
               <Button
                 key={cat}
@@ -348,12 +377,12 @@ export default function ReportIncidentScreen() {
                 onPress={() => setCategory(cat)}
               />
             ))}
-          </ScrollView>
+          </View>
 
-          <ThemedText variant="label" style={{ marginBottom: spacing.sm }}>
+          <ThemedText variant="label" style={{ marginBottom: spacing.xs }}>
             Severity
           </ThemedText>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: spacing.sm, marginBottom: spacing.lg }} keyboardShouldPersistTaps="handled">
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.xs, marginBottom: spacing.md }}>
             {SEVERITIES.map((sev) => (
               <Button
                 key={sev}
@@ -363,7 +392,7 @@ export default function ReportIncidentScreen() {
                 onPress={() => setSeverity(sev)}
               />
             ))}
-          </ScrollView>
+          </View>
 
           <Input
             label="Description"

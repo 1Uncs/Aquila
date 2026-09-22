@@ -53,9 +53,9 @@ export function Button({
   const { scale, onPressIn: onScaleIn, onPressOut: onScaleOut } = usePressScale({ toValue: 0.97 });
 
   const sizeStyles = {
-    sm: { paddingVertical: spacing.sm, paddingHorizontal: spacing.md, minHeight: 44 },
-    md: { paddingVertical: spacing.md, paddingHorizontal: spacing.lg, minHeight: 52 },
-    lg: { paddingVertical: spacing.lg, paddingHorizontal: spacing.xl, minHeight: 56 },
+    sm: { paddingVertical: 6, paddingHorizontal: 12, minHeight: 36 },
+    md: { paddingVertical: 10, paddingHorizontal: 16, minHeight: 46 },
+    lg: { paddingVertical: 13, paddingHorizontal: 20, minHeight: 52 },
   };
 
   const variantStyles: Record<ButtonVariant, ViewStyle> = {
@@ -119,8 +119,11 @@ export function Button({
           variant="label"
           style={[
             styles.label,
-            { color: textColor },
-            size === 'lg' && { fontSize: 14 },
+            {
+              color: textColor,
+              fontSize: size === 'sm' ? 12.5 : size === 'lg' ? 15 : 13.5,
+              lineHeight: size === 'sm' ? 16 : size === 'lg' ? 20 : 18,
+            },
           ]}
         >
           {loading ? 'Loading...' : label}

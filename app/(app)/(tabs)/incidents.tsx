@@ -28,6 +28,7 @@ export default function IncidentsScreen() {
   const { data: apiIncidents = [], isLoading: loading, refetch: refetchIncidents } = useIncidentsQuery();
   const { incidents: storeIncidents, updateIncident } = useIncidentsStore();
   const { user } = useAuthStore();
+  const isElectionOfficer = user?.role === 'ELECTION_OFFICER';
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
   const [statusFilter, setStatusFilter] = useState<'ALL' | 'UNRESOLVED' | 'RESOLVED'>('ALL');
 
@@ -140,33 +141,45 @@ export default function IncidentsScreen() {
           ) : null}
         </View>
 
-        {/* Triage Actions: Reviewing & Resolved (Audio Part 7) */}
+        {/* Triage Actions: Officer Only (Audio Part 4 & 7) */}
         <View style={styles.cardActionsRow}>
           <ThemedText variant="label" color="textMuted">
             {new Date(item.reportedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
           </ThemedText>
 
-          <View style={{ flexDirection: 'row', gap: spacing.xs }}>
-            {!isResolved && (
+          {isElectionOfficer ? (
+            <View style={{ flexDirection: 'row', gap: spacing.xs }}>
+              {!isResolved && (
+                <Button
+                  label="Reviewing"
+                  variant={isReviewing ? 'primary' : 'outline'}
+                  size="sm"
+                  onPress={() => handleUpdateStatus(item.id, 'UNDER_REVIEW')}
+                />
+              )}
               <Button
-                label="Reviewing"
-                variant={isReviewing ? 'primary' : 'outline'}
+                label={isResolved ? 'Mark Reopened' : 'Resolve'}
+                variant={isResolved ? 'outline' : 'primary'}
                 size="sm"
-                onPress={() => handleUpdateStatus(item.id, 'UNDER_REVIEW')}
+                leftIcon={isResolved ? 'refresh-outline' : 'checkmark-circle-outline'}
+                onPress={() => handleUpdateStatus(item.id, isResolved ? 'UNDER_REVIEW' : 'RESOLVED')}
               />
-            )}
-            <Button
-              label={isResolved ? 'Mark Reopened' : 'Resolve'}
-              variant={isResolved ? 'outline' : 'primary'}
-              size="sm"
-              leftIcon={isResolved ? 'refresh-outline' : 'checkmark-circle-outline'}
-              onPress={() => handleUpdateStatus(item.id, isResolved ? 'UNDER_REVIEW' : 'RESOLVED')}
-            />
-          </View>
+            </View>
+          ) : (
+            <View style={[styles.fieldAgentPill, { backgroundColor: isResolved ? colors.successSubtle : colors.warningSubtle }]}>
+              <ThemedText
+                variant="label"
+                color={isResolved ? 'success' : 'warning'}
+                fontFamily="bold"
+              >
+                {isResolved ? 'RESOLVED' : isReviewing ? 'UNDER REVIEW' : 'LOGGED'}
+              </ThemedText>
+            </View>
+          )}
         </View>
       </Card>
     );
-  }, [colors, impact]);
+  }, [colors, impact, isElectionOfficer]);
 
   return (
     <ScreenView scrollable={false} noScrollPadding>
@@ -370,5 +383,10 @@ const styles = StyleSheet.create({
     paddingTop: spacing.xs,
     borderTopWidth: 1,
     borderTopColor: 'rgba(0,0,0,0.04)',
+  },
+  fieldAgentPill: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: radius.full,
   },
 });

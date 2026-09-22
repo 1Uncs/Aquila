@@ -50,6 +50,13 @@ const ASSIGNED_DEMO_PUS = [
   },
 ];
 
+const PARTY_COLORS: Record<string, string> = {
+  APC: '#0D6338',
+  PDP: '#DC2626',
+  LP: '#16A34A',
+  NNPP: '#2563EB',
+};
+
 export default function DashboardScreen() {
   const scheme = useColorScheme() ?? 'light';
   const colors = Colors[scheme];
@@ -79,8 +86,13 @@ export default function DashboardScreen() {
     pastData: pastDataEnum,
   });
 
-  // Simulated Live Pulse (Audio Part 6: simulated live incoming data pulsing every 18s)
-  const [livePulseVotes, setLivePulseVotes] = useState(14850);
+  // Simulated Live Pulse (Audio Part 6: simulated live incoming data pulsing every 12s across all values)
+  const [pulseBonusVotes, setPulseBonusVotes] = useState<Record<string, number>>({
+    cand1: 0, // APC
+    cand2: 0, // PDP
+    cand3: 0, // LP
+    cand4: 0, // NNPP
+  });
   const [livePulsePUs, setLivePulsePUs] = useState(725);
   const [pulseActive, setPulseActive] = useState(false);
   const pulseAnim = useRef(new Animated.Value(1)).current;
@@ -89,16 +101,29 @@ export default function DashboardScreen() {
     const timer = setInterval(() => {
       setPulseActive(true);
       Animated.sequence([
-        Animated.timing(pulseAnim, { toValue: 1.4, duration: 300, useNativeDriver: true }),
-        Animated.timing(pulseAnim, { toValue: 1, duration: 400, useNativeDriver: true }),
+        Animated.timing(pulseAnim, { toValue: 1.35, duration: 280, useNativeDriver: true }),
+        Animated.timing(pulseAnim, { toValue: 1, duration: 350, useNativeDriver: true }),
       ]).start();
 
-      const incVotes = Math.floor(Math.random() * 85) + 35;
-      const incPUs = Math.random() > 0.4 ? 1 : 0;
-      setLivePulseVotes((prev) => prev + incVotes);
+      const incVotes = Math.floor(Math.random() * 55) + 30; // 30-85 new votes incoming
+      const incPUs = Math.random() > 0.45 ? 1 : 0;
+
+      // Proportional vote increment matching field returns
+      const apcAdd = Math.round(incVotes * 0.38);
+      const lpAdd = Math.round(incVotes * 0.34);
+      const pdpAdd = Math.round(incVotes * 0.22);
+      const nnppAdd = Math.max(0, incVotes - apcAdd - lpAdd - pdpAdd);
+
+      setPulseBonusVotes((prev) => ({
+        cand1: (prev.cand1 ?? 0) + apcAdd,
+        cand2: (prev.cand2 ?? 0) + pdpAdd,
+        cand3: (prev.cand3 ?? 0) + lpAdd,
+        cand4: (prev.cand4 ?? 0) + nnppAdd,
+      }));
+
       setLivePulsePUs((prev) => prev + incPUs);
-      setTimeout(() => setPulseActive(false), 1400);
-    }, 18000);
+      setTimeout(() => setPulseActive(false), 1200);
+    }, 12000);
     return () => clearInterval(timer);
   }, [pulseAnim]);
 
@@ -111,31 +136,50 @@ export default function DashboardScreen() {
   const isFieldAgent = user?.role === 'FIELD_AGENT' || !user?.role;
   const isElectionOfficer = user?.role === 'ELECTION_OFFICER';
 
-  // Candidate scores aggregation for snapshot performance (Audio Part 2)
+  // Candidate scores aggregation for snapshot performance (Audio Part 2 & 6: linked to live pulse)
   const candidateScores = useMemo(() => {
     const totals: Record<string, number> = {};
-    let totalVotes = 0;
     allResults.forEach((r) => {
       Object.entries(r.candidateVotes).forEach(([candId, v]) => {
         const val = typeof v === 'number' ? v : 0;
         totals[candId] = (totals[candId] ?? 0) + val;
-        totalVotes += val;
       });
     });
 
-    return candidates
-      .map((c) => {
-        const votes = totals[c.id] ?? (c.id === 'cand1' ? 4250 : c.id === 'cand3' ? 3890 : c.id === 'cand2' ? 2980 : 890);
-        return {
-          ...c,
-          votes,
-          pct: totalVotes > 0 ? (votes / totalVotes) * 100 : c.id === 'cand1' ? 38.5 : c.id === 'cand3' ? 32.1 : c.id === 'cand2' ? 22.4 : 7.0,
-        };
-      })
-      .sort((a, b) => b.votes - a.votes);
-  }, [candidates, allResults]);
+    const baseMap: Record<string, number> = {
+      cand1: 6420, // APC
+      cand3: 5890, // LP
+      cand2: 3980, // PDP
+      cand4: 1210, // NNPP
+    };
 
+    let grandTotal = 0;
+    const list = candidates.map((c) => {
+      const dbVotes = totals[c.id];
+      const base = dbVotes !== undefined ? dbVotes : (baseMap[c.id] ?? 500);
+      const votes = base + (pulseBonusVotes[c.id] ?? 0);
+      grandTotal += votes;
+      return { ...c, votes };
+    });
+
+    return list
+      .map((c) => ({
+        ...c,
+        pct: grandTotal > 0 ? (c.votes / grandTotal) * 100 : 25,
+      }))
+      .sort((a, b) => b.votes - a.votes);
+  }, [candidates, allResults, pulseBonusVotes]);
+
+  const grandTotalVotes = useMemo(() => {
+    return candidateScores.reduce((acc, c) => acc + c.votes, 0);
+  }, [candidateScores]);
+
+  // Audio Part 2: Show candidate agent is tied to first (default Peter Obi / LP if unspecified)
+  const myCandidateId = user?.watchCandidateId ?? 'cand3';
   const winningCandidate = candidateScores[0];
+  const myCandidate = candidateScores.find((c) => c.id === myCandidateId) ?? candidateScores[0];
+  const myCandidateRank = candidateScores.findIndex((c) => c.id === myCandidate?.id) + 1;
+  const otherCandidates = candidateScores.filter((c) => c.id !== myCandidate?.id).slice(0, 3);
 
   return (
     <ScreenView
@@ -188,7 +232,7 @@ export default function DashboardScreen() {
             <View style={styles.tickerStatItem}>
               <ThemedText variant="caption" color="textMuted">TOTAL VOTES TALLIED</ThemedText>
               <ThemedText variant="h3" color="primary" fontFamily="bold">
-                {livePulseVotes.toLocaleString()}
+                {grandTotalVotes.toLocaleString()}
               </ThemedText>
             </View>
             <View style={styles.statDivider} />
@@ -258,17 +302,73 @@ export default function DashboardScreen() {
             )}
           </View>
 
-          {/* Candidate score rows */}
+          {/* Candidate score rows (Audio Part 2: Agent's affiliated candidate pinned at the top) */}
           <View style={{ gap: spacing.sm, marginTop: spacing.sm }}>
-            {candidateScores.slice(0, 4).map((cand, idx) => {
-              const isWinner = idx === 0;
-              const partyColors: Record<string, string> = {
-                APC: '#0D6338',
-                PDP: '#DC2626',
-                LP: '#16A34A',
-                NNPP: '#2563EB',
-              };
-              const partyCol = partyColors[cand.partyAcronym] ?? colors.primary;
+            {myCandidate && (
+              <View style={[styles.candidateRowCard, { borderColor: colors.primary, borderWidth: 1.5 }]}>
+                <View style={styles.candHeader}>
+                  <View style={styles.candLeft}>
+                    <View style={[styles.rankTag, { backgroundColor: colors.primary }]}>
+                      <ThemedText variant="caption" color="#FFFFFF" fontFamily="bold">
+                        #{myCandidateRank}
+                      </ThemedText>
+                    </View>
+                    <View style={{ marginLeft: spacing.xs, flex: 1 }}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                        <ThemedText variant="body" color="text" fontFamily="bold">
+                          {myCandidate.fullName}
+                        </ThemedText>
+                        <View style={[styles.myCandidatePill, { backgroundColor: colors.primarySubtle }]}>
+                          <ThemedText variant="label" color="primary" fontFamily="bold">
+                            MY CANDIDATE
+                          </ThemedText>
+                        </View>
+                      </View>
+                      <View style={styles.partyBadgeRow}>
+                        <View style={[styles.partyPill, { backgroundColor: (PARTY_COLORS[myCandidate.partyAcronym] ?? colors.primary) + '18' }]}>
+                          <ThemedText variant="label" style={{ color: PARTY_COLORS[myCandidate.partyAcronym] ?? colors.primary }} fontFamily="bold">
+                            {myCandidate.partyAcronym}
+                          </ThemedText>
+                        </View>
+                        {myCandidate.candidateNumber ? (
+                          <ThemedText variant="label" color="textMuted" style={{ marginLeft: 6 }}>
+                            ID #{myCandidate.candidateNumber}
+                          </ThemedText>
+                        ) : null}
+                      </View>
+                    </View>
+                  </View>
+
+                  <View style={{ alignItems: 'flex-end' }}>
+                    <ThemedText variant="title" color="text" fontFamily="bold">
+                      {myCandidate.votes.toLocaleString()}
+                    </ThemedText>
+                    <ThemedText variant="caption" color="primary" fontFamily="bold">
+                      {myCandidate.pct.toFixed(1)}%
+                    </ThemedText>
+                  </View>
+                </View>
+
+                {/* Progress bar */}
+                <View style={[styles.progressBarTrack, { backgroundColor: colors.borderSubtle }]}>
+                  <View
+                    style={[
+                      styles.progressBarFill,
+                      {
+                        width: `${Math.min(myCandidate.pct, 100)}%`,
+                        backgroundColor: PARTY_COLORS[myCandidate.partyAcronym] ?? colors.primary,
+                      },
+                    ]}
+                  />
+                </View>
+              </View>
+            )}
+
+            {/* Other Contesting Candidates */}
+            {otherCandidates.map((cand) => {
+              const rank = candidateScores.findIndex((c) => c.id === cand.id) + 1;
+              const isWinner = rank === 1;
+              const partyCol = PARTY_COLORS[cand.partyAcronym] ?? colors.primary;
 
               return (
                 <View key={cand.id} style={[styles.candidateRowCard, { borderColor: isWinner ? colors.primary : colors.border }]}>
@@ -276,13 +376,23 @@ export default function DashboardScreen() {
                     <View style={styles.candLeft}>
                       <View style={[styles.rankTag, { backgroundColor: isWinner ? colors.primary : colors.borderSubtle }]}>
                         <ThemedText variant="caption" color={isWinner ? '#FFFFFF' : 'textSecondary'} fontFamily="bold">
-                          #{idx + 1}
+                          #{rank}
                         </ThemedText>
                       </View>
-                      <View style={{ marginLeft: spacing.xs }}>
-                        <ThemedText variant="body" color="text" fontFamily="bold">
-                          {cand.fullName}
-                        </ThemedText>
+                      <View style={{ marginLeft: spacing.xs, flex: 1 }}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                          <ThemedText variant="body" color="text" fontFamily="bold">
+                            {cand.fullName}
+                          </ThemedText>
+                          {isWinner && (
+                            <View style={[styles.winnerMiniPill, { backgroundColor: colors.primarySubtle }]}>
+                              <Ionicons name="trophy" size={10} color={colors.primary} />
+                              <ThemedText variant="label" color="primary" fontFamily="bold" style={{ marginLeft: 2, fontSize: 10 }}>
+                                LEADING
+                              </ThemedText>
+                            </View>
+                          )}
+                        </View>
                         <View style={styles.partyBadgeRow}>
                           <View style={[styles.partyPill, { backgroundColor: partyCol + '18' }]}>
                             <ThemedText variant="label" style={{ color: partyCol }} fontFamily="bold">
@@ -870,22 +980,29 @@ const styles = StyleSheet.create({
   aiHeaderRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'flex-start',
+    gap: spacing.xs,
   },
   aiTitleBlock: {
     flexDirection: 'row',
     alignItems: 'center',
+    flex: 1,
+    minWidth: 0,
+    marginRight: spacing.xs,
   },
   aiIconBadge: {
-    width: 36,
-    height: 36,
-    borderRadius: radius.md,
+    width: 32,
+    height: 32,
+    borderRadius: radius.sm,
     alignItems: 'center',
     justifyContent: 'center',
+    flexShrink: 0,
   },
   probBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 5,
+    flexShrink: 0,
+    alignSelf: 'flex-start',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
     borderRadius: radius.full,
   },
   candChipsRow: {
@@ -894,22 +1011,37 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   candChip: {
-    paddingHorizontal: 10,
-    paddingVertical: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
     borderRadius: radius.full,
     borderWidth: 1,
   },
   datasetTabs: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: 6,
   },
   datasetTab: {
     flex: 1,
+    minWidth: 90,
     paddingVertical: 6,
+    paddingHorizontal: 4,
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: radius.sm,
     borderWidth: 1,
+  },
+  myCandidatePill: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: radius.full,
+  },
+  winnerMiniPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 5,
+    paddingVertical: 2,
+    borderRadius: radius.full,
   },
   aiMetricsBox: {
     marginTop: spacing.md,
