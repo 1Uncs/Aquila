@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Platform, KeyboardAvoidingView, ScrollView, StyleSheet, Alert, Pressable } from 'react-native';
 import { ScreenView } from '@/core/components/ScreenView';
-import { ThemedText, Button, Input, Card } from '@/core/components';
+import { ThemedText, Button, Input, Card, ScreenHeader } from '@/core/components';
 import { useResultsStore, useAuthStore, ResultSubmission } from '@/features/auth/store';
 import { router, useLocalSearchParams } from 'expo-router';
 import { spacing, shadows, radius, border } from '@/constants/tokens';
@@ -235,6 +235,11 @@ export default function SubmitResultScreen() {
   if (user?.role === 'ELECTION_OFFICER') {
     return (
       <ScreenView scrollable={false}>
+        <ScreenHeader
+          title="Submit Result"
+          category="FIELD RETURN"
+          subtitle="Restricted supervisor access"
+        />
         <View style={styles.restrictedContainer}>
           <Card style={styles.restrictedCard}>
             <View style={[styles.restrictedIcon, { backgroundColor: colors.primarySubtle }]}>
@@ -259,6 +264,11 @@ export default function SubmitResultScreen() {
 
   return (
     <ScreenView scrollable contentContainerStyle={styles.scrollContent}>
+      <ScreenHeader
+        title="Submit Result"
+        category="BALLOT RETURN CONSOLE"
+        subtitle={existingDraft ? 'Editing saved EC8A draft return' : 'Official INEC EC8A ballot entry'}
+      />
       {/* Polling Unit Selector / Display */}
       <Card style={styles.sectionCard}>
         <ThemedText variant="label" color="textMuted" fontFamily="bold">

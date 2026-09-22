@@ -3,7 +3,7 @@ import { StyleSheet, View, ScrollView } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useLocalSearchParams, router } from 'expo-router';
 import { ScreenView } from '@/core/components/ScreenView';
-import { ThemedText, Card, EmptyState, Button } from '@/core/components';
+import { ThemedText, Card, EmptyState, Button, ScreenHeader } from '@/core/components';
 import { useResultsQuery, useCandidatesQuery, usePollingUnitsQuery } from '@/features/elections/hooks';
 import { spacing, radius, shadows, border } from '@/constants/tokens';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
@@ -93,6 +93,11 @@ export default function ResultDetailScreen() {
 
   return (
     <ScreenView scrollable contentContainerStyle={styles.scrollContent}>
+      <ScreenHeader
+        title="Polling Unit Return"
+        category="EC8A VERIFICATION"
+        subtitle={result.pollingUnitName}
+      />
       {/* 1. Header Hero Card */}
       <LinearGradient
         colors={['#0D6338', '#0A4A2A']}

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { StyleSheet, View, Pressable, ScrollView } from 'react-native';
 import { ScreenView } from '@/core/components/ScreenView';
-import { ThemedText, Card, Button, Input } from '@/core/components';
+import { ThemedText, Card, Button, Input, ScreenHeader } from '@/core/components';
 import { Ionicons } from '@expo/vector-icons';
 import { spacing, radius, shadows, border } from '@/constants/tokens';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
@@ -37,6 +37,11 @@ export default function LocationsScreen() {
 
   return (
     <ScreenView scrollable contentContainerStyle={styles.scrollContent}>
+      <ScreenHeader
+        title="Electoral Locations"
+        category="INEC GEOGRAPHY"
+        subtitle="36 States, 774 LGAs, and 176,846 Polling Units"
+      />
       {/* 1. Header Overview Banner */}
       <LinearGradient
         colors={['#0D6338', '#0A4A2A']}

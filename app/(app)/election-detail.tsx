@@ -5,7 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router, useLocalSearchParams } from 'expo-router';
 import { ScreenView } from '@/core/components/ScreenView';
-import { ThemedText, Card, EmptyState, Button } from '@/core/components';
+import { ThemedText, Card, EmptyState, Button, ScreenHeader } from '@/core/components';
 import { ROUTES } from '@/constants/routes';
 import { spacing, shadows, radius, border } from '@/constants/tokens';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
@@ -58,6 +58,11 @@ export default function ElectionDetailScreen() {
   return (
     <ScreenView scrollable={false} noScrollPadding>
       <View style={styles.container}>
+        <ScreenHeader
+          title={election.position}
+          category="ELECTORAL CONTEST"
+          subtitle={`${election.electoralArea} · ${election.electoralAreaType}`}
+        />
         <FlashList
           data={candidates}
           keyExtractor={(item) => item.id}

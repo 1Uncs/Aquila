@@ -3,7 +3,7 @@ import { StyleSheet, View, Alert, Pressable } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router, useLocalSearchParams } from 'expo-router';
 import { ScreenView } from '@/core/components/ScreenView';
-import { ThemedText, EmptyState, Button, Card } from '@/core/components';
+import { ThemedText, EmptyState, Button, Card, ScreenHeader } from '@/core/components';
 import { useResultsQuery, useCandidatesQuery } from '@/features/elections/hooks';
 import { spacing, radius, shadows, border } from '@/constants/tokens';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
@@ -78,6 +78,11 @@ export default function ResultCollationScreen() {
       refreshControl={refreshControl}
       contentContainerStyle={styles.scrollContent}
     >
+      <ScreenHeader
+        title="Result Collation"
+        category="SITUATION ROOM AUDIT"
+        subtitle="Live EC8D tally & presidential returns"
+      />
       {/* 1. Situation Room Collation Hero */}
       <LinearGradient
         colors={['#070C09', '#0A331D', '#0D6338']}

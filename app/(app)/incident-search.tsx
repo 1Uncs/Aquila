@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import { ScreenView } from '@/core/components/ScreenView';
-import { ThemedText, Card, EmptyState, Input } from '@/core/components';
+import { ThemedText, Card, EmptyState, Input, ScreenHeader } from '@/core/components';
 import { useIncidentsStore } from '@/features/auth/store';
 import { spacing, radius, shadows, border } from '@/constants/tokens';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
@@ -52,14 +52,13 @@ export default function IncidentSearchScreen() {
   return (
     <ScreenView scrollable={false} noScrollPadding>
       <View style={styles.container}>
-        <View style={styles.headerBlock}>
-          <ThemedText variant="title" color="text" fontFamily="bold">
-            Search Field Incidents
-          </ThemedText>
-          <ThemedText variant="caption" color="textSecondary" style={{ marginBottom: spacing.sm }}>
-            Filter by category, description, electoral area, or station code
-          </ThemedText>
+        <ScreenHeader
+          title="Search Field Incidents"
+          category="INCIDENT AUDIT"
+          subtitle="Filter by category, description, electoral area, or station"
+        />
 
+        <View style={styles.headerBlock}>
           <Input
             placeholder="Type e.g. 'Violence', 'BVAS', 'Ikeja'..."
             value={search}

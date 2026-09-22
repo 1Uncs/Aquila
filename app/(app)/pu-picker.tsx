@@ -2,7 +2,7 @@ import React, { useState, useMemo, useCallback } from 'react';
 import { View, StyleSheet, Pressable } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import { ScreenView } from '@/core/components/ScreenView';
-import { ThemedText, Card, EmptyState, Input } from '@/core/components';
+import { ThemedText, Card, EmptyState, Input, ScreenHeader } from '@/core/components';
 import { router, useLocalSearchParams } from 'expo-router';
 import { spacing, radius, shadows, border } from '@/constants/tokens';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
@@ -97,12 +97,14 @@ export default function PUPickerScreen() {
   return (
     <ScreenView scrollable={false} noScrollPadding>
       <View style={styles.container}>
+        <ScreenHeader
+          title="Select Polling Unit"
+          category={mode === 'incident' ? 'INCIDENT LOCATION' : 'EC8A PU SELECTION'}
+          subtitle={mode === 'incident' ? 'Link evidence to an official polling unit' : 'Choose voting station to enter return'}
+        />
+
         {/* Header Search Section */}
         <View style={styles.headerBlock}>
-          <ThemedText variant="caption" color="textSecondary" style={{ marginBottom: spacing.sm }}>
-            {mode === 'incident' ? 'Link incident evidence to a specific polling unit' : 'Select polling unit to record EC8A ballots'}
-          </ThemedText>
-
           <Input
             placeholder="Type name, code (e.g. PU/001), or LGA..."
             value={search}

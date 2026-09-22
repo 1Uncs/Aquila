@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, StyleSheet, Pressable, ScrollView } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import { ScreenView } from '@/core/components/ScreenView';
-import { ThemedText, Card, EmptyState } from '@/core/components';
+import { ThemedText, Card, EmptyState, ScreenHeader } from '@/core/components';
 import { Ionicons } from '@expo/vector-icons';
 import { usePartiesQuery, useCandidatesQuery } from '@/features/elections/hooks';
 import { spacing, radius, shadows, border } from '@/constants/tokens';
@@ -36,16 +36,14 @@ export default function PartiesScreen() {
   return (
     <ScreenView scrollable={false} noScrollPadding>
       <View style={styles.container}>
-        {/* Top Header */}
-        <View style={styles.headerBlock}>
-          <ThemedText variant="title" color="text" fontFamily="bold">
-            Parties & Candidate Directory
-          </ThemedText>
-          <ThemedText variant="caption" color="textSecondary" style={{ marginBottom: spacing.xs }}>
-            INEC registered political entities and candidate party affiliations
-          </ThemedText>
+        <ScreenHeader
+          title="Parties & Candidates"
+          category="INEC DIRECTORY"
+          subtitle="Registered political parties and nominated contestants"
+        />
 
-          {/* Tab Switcher: Candidates vs Parties (Audio Part 2) */}
+        {/* Tab Switcher: Candidates vs Parties (Audio Part 2) */}
+        <View style={styles.headerBlock}>
           <View style={[styles.tabBar, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }]}>
             <Pressable
               onPress={() => {

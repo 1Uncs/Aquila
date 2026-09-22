@@ -43,22 +43,11 @@ export function ScreenView({
 
   let resolvedTopPadding = 0;
   if (!skipTopSafeArea) {
-    if (hasNoNativeHeader) {
-      // Headerless screens (auth, tabs): if non-scrollable, apply insets.top on both iOS & Android so header is never covered
-      if (!scrollable) {
-        resolvedTopPadding = insets.top;
-      } else if (Platform.OS === 'android' && !skipAndroidTopPadding) {
-        resolvedTopPadding = insets.top;
-      }
-    } else {
-      // Push screens on iOS with headerTransparent: true
-      if (Platform.OS === 'ios') {
-        if (!scrollable) {
-          // Non-scrollable push screens need padding so content starts below transparent header
-          resolvedTopPadding = insets.top + 44;
-        }
-        // Scrollable push screens use contentInsetAdjustmentBehavior="automatic" so content scrolls natively under header!
-      }
+    if (!scrollable) {
+      // Non-scrollable screens (and FlashList roots): always apply insets.top on both iOS and Android
+      resolvedTopPadding = insets.top;
+    } else if (Platform.OS === 'android' && !skipAndroidTopPadding) {
+      resolvedTopPadding = insets.top;
     }
   }
 
@@ -77,15 +66,18 @@ export function ScreenView({
         ? {}
         : {
             paddingHorizontal: spacing.screen.paddingHorizontal,
-            paddingTop: isTab ? (Platform.OS === 'ios' ? insets.top + spacing.xs : spacing.xs) : spacing.screen.padding,
+            paddingTop: Platform.OS === 'ios' ? insets.top + spacing.xs : spacing.xs,
           },
-      isTab ? { paddingBottom: Math.max(spacing.screen.padding, insets.bottom + 84) } : {},
+      isTab
+        ? { paddingBottom: Math.max(spacing.screen.padding, insets.bottom + 84) }
+        : { paddingBottom: Math.max(spacing.screen.padding, insets.bottom + 24) },
       contentContainerStyle,
     ];
 
     const scrollViewProps: ScrollViewProps = {
       contentContainerStyle: scrollContentStyle,
-      contentInsetAdjustmentBehavior: Platform.OS === 'ios' && !hasNoNativeHeader ? 'automatic' : 'never',
+      contentInsetAdjustmentBehavior: 'never',
+      automaticallyAdjustKeyboardInsets: true,
       keyboardShouldPersistTaps: keyboardShouldPersistTaps,
       bounces: true,
       overScrollMode: 'always',

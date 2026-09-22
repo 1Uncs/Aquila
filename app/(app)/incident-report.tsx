@@ -3,7 +3,7 @@ import { ScrollView, View, Platform, KeyboardAvoidingView, Alert, StyleSheet, Pr
 import { useAudioRecorder, useAudioRecorderState, AudioModule, RecordingPresets, setAudioModeAsync } from 'expo-audio';
 import * as ImagePicker from 'expo-image-picker';
 import { ScreenView } from '@/core/components/ScreenView';
-import { ThemedText, Input, Button, Card } from '@/core/components';
+import { ThemedText, Input, Button, Card, ScreenHeader } from '@/core/components';
 import { IncidentReport } from '@/features/auth/store';
 import { useIncidentsStore, useAuthStore } from '@/features/auth/store';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -310,13 +310,21 @@ export default function ReportIncidentScreen() {
 
   if (user?.role === 'ELECTION_OFFICER') {
     return (
-      <ScreenView>
-        <View style={{ padding: spacing.lg, alignItems: 'center', marginTop: spacing.xxl }}>
-          <Card style={{ padding: spacing.xl, width: '100%', alignItems: 'center' }}>
-            <ThemedText variant="h3" style={{ textAlign: 'center', marginBottom: spacing.md, color: colors.critical }}>
-              Supervisory Access Restricted
+      <ScreenView scrollable={false}>
+        <ScreenHeader
+          title="Report Incident"
+          category="INCIDENT LOGGING"
+          subtitle="Restricted supervisor access"
+        />
+        <View style={styles.restrictedContainer}>
+          <Card style={styles.restrictedCard}>
+            <View style={[styles.restrictedIcon, { backgroundColor: colors.primarySubtle }]}>
+              <Ionicons name="shield-outline" size={32} color={colors.primary} />
+            </View>
+            <ThemedText variant="h3" color="primary" fontFamily="bold" style={{ textAlign: 'center', marginTop: spacing.sm }}>
+              Election Officer Supervisory Mandate
             </ThemedText>
-            <ThemedText variant="body" color="textSecondary" style={{ textAlign: 'center', marginBottom: spacing.lg }}>
+            <ThemedText variant="body" color="textSecondary" style={{ textAlign: 'center', marginVertical: spacing.sm }}>
               As an Election Officer (Situation Room Director), your mandate focuses on incident monitoring, triage, and task-force dispatches. Incident reporting in the field is reserved for Polling Unit Agents and Observers.
             </ThemedText>
             <Button
@@ -331,19 +339,12 @@ export default function ReportIncidentScreen() {
   }
 
   return (
-    <ScreenView>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        enabled={Platform.OS === 'ios'}
-        style={{ flex: 1 }}
-      >
-        <ScrollView
-          keyboardShouldPersistTaps="handled"
-          keyboardDismissMode="on-drag"
-          contentInsetAdjustmentBehavior="automatic"
-          automaticallyAdjustKeyboardInsets={true}
-          contentContainerStyle={{ paddingBottom: spacing.xxl, paddingTop: spacing.xs }}
-        >
+    <ScreenView scrollable contentContainerStyle={{ paddingBottom: spacing.xxl }}>
+      <ScreenHeader
+        title="Report Incident"
+        category="FIELD INCIDENT LOGGING"
+        subtitle="Log security anomalies, BVAS issues, and field evidence"
+      />
           {/* Location Scope: Specific Polling Unit vs Area-Wide Incident */}
           <ThemedText variant="label" style={{ marginBottom: spacing.xs }}>
             Incident Location Scope
@@ -534,12 +535,30 @@ export default function ReportIncidentScreen() {
             <Button label="Cancel" variant="outline" onPress={() => router.back()} fullWidth />
             <Button label="Submit" onPress={handleSubmit} loading={submitting} fullWidth />
           </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
     </ScreenView>
   );
 }
 
 const styles = StyleSheet.create({
   titleIndicator: { width: 4, height: 20, borderRadius: radius.full },
+  restrictedContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: spacing.lg,
+  },
+  restrictedCard: {
+    padding: spacing.xl,
+    alignItems: 'center',
+    width: '100%',
+    maxWidth: 400,
+  },
+  restrictedIcon: {
+    width: 64,
+    height: 64,
+    borderRadius: radius.full,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: spacing.md,
+  },
 });
