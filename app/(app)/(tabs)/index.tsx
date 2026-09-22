@@ -254,34 +254,34 @@ export default function DashboardScreen() {
       {/* 2. Drafts Alert Banner (Audio Part 3) */}
       {draftSubmissions.length > 0 && (
         <EntranceView delay={100}>
-          <Pressable
+          <Card
+            pressable
             onPress={() => {
               impact(Haptics.ImpactFeedbackStyle.Medium);
               router.push(ROUTES.RESULT_DRAFTS);
             }}
+            style={[styles.draftAlertCard, { backgroundColor: colors.warningSubtle, borderColor: colors.warning }]}
           >
-            <Card style={[styles.draftAlertCard, { backgroundColor: colors.warningSubtle, borderColor: colors.warning }]}>
-              <View style={styles.draftAlertContent}>
-                <View style={[styles.draftAlertIcon, { backgroundColor: colors.warning + '20' }]}>
-                  <Ionicons name="document-text" size={20} color={colors.warning} />
-                </View>
-                <View style={{ flex: 1 }}>
-                  <ThemedText variant="body" color="text" fontFamily="bold">
-                    {draftSubmissions.length} Pending Result Draft{draftSubmissions.length > 1 ? 's' : ''}
-                  </ThemedText>
-                  <ThemedText variant="caption" color="textSecondary">
-                    You have saved drafts awaiting review and final publication.
-                  </ThemedText>
-                </View>
-                <View style={[styles.actionPill, { backgroundColor: colors.warning }]}>
-                  <ThemedText variant="caption" color="#FFFFFF" fontFamily="bold">
-                    Resume
-                  </ThemedText>
-                  <Ionicons name="chevron-forward" size={14} color="#FFFFFF" />
-                </View>
+            <View style={styles.draftAlertContent}>
+              <View style={[styles.draftAlertIcon, { backgroundColor: colors.warning + '20' }]}>
+                <Ionicons name="document-text" size={20} color={colors.warning} />
               </View>
-            </Card>
-          </Pressable>
+              <View style={{ flex: 1 }}>
+                <ThemedText variant="body" color="text" fontFamily="bold">
+                  {draftSubmissions.length} Pending Result Draft{draftSubmissions.length > 1 ? 's' : ''}
+                </ThemedText>
+                <ThemedText variant="caption" color="textSecondary">
+                  You have saved drafts awaiting review and final publication.
+                </ThemedText>
+              </View>
+              <View style={[styles.actionPill, { backgroundColor: colors.warning }]}>
+                <ThemedText variant="caption" color="#FFFFFF" fontFamily="bold">
+                  Resume
+                </ThemedText>
+                <Ionicons name="chevron-forward" size={14} color="#FFFFFF" />
+              </View>
+            </View>
+          </Card>
         </EntranceView>
       )}
 
@@ -599,7 +599,24 @@ export default function DashboardScreen() {
               const isDraft = pu.status === 'DRAFT';
 
               return (
-                <View key={pu.id} style={[styles.puCard, { borderColor: colors.border }]}>
+                <Card
+                  key={pu.id}
+                  pressable
+                  onPress={() => {
+                    impact(Haptics.ImpactFeedbackStyle.Medium);
+                    if (isElectionOfficer) {
+                      // Election officers can view results, not submit
+                      router.push({ pathname: ROUTES.RESULT_DETAIL, params: { id: 'r1' } });
+                    } else if (isPub) {
+                      router.push({ pathname: ROUTES.RESULT_DETAIL, params: { id: 'r1' } });
+                    } else if (isDraft) {
+                      router.push(ROUTES.RESULT_DRAFTS);
+                    } else {
+                      router.push({ pathname: ROUTES.RESULT_SUBMIT, params: { puId: pu.id, puName: pu.name } });
+                    }
+                  }}
+                  style={[styles.puCard, { borderColor: colors.border }]}
+                >
                   <View style={styles.puTopRow}>
                     <View style={{ flex: 1 }}>
                       <ThemedText variant="body" color="text" fontFamily="bold">
@@ -649,20 +666,7 @@ export default function DashboardScreen() {
                           : 'Awaiting accredited ballot entry'}
                     </ThemedText>
 
-                    <Pressable
-                      onPress={() => {
-                        impact(Haptics.ImpactFeedbackStyle.Medium);
-                        if (isElectionOfficer) {
-                          // Election officers can view results, not submit
-                          router.push({ pathname: ROUTES.RESULT_DETAIL, params: { id: 'r1' } });
-                        } else if (isPub) {
-                          router.push({ pathname: ROUTES.RESULT_DETAIL, params: { id: 'r1' } });
-                        } else if (isDraft) {
-                          router.push(ROUTES.RESULT_DRAFTS);
-                        } else {
-                          router.push({ pathname: ROUTES.RESULT_SUBMIT, params: { puId: pu.id, puName: pu.name } });
-                        }
-                      }}
+                    <View
                       style={[
                         styles.puActionBtn,
                         { backgroundColor: isPub || isElectionOfficer ? colors.borderSubtle : colors.primary },
@@ -680,9 +684,9 @@ export default function DashboardScreen() {
                         size={12}
                         color={isPub || isElectionOfficer ? colors.text : '#FFFFFF'}
                       />
-                    </Pressable>
+                    </View>
                   </View>
-                </View>
+                </Card>
               );
             })}
           </View>
@@ -693,12 +697,13 @@ export default function DashboardScreen() {
       <EntranceView delay={300}>
         <View style={styles.quickGrid}>
           {isElectionOfficer ? (
-            <Pressable
+            <Card
+              pressable
               onPress={() => {
                 impact(Haptics.ImpactFeedbackStyle.Medium);
                 router.push(ROUTES.RESULT_SEARCH);
               }}
-              style={[styles.quickCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
+              style={[styles.quickCard, { borderColor: colors.border }]}
             >
               <View style={[styles.quickIconWrap, { backgroundColor: colors.primary + '18' }]}>
                 <Ionicons name="search" size={22} color={colors.primary} />
@@ -709,14 +714,15 @@ export default function DashboardScreen() {
               <ThemedText variant="caption" color="textSecondary">
                 Audit returns
               </ThemedText>
-            </Pressable>
+            </Card>
           ) : (
-            <Pressable
+            <Card
+              pressable
               onPress={() => {
                 impact(Haptics.ImpactFeedbackStyle.Medium);
                 router.push(ROUTES.RESULT_SUBMIT);
               }}
-              style={[styles.quickCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
+              style={[styles.quickCard, { borderColor: colors.border }]}
             >
               <View style={[styles.quickIconWrap, { backgroundColor: colors.primary + '18' }]}>
                 <Ionicons name="add-circle" size={22} color={colors.primary} />
@@ -727,15 +733,16 @@ export default function DashboardScreen() {
               <ThemedText variant="caption" color="textSecondary">
                 PU ballot return
               </ThemedText>
-            </Pressable>
+            </Card>
           )}
 
-          <Pressable
+          <Card
+            pressable
             onPress={() => {
               impact(Haptics.ImpactFeedbackStyle.Medium);
               router.push(ROUTES.INCIDENT_REPORT);
             }}
-            style={[styles.quickCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
+            style={[styles.quickCard, { borderColor: colors.border }]}
           >
             <View style={[styles.quickIconWrap, { backgroundColor: colors.critical + '18' }]}>
               <Ionicons name="warning" size={22} color={colors.critical} />
@@ -746,14 +753,15 @@ export default function DashboardScreen() {
             <ThemedText variant="caption" color="textSecondary">
               Live covert filing
             </ThemedText>
-          </Pressable>
+          </Card>
 
-          <Pressable
+          <Card
+            pressable
             onPress={() => {
               impact(Haptics.ImpactFeedbackStyle.Medium);
               router.push(ROUTES.RESULT_COLLATION);
             }}
-            style={[styles.quickCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
+            style={[styles.quickCard, { borderColor: colors.border }]}
           >
             <View style={[styles.quickIconWrap, { backgroundColor: colors.accent + '18' }]}>
               <Ionicons name="bar-chart" size={22} color={colors.accentDark} />
@@ -764,14 +772,15 @@ export default function DashboardScreen() {
             <ThemedText variant="caption" color="textSecondary">
               Wards & LGA summary
             </ThemedText>
-          </Pressable>
+          </Card>
 
-          <Pressable
+          <Card
+            pressable
             onPress={() => {
               impact(Haptics.ImpactFeedbackStyle.Medium);
               router.push(ROUTES.LOCATIONS);
             }}
-            style={[styles.quickCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
+            style={[styles.quickCard, { borderColor: colors.border }]}
           >
             <View style={[styles.quickIconWrap, { backgroundColor: colors.primary + '18' }]}>
               <Ionicons name="map" size={22} color={colors.primary} />
@@ -780,9 +789,9 @@ export default function DashboardScreen() {
               Locations
             </ThemedText>
             <ThemedText variant="caption" color="textSecondary">
-              Search hierarchy
+              National registry
             </ThemedText>
-          </Pressable>
+          </Card>
         </View>
       </EntranceView>
 

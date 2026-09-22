@@ -274,33 +274,39 @@ export default function ElectionsScreen() {
 
       {/* Quick Navigation Directory Row */}
       <View style={styles.quickLinksRow}>
-        <Pressable
+        <Card
+          pressable
           onPress={() => {
             impact(Haptics.ImpactFeedbackStyle.Light);
             router.push(ROUTES.PARTIES);
           }}
           style={[styles.quickLinkPill, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }]}
         >
-          <Ionicons name="people-circle-outline" size={15} color={colors.primary} />
-          <ThemedText variant="caption" color="text" fontFamily="medium">
-            Political Parties
-          </ThemedText>
-          <Ionicons name="chevron-forward" size={12} color={colors.textMuted} />
-        </Pressable>
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Ionicons name="people-circle-outline" size={15} color={colors.primary} />
+            <ThemedText variant="caption" color="text" fontFamily="medium" style={{ flex: 1, marginLeft: 6 }}>
+              Political Parties
+            </ThemedText>
+            <Ionicons name="chevron-forward" size={12} color={colors.textMuted} />
+          </View>
+        </Card>
 
-        <Pressable
+        <Card
+          pressable
           onPress={() => {
             impact(Haptics.ImpactFeedbackStyle.Light);
             router.push(ROUTES.LOCATIONS);
           }}
           style={[styles.quickLinkPill, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }]}
         >
-          <Ionicons name="map-outline" size={15} color={colors.primary} />
-          <ThemedText variant="caption" color="text" fontFamily="medium">
-            Electoral Hierarchy
-          </ThemedText>
-          <Ionicons name="chevron-forward" size={12} color={colors.textMuted} />
-        </Pressable>
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Ionicons name="map-outline" size={15} color={colors.primary} />
+            <ThemedText variant="caption" color="text" fontFamily="medium" style={{ flex: 1, marginLeft: 6 }}>
+              Electoral Hierarchy
+            </ThemedText>
+            <Ionicons name="chevron-forward" size={12} color={colors.textMuted} />
+          </View>
+        </Card>
       </View>
 
       {/* Loading Skeleton State */}

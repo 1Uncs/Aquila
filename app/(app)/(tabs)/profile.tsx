@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, View, Alert, Image, Pressable } from 'react-native';
+import { StyleSheet, View, Alert, Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { ScreenView } from '@/core/components/ScreenView';
@@ -175,22 +175,24 @@ export default function ProfileTabScreen() {
             { label: 'National Result Collation Room', icon: 'bar-chart-outline', route: ROUTES.RESULT_COLLATION },
             { label: 'Draft Results Queue', icon: 'save-outline', route: ROUTES.RESULT_DRAFTS },
           ].map((item) => (
-            <Pressable
+            <Card
               key={item.label}
+              pressable
               onPress={() => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                 router.push(item.route as any);
               }}
               style={[styles.moduleLink, { borderColor: colors.border }]}
             >
-              <View style={[styles.moduleIconWrap, { backgroundColor: colors.primary + '14' }]}>
-                <Ionicons name={item.icon as any} size={18} color={colors.primary} />
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <View style={[styles.moduleIconWrap, { backgroundColor: colors.primary + '14' }]}>
+                  <Ionicons name={item.icon as any} size={18} color={colors.primary} />
+                </View>
+                <ThemedText variant="body" color="text" fontFamily="medium" style={{ flex: 1, marginLeft: spacing.xs }}>
+                  {item.label}
+                </ThemedText>
+                <Ionicons name="chevron-forward" size={16} color={colors.textMuted} />
               </View>
-              <ThemedText variant="body" color="text" fontFamily="medium" style={{ flex: 1, marginLeft: spacing.xs }}>
-                {item.label}
-              </ThemedText>
-              <Ionicons name="chevron-forward" size={16} color={colors.textMuted} />
-            </Pressable>
+            </Card>
           ))}
         </View>
       </Card>
