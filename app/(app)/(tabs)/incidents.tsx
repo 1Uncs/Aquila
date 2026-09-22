@@ -1,6 +1,5 @@
 import React, { useState, useMemo, useCallback } from 'react';
-import { StyleSheet, View, ScrollView, Pressable, Alert } from 'react-native';
-import { FlashList } from '@shopify/flash-list';
+import { StyleSheet, View, ScrollView, Pressable, Alert, FlatList } from 'react-native';
 import { router } from 'expo-router';
 import { ScreenView } from '@/core/components/ScreenView';
 import { ThemedText, EmptyState, Button, Card } from '@/core/components';
@@ -268,11 +267,10 @@ export default function IncidentsScreen() {
           </ScrollView>
         </View>
 
-        {/* Unnested FlashList */}
-        <FlashList
+        {/* Unnested FlatList */}
+        <FlatList
           data={filtered}
           keyExtractor={(item) => item.id}
-          contentInsetAdjustmentBehavior="never"
           renderItem={renderIncidentCard}
           refreshControl={refreshControl}
           contentContainerStyle={styles.listContent}

@@ -23,7 +23,7 @@ export default function ResultCollationScreen() {
   const scheme = useColorScheme() ?? 'light';
   const colors = Colors[scheme];
   const { refreshControl } = useRefreshControl(loading, refetch);
-  useStatusBar({ barStyle: 'light' });
+  useStatusBar({ barStyle: scheme === 'dark' ? 'light' : 'dark' });
   useForegroundRefresh([['results', 'collation', electionId ?? 'all']], 5 * 60 * 1000);
   const { impact } = useHaptics();
 
@@ -75,14 +75,16 @@ export default function ResultCollationScreen() {
   return (
     <ScreenView
       scrollable
+      header={
+        <ScreenHeader
+          title="Result Collation"
+          subtitle="National Collation Room"
+          showBack
+        />
+      }
       refreshControl={refreshControl}
       contentContainerStyle={styles.scrollContent}
     >
-      <ScreenHeader
-        title="Result Collation"
-        category="SITUATION ROOM AUDIT"
-        subtitle="Live EC8D tally & presidential returns"
-      />
       {/* 1. Situation Room Collation Hero */}
       <LinearGradient
         colors={['#070C09', '#0A331D', '#0D6338']}

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, View, ScrollView, LayoutAnimation } from 'react-native';
+import { StyleSheet, View, ScrollView, LayoutAnimation, Pressable } from 'react-native';
+import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
 import { ScreenView } from '@/core/components/ScreenView';
 import { ThemedText, EmptyState, Button, SkeletonCard, Card } from '@/core/components';
@@ -73,16 +74,33 @@ export default function ElectionsScreen() {
       </View>
 
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipRow} keyboardShouldPersistTaps="handled">
-        {cycles.map((cycle) => (
-          <Button
-            key={cycle.id}
-            label={cycle.name}
-            size="sm"
-            variant={selectedCycle === cycle.id ? 'primary' : 'outline'}
-            onPress={() => setSelectedCycle(cycle.id === selectedCycle ? null : cycle.id)}
-            style={styles.chip}
-          />
-        ))}
+        {cycles.map((cycle) => {
+          const isSelected = selectedCycle === cycle.id;
+          return (
+            <Pressable
+              key={cycle.id}
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                setSelectedCycle(isSelected ? null : cycle.id);
+              }}
+              style={[
+                styles.cycleChip,
+                {
+                  backgroundColor: isSelected ? colors.primary : colors.surface,
+                  borderColor: isSelected ? colors.primary : colors.border,
+                },
+              ]}
+            >
+              <ThemedText
+                variant="caption"
+                fontFamily={isSelected ? 'bold' : 'medium'}
+                style={{ color: isSelected ? '#FFFFFF' : colors.text }}
+              >
+                {cycle.name}
+              </ThemedText>
+            </Pressable>
+          );
+        })}
       </ScrollView>
 
         {loading ? (
@@ -144,6 +162,14 @@ const styles = StyleSheet.create({
     paddingBottom: 110,
   },
   chipRow: { gap: spacing.sm, marginBottom: spacing.md, paddingRight: spacing.md },
+  cycleChip: {
+    paddingVertical: 7,
+    paddingHorizontal: 14,
+    borderRadius: radius.full,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   chip: { marginRight: spacing.sm },
   electionCard: { marginBottom: spacing.md, padding: spacing.md },
   titleIndicator: { width: 4, height: 16, borderRadius: radius.full },

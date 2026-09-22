@@ -36,12 +36,17 @@ export default function LocationsScreen() {
   const stateLgas = selectedStateId ? lgas.filter((l) => l.stateId === selectedStateId) : [];
 
   return (
-    <ScreenView scrollable contentContainerStyle={styles.scrollContent}>
-      <ScreenHeader
-        title="Electoral Locations"
-        category="INEC GEOGRAPHY"
-        subtitle="36 States, 774 LGAs, and 176,846 Polling Units"
-      />
+    <ScreenView
+      scrollable
+      header={
+        <ScreenHeader
+          title="Locations"
+          subtitle="Electoral Geography & Hierarchy"
+          showBack
+        />
+      }
+      contentContainerStyle={styles.scrollContent}
+    >
       {/* 1. Header Overview Banner */}
       <LinearGradient
         colors={['#0D6338', '#0A4A2A']}

@@ -1,34 +1,35 @@
 import React from 'react';
 import { View, StyleSheet, Pressable, ViewStyle } from 'react-native';
-import { router } from 'expo-router';
+import { useRouter } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from './ThemedText';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
 import Colors from '@/constants/colors';
-import { spacing, radius, border } from '@/constants/tokens';
+import { spacing, radius } from '@/constants/tokens';
 
-export type ScreenHeaderProps = {
+type ScreenHeaderProps = {
   title: string;
   subtitle?: string;
-  category?: string;
   showBack?: boolean;
   onBack?: () => void;
-  rightElement?: React.ReactNode;
+  rightAction?: React.ReactNode;
+  badge?: React.ReactNode;
   style?: ViewStyle;
-  testID?: string;
 };
 
 export function ScreenHeader({
   title,
   subtitle,
-  category,
-  showBack = true,
+  showBack = false,
   onBack,
-  rightElement,
+  rightAction,
+  badge,
   style,
-  testID,
 }: ScreenHeaderProps) {
+  const router = useRouter();
+  const insets = useSafeAreaInsets();
   const scheme = useColorScheme() ?? 'light';
   const colors = Colors[scheme];
 
@@ -42,49 +43,60 @@ export function ScreenHeader({
   };
 
   return (
-    <View style={[styles.container, style]} testID={testID}>
-      <View style={styles.topRow}>
+    <View
+      style={[
+        styles.container,
+        {
+          paddingTop: insets.top + spacing.xs,
+          backgroundColor: colors.background,
+          borderBottomColor: colors.border,
+        },
+        style,
+      ]}
+    >
+      <View style={styles.contentRow}>
         {showBack && (
           <Pressable
+            onPress={handleBack}
+            hitSlop={12}
+            style={({ pressed }) => [
+              styles.backButton,
+              { backgroundColor: colors.surface, borderColor: colors.border },
+              pressed && { opacity: 0.7 },
+            ]}
             accessibilityRole="button"
             accessibilityLabel="Go back"
-            hitSlop={12}
-            onPress={handleBack}
-            style={({ pressed }) => [
-              styles.backBtn,
-              {
-                backgroundColor: colors.surface,
-                borderColor: colors.border,
-                opacity: pressed ? 0.7 : 1,
-              },
-            ]}
           >
             <Ionicons name="chevron-back" size={20} color={colors.text} />
           </Pressable>
         )}
 
-        <View style={styles.textColumn}>
-          {category && (
-            <View style={styles.categoryRow}>
-              <View style={[styles.categoryDot, { backgroundColor: colors.primary }]} />
-              <ThemedText variant="label" color="primary" fontFamily="bold" numberOfLines={1}>
-                {category.toUpperCase()}
-              </ThemedText>
-            </View>
-          )}
-
-          <ThemedText variant="title" color="text" fontFamily="bold" numberOfLines={1}>
-            {title}
-          </ThemedText>
-
+        <View style={styles.titleContainer}>
+          <View style={styles.titleRow}>
+            <ThemedText
+              variant="title"
+              color="text"
+              fontFamily="bold"
+              numberOfLines={1}
+              style={styles.titleText}
+            >
+              {title}
+            </ThemedText>
+            {badge}
+          </View>
           {subtitle && (
-            <ThemedText variant="caption" color="textSecondary" numberOfLines={1} style={{ marginTop: 1 }}>
+            <ThemedText
+              variant="caption"
+              color="textSecondary"
+              numberOfLines={1}
+              style={{ marginTop: 1 }}
+            >
               {subtitle}
             </ThemedText>
           )}
         </View>
 
-        {rightElement ? <View style={styles.rightContainer}>{rightElement}</View> : null}
+        {rightAction && <View style={styles.rightActionContainer}>{rightAction}</View>}
       </View>
     </View>
   );
@@ -93,39 +105,39 @@ export function ScreenHeader({
 const styles = StyleSheet.create({
   container: {
     paddingHorizontal: spacing.md,
-    paddingTop: spacing.xs,
     paddingBottom: spacing.sm,
+    borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  topRow: {
+  contentRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    minHeight: 40,
     gap: spacing.sm,
   },
-  backBtn: {
+  backButton: {
     width: 36,
     height: 36,
-    borderRadius: radius.full,
-    borderWidth: border.thin,
+    borderRadius: radius.md,
+    borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  textColumn: {
+  titleContainer: {
     flex: 1,
     justifyContent: 'center',
   },
-  categoryRow: {
+  titleRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 5,
-    marginBottom: 2,
+    gap: spacing.xs,
   },
-  categoryDot: {
-    width: 6,
-    height: 6,
-    borderRadius: radius.full,
+  titleText: {
+    fontSize: 18,
+    lineHeight: 22,
   },
-  rightContainer: {
-    alignItems: 'flex-end',
-    justifyContent: 'center',
+  rightActionContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
   },
 });

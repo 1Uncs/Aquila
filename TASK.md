@@ -40,5 +40,3 @@
   * Slide-back Prevention: Set `gestureEnabled: false` on root Stack, `(auth)`, `(app)`, and `(tabs)`.
   * Theme Synchronization: Initialized native OS root window via `SystemUI.setBackgroundColorAsync` responding dynamically to color scheme (`#070C09` dark / `#F8FAF9` light) across root and stack layouts.
   * Incident Report Audio Crash: Fixed `ExpoModulesCore` Swift `NotFoundException` in `incident-report.tsx` by replacing direct `recorderRef.current.isRecording` getter calls with `isRecordingRef` JavaScript boolean synchronization.
-  * In-Screen Header Unification: Standardized on Dashboard-style in-screen headers across all screens with `headerShown: false` globally in `app/(app)/_layout.tsx`. Created reusable `core/components/ScreenHeader.tsx` with debounced native back button, category tag, and action slots across all push screens.
-  * Static SystemUI & Background Cleanup: Removed hardcoded static `"backgroundColor": "#070C09"` from `app.json` (iOS) and reverted `elections.tsx` to prevent double-top-padding. Standardized `ScreenView.tsx` so all screens begin below the Dynamic Island / status bar.

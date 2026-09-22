@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, StyleSheet } from 'react-native';
-import { FlashList } from '@shopify/flash-list';
+import { View, StyleSheet, FlatList } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -22,7 +21,7 @@ export default function ElectionDetailScreen() {
   const [loading, setLoading] = useState(true);
   const scheme = useColorScheme() ?? 'light';
   const colors = Colors[scheme];
-  useStatusBar({ barStyle: 'light' });
+  useStatusBar({ barStyle: scheme === 'dark' ? 'light' : 'dark' });
   useForegroundRefresh([['elections', 'detail', id], ['elections', 'candidates', id]], 5 * 60 * 1000);
 
   useEffect(() => {
@@ -56,14 +55,19 @@ export default function ElectionDetailScreen() {
   }
 
   return (
-    <ScreenView scrollable={false} noScrollPadding>
-      <View style={styles.container}>
+    <ScreenView
+      scrollable={false}
+      noScrollPadding
+      header={
         <ScreenHeader
-          title={election.position}
-          category="ELECTORAL CONTEST"
-          subtitle={`${election.electoralArea} · ${election.electoralAreaType}`}
+          title="Election Details"
+          subtitle={election.position}
+          showBack
         />
-        <FlashList
+      }
+    >
+      <View style={styles.container}>
+        <FlatList
           data={candidates}
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.listContent}

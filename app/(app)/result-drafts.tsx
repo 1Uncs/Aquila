@@ -61,12 +61,17 @@ export default function ResultDraftsScreen() {
   };
 
   return (
-    <ScreenView scrollable contentContainerStyle={styles.scrollContent}>
-      <ScreenHeader
-        title="Draft Results Queue"
-        category="OFFLINE STORE"
-        subtitle={`${drafts.length} incomplete or unpublished ballot return${drafts.length === 1 ? '' : 's'}`}
-      />
+    <ScreenView
+      scrollable
+      header={
+        <ScreenHeader
+          title="Drafts Queue"
+          subtitle={`${drafts.length} unpublished ballot return${drafts.length === 1 ? '' : 's'}`}
+          showBack
+        />
+      }
+      contentContainerStyle={styles.scrollContent}
+    >
 
       {drafts.length === 0 ? (
         <EmptyState

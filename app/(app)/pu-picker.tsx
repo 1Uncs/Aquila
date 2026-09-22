@@ -1,6 +1,5 @@
 import React, { useState, useMemo, useCallback } from 'react';
-import { View, StyleSheet, Pressable } from 'react-native';
-import { FlashList } from '@shopify/flash-list';
+import { View, StyleSheet, Pressable, FlatList } from 'react-native';
 import { ScreenView } from '@/core/components/ScreenView';
 import { ThemedText, Card, EmptyState, Input, ScreenHeader } from '@/core/components';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -95,14 +94,18 @@ export default function PUPickerScreen() {
   }, [colors, lgaMap, stateMap]);
 
   return (
-    <ScreenView scrollable={false} noScrollPadding>
-      <View style={styles.container}>
+    <ScreenView
+      scrollable={false}
+      noScrollPadding
+      header={
         <ScreenHeader
           title="Select Polling Unit"
-          category={mode === 'incident' ? 'INCIDENT LOCATION' : 'EC8A PU SELECTION'}
-          subtitle={mode === 'incident' ? 'Link evidence to an official polling unit' : 'Choose voting station to enter return'}
+          subtitle={mode === 'incident' ? 'Tie incident to specific polling unit' : 'Select PU for EC8A return'}
+          showBack
         />
-
+      }
+    >
+      <View style={styles.container}>
         {/* Header Search Section */}
         <View style={styles.headerBlock}>
           <Input
@@ -115,8 +118,8 @@ export default function PUPickerScreen() {
           />
         </View>
 
-        {/* Unnested Native FlashList */}
-        <FlashList
+        {/* Native FlatList */}
+        <FlatList
           data={filtered}
           keyExtractor={(item) => item.id}
           renderItem={renderPUItem}

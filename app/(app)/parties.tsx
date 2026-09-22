@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, Pressable, ScrollView } from 'react-native';
-import { FlashList } from '@shopify/flash-list';
+import { View, StyleSheet, Pressable, ScrollView, FlatList } from 'react-native';
 import { ScreenView } from '@/core/components/ScreenView';
 import { ThemedText, Card, EmptyState, ScreenHeader } from '@/core/components';
 import { Ionicons } from '@expo/vector-icons';
@@ -34,16 +33,21 @@ export default function PartiesScreen() {
   };
 
   return (
-    <ScreenView scrollable={false} noScrollPadding>
-      <View style={styles.container}>
+    <ScreenView
+      scrollable={false}
+      noScrollPadding
+      header={
         <ScreenHeader
-          title="Parties & Candidates"
-          category="INEC DIRECTORY"
-          subtitle="Registered political parties and nominated contestants"
+          title="Political Parties"
+          subtitle="INEC Registered Entities & Candidate Affiliations"
+          showBack
         />
-
-        {/* Tab Switcher: Candidates vs Parties (Audio Part 2) */}
+      }
+    >
+      <View style={styles.container}>
+        {/* Top Header */}
         <View style={styles.headerBlock}>
+          {/* Tab Switcher: Candidates vs Parties (Audio Part 2) */}
           <View style={[styles.tabBar, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }]}>
             <Pressable
               onPress={() => {
@@ -139,7 +143,7 @@ export default function PartiesScreen() {
             })}
           </ScrollView>
         ) : (
-          <FlashList
+          <FlatList
             data={parties}
             keyExtractor={(p) => p.id}
             refreshControl={refreshControl}

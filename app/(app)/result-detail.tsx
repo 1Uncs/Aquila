@@ -22,7 +22,7 @@ export default function ResultDetailScreen() {
 
   const scheme = useColorScheme() ?? 'light';
   const colors = Colors[scheme];
-  useStatusBar({ barStyle: 'light' });
+  useStatusBar({ barStyle: scheme === 'dark' ? 'light' : 'dark' });
 
   // Find result from either API or local store submissions
   const result = useMemo(() => {
@@ -92,12 +92,17 @@ export default function ResultDetailScreen() {
   const isVerified = result.status === 'PUBLISHED';
 
   return (
-    <ScreenView scrollable contentContainerStyle={styles.scrollContent}>
-      <ScreenHeader
-        title="Polling Unit Return"
-        category="EC8A VERIFICATION"
-        subtitle={result.pollingUnitName}
-      />
+    <ScreenView
+      scrollable
+      header={
+        <ScreenHeader
+          title="Result Details"
+          subtitle={result.pollingUnitName}
+          showBack
+        />
+      }
+      contentContainerStyle={styles.scrollContent}
+    >
       {/* 1. Header Hero Card */}
       <LinearGradient
         colors={['#0D6338', '#0A4A2A']}

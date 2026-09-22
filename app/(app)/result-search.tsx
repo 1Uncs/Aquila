@@ -1,6 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { StyleSheet, View } from 'react-native';
-import { FlashList } from '@shopify/flash-list';
+import { StyleSheet, View, FlatList } from 'react-native';
 import { router } from 'expo-router';
 import { ScreenView } from '@/core/components/ScreenView';
 import { ThemedText, EmptyState, Card, Input, ScreenHeader } from '@/core/components';
@@ -36,14 +35,18 @@ export default function ResultSearchScreen() {
   }, [query, results]);
 
   return (
-    <ScreenView scrollable={false} noScrollPadding>
-      <View style={styles.container}>
+    <ScreenView
+      scrollable={false}
+      noScrollPadding
+      header={
         <ScreenHeader
-          title="Search Ballot Returns"
-          category="SEARCH & AUDIT"
-          subtitle="Filter verified returns by Polling Unit name or code"
+          title="Search Results"
+          subtitle="Filter verified returns by Polling Unit"
+          showBack
         />
-
+      }
+    >
+      <View style={styles.container}>
         <View style={styles.headerBlock}>
           <Input
             placeholder="Type PU name or code (e.g. Alausa, Ikeja)..."
@@ -55,7 +58,7 @@ export default function ResultSearchScreen() {
           />
         </View>
 
-        <FlashList
+        <FlatList
           data={filtered}
           keyExtractor={(item) => item.id}
           refreshControl={refreshControl}

@@ -14,6 +14,7 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.alabiansolutions.aquila",
+      "backgroundColor": "#070C09",
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "Aquila requires your location to geotag submitted electoral results and field incident evidence."
       }

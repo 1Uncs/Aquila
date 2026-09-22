@@ -9,12 +9,13 @@ export default function AppLayout() {
     <Stack
       screenOptions={{
         headerShown: false,
+        gestureEnabled: true,
         contentStyle: { backgroundColor: rootBg },
         animation: 'slide_from_right',
-        animationDuration: 250,
+        animationDuration: 220,
       }}
     >
-      <Stack.Screen name="(tabs)" options={{ headerShown: false, gestureEnabled: false }} />
+      <Stack.Screen name="(tabs)" options={{ gestureEnabled: false }} />
       <Stack.Screen name="election-detail" />
       <Stack.Screen name="result-submit" />
       <Stack.Screen name="result-detail" />

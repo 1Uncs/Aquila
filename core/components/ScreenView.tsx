@@ -7,6 +7,7 @@ import { spacing } from '@/constants/tokens';
 
 type ScreenViewProps = {
   children: React.ReactNode;
+  header?: React.ReactNode;
   style?: ViewStyle;
   contentContainerStyle?: ViewStyle;
   scrollable?: boolean;
@@ -21,6 +22,7 @@ type ScreenViewProps = {
 
 export function ScreenView({
   children,
+  header,
   style,
   contentContainerStyle,
   scrollable = false,
@@ -42,9 +44,8 @@ export function ScreenView({
   const hasNoNativeHeader = isTab || isAuth;
 
   let resolvedTopPadding = 0;
-  if (!skipTopSafeArea) {
+  if (!skipTopSafeArea && !header) {
     if (!scrollable) {
-      // Non-scrollable screens (and FlashList roots): always apply insets.top on both iOS and Android
       resolvedTopPadding = insets.top;
     } else if (Platform.OS === 'android' && !skipAndroidTopPadding) {
       resolvedTopPadding = insets.top;
@@ -66,18 +67,15 @@ export function ScreenView({
         ? {}
         : {
             paddingHorizontal: spacing.screen.paddingHorizontal,
-            paddingTop: Platform.OS === 'ios' ? insets.top + spacing.xs : spacing.xs,
+            paddingTop: !header && Platform.OS === 'ios' ? insets.top + spacing.xs : spacing.xs,
           },
-      isTab
-        ? { paddingBottom: Math.max(spacing.screen.padding, insets.bottom + 84) }
-        : { paddingBottom: Math.max(spacing.screen.padding, insets.bottom + 24) },
+      isTab ? { paddingBottom: Math.max(spacing.screen.padding, insets.bottom + 84) } : {},
       contentContainerStyle,
     ];
 
     const scrollViewProps: ScrollViewProps = {
       contentContainerStyle: scrollContentStyle,
       contentInsetAdjustmentBehavior: 'never',
-      automaticallyAdjustKeyboardInsets: true,
       keyboardShouldPersistTaps: keyboardShouldPersistTaps,
       bounces: true,
       overScrollMode: 'always',
@@ -89,6 +87,7 @@ export function ScreenView({
 
     return (
       <View style={[baseStyle, style]} testID={testID} collapsable={false}>
+        {header}
         <ScrollView style={styles.scrollView} {...scrollViewProps}>
           {children}
         </ScrollView>
@@ -98,6 +97,7 @@ export function ScreenView({
 
   return (
     <View style={[baseStyle, style]} testID={testID}>
+      {header}
       <View
         style={[
           styles.nonScrollContainer,

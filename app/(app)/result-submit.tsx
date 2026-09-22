@@ -235,11 +235,6 @@ export default function SubmitResultScreen() {
   if (user?.role === 'ELECTION_OFFICER') {
     return (
       <ScreenView scrollable={false}>
-        <ScreenHeader
-          title="Submit Result"
-          category="FIELD RETURN"
-          subtitle="Restricted supervisor access"
-        />
         <View style={styles.restrictedContainer}>
           <Card style={styles.restrictedCard}>
             <View style={[styles.restrictedIcon, { backgroundColor: colors.primarySubtle }]}>
@@ -263,12 +258,17 @@ export default function SubmitResultScreen() {
   }
 
   return (
-    <ScreenView scrollable contentContainerStyle={styles.scrollContent}>
-      <ScreenHeader
-        title="Submit Result"
-        category="BALLOT RETURN CONSOLE"
-        subtitle={existingDraft ? 'Editing saved EC8A draft return' : 'Official INEC EC8A ballot entry'}
-      />
+    <ScreenView
+      scrollable
+      header={
+        <ScreenHeader
+          title={draftId ? 'Edit Result Draft' : 'Submit Result'}
+          subtitle={resolvedPuName || 'Official EC8A Form'}
+          showBack
+        />
+      }
+      contentContainerStyle={styles.scrollContent}
+    >
       {/* Polling Unit Selector / Display */}
       <Card style={styles.sectionCard}>
         <ThemedText variant="label" color="textMuted" fontFamily="bold">

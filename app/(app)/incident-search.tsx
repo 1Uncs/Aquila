@@ -1,6 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { StyleSheet, View } from 'react-native';
-import { FlashList } from '@shopify/flash-list';
+import { StyleSheet, View, FlatList } from 'react-native';
 import { ScreenView } from '@/core/components/ScreenView';
 import { ThemedText, Card, EmptyState, Input, ScreenHeader } from '@/core/components';
 import { useIncidentsStore } from '@/features/auth/store';
@@ -50,14 +49,18 @@ export default function IncidentSearchScreen() {
   };
 
   return (
-    <ScreenView scrollable={false} noScrollPadding>
-      <View style={styles.container}>
+    <ScreenView
+      scrollable={false}
+      noScrollPadding
+      header={
         <ScreenHeader
-          title="Search Field Incidents"
-          category="INCIDENT AUDIT"
-          subtitle="Filter by category, description, electoral area, or station"
+          title="Search Incidents"
+          subtitle="Filter by category, sector, or PU"
+          showBack
         />
-
+      }
+    >
+      <View style={styles.container}>
         <View style={styles.headerBlock}>
           <Input
             placeholder="Type e.g. 'Violence', 'BVAS', 'Ikeja'..."
@@ -69,7 +72,7 @@ export default function IncidentSearchScreen() {
           />
         </View>
 
-        <FlashList
+        <FlatList
           data={filtered}
           keyExtractor={(item) => item.id}
           refreshControl={refreshControl}

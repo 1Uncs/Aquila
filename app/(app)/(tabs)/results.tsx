@@ -1,6 +1,5 @@
 import React, { useState, useMemo, useCallback } from 'react';
-import { StyleSheet, View, Pressable } from 'react-native';
-import { FlashList } from '@shopify/flash-list';
+import { StyleSheet, View, Pressable, FlatList } from 'react-native';
 import { router } from 'expo-router';
 import { ScreenView } from '@/core/components/ScreenView';
 import { ThemedText, Card, EmptyState, Button } from '@/core/components';
@@ -243,11 +242,10 @@ export default function ResultsScreen() {
           </Pressable>
         </View>
 
-        {/* Native FlashList */}
-        <FlashList
+        {/* Native FlatList */}
+        <FlatList
           data={activeList}
           keyExtractor={(item) => item.id}
-          contentInsetAdjustmentBehavior="never"
           renderItem={renderResultItem}
           refreshControl={refreshControl}
           contentContainerStyle={styles.listContent}
