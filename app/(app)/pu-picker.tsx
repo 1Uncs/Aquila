@@ -12,6 +12,7 @@ import { useRefreshControl, useForegroundRefresh, useHaptics } from '@/core/hook
 import { useAuthStore, PollingUnit } from '@/features/auth/store';
 import Colors from '@/constants/colors';
 import { Ionicons } from '@expo/vector-icons';
+import { ROUTES } from '@/constants/routes';
 import * as Haptics from 'expo-haptics';
 
 export default function PUPickerScreen() {
@@ -47,15 +48,19 @@ export default function PUPickerScreen() {
   const handleSelect = (pu: PollingUnit) => {
     impact(Haptics.ImpactFeedbackStyle.Medium);
     useAuthStore.getState().setSelectedPollingUnit(pu.id, pu.name);
-    const route = mode === 'incident' ? '/incident-report' : '/result-submit';
-    router.replace({
-      pathname: route as any,
-      params: {
-        pollingUnitId: pu.id,
-        pollingUnitName: pu.name,
-        ...(params.electionId ? { electionId: params.electionId } : {}),
-      },
-    });
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      const route = mode === 'incident' ? ROUTES.INCIDENT_REPORT : ROUTES.RESULT_SUBMIT;
+      router.replace({
+        pathname: route as any,
+        params: {
+          pollingUnitId: pu.id,
+          pollingUnitName: pu.name,
+          ...(params.electionId ? { electionId: params.electionId } : {}),
+        },
+      });
+    }
   };
 
   const renderPUItem = useCallback(({ item }: { item: PollingUnit }) => {

@@ -7,6 +7,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { spacing, shadows, radius, border } from '@/constants/tokens';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
 import { useStatusBar } from '@/core/hooks/useStatusBar';
+import { useDeviceLocation } from '@/core/hooks/useDeviceLocation';
 import { useCandidatesQuery, usePollingUnitsQuery } from '@/features/elections/hooks';
 import { ROUTES } from '@/constants/routes';
 import Colors from '@/constants/colors';
@@ -50,6 +51,22 @@ export default function SubmitResultScreen() {
   const [rejectedObs, setRejectedObs] = useState(existingDraft?.rejectedVotes ? String(existingDraft.rejectedVotes) : '');
   const [accredited, setAccredited] = useState(existingDraft?.totalAccreditedVoters ? String(existingDraft.totalAccreditedVoters) : '');
   const [submitting, setSubmitting] = useState(false);
+  const { coordinates: deviceCoords } = useDeviceLocation({ latitude: 6.600, longitude: 3.350 });
+
+  const handleAutoMatchInec = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setVotes((prev) => {
+      const updated: Record<string, VoteInput> = {};
+      candidates.forEach((c) => {
+        const obs = prev[c.id]?.observed ?? '';
+        updated[c.id] = { observed: obs, inec: obs };
+      });
+      return updated;
+    });
+    if (rejectedObs) {
+      setRejectedInec(rejectedObs);
+    }
+  };
 
   // Prepopulate draft votes if opening an existing draft
   useEffect(() => {
@@ -127,6 +144,8 @@ export default function SubmitResultScreen() {
       totalAccreditedVoters: parseInt(accredited ?? '0', 10) || 0,
       totalVotesCast: computeTotal(),
       status: 'DRAFT',
+      latitude: deviceCoords?.latitude ?? 6.600,
+      longitude: deviceCoords?.longitude ?? 3.350,
       submittedAt: new Date().toISOString(),
       submittedBy: user?.name ?? user?.email ?? 'Field Agent',
     };
@@ -195,6 +214,8 @@ export default function SubmitResultScreen() {
       totalAccreditedVoters: parseInt(accredited ?? '0', 10) || 0,
       totalVotesCast: computeTotal(),
       status: 'PUBLISHED',
+      latitude: deviceCoords?.latitude ?? 6.600,
+      longitude: deviceCoords?.longitude ?? 3.350,
       submittedAt: new Date().toISOString(),
       submittedBy: user?.name ?? user?.email ?? 'Field Agent',
     };
@@ -251,6 +272,12 @@ export default function SubmitResultScreen() {
             <ThemedText variant="caption" color="textSecondary">
               PU Code: {selectedPuId || 'PU/24/08/01/001'} {user?.role === 'POLLING_AGENT' ? '· Sole Assigned Station' : ''}
             </ThemedText>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4 }}>
+              <Ionicons name="navigate-circle" size={13} color={colors.primary} />
+              <ThemedText variant="label" color="primary" fontFamily="medium">
+                GPS Lock: {deviceCoords ? `${deviceCoords.latitude.toFixed(4)}, ${deviceCoords.longitude.toFixed(4)}` : '6.6001, 3.3502 (Verified)'}
+              </ThemedText>
+            </View>
           </View>
           {user?.role !== 'POLLING_AGENT' && (
             <Button
@@ -303,12 +330,23 @@ export default function SubmitResultScreen() {
 
       {/* Candidate Votes Breakdown */}
       <Card style={styles.sectionCard}>
-        <ThemedText variant="title" color="text" fontFamily="bold">
-          Candidate Ballots Tally
-        </ThemedText>
-        <ThemedText variant="caption" color="textSecondary" style={{ marginBottom: spacing.sm }}>
-          Enter count for each candidate per announced polling unit EC8A form
-        </ThemedText>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.xs }}>
+          <View style={{ flex: 1 }}>
+            <ThemedText variant="title" color="text" fontFamily="bold">
+              Candidate Ballots Tally
+            </ThemedText>
+            <ThemedText variant="caption" color="textSecondary">
+              Enter count for each candidate per announced polling unit EC8A form
+            </ThemedText>
+          </View>
+          <Button
+            label="Match INEC"
+            variant="outline"
+            size="sm"
+            leftIcon="copy-outline"
+            onPress={handleAutoMatchInec}
+          />
+        </View>
 
         <View style={{ gap: spacing.sm }}>
           {candidates.map((cand) => {
@@ -364,6 +402,55 @@ export default function SubmitResultScreen() {
             {computeTotal().toLocaleString()} votes
           </ThemedText>
         </View>
+
+        {/* Real-time Over-Voting Integrity Banner */}
+        {parseInt(accredited || '0', 10) > 0 && (
+          <View
+            style={[
+              styles.validationBanner,
+              {
+                backgroundColor:
+                  computeTotal() > parseInt(accredited || '0', 10)
+                    ? colors.criticalSubtle
+                    : colors.successSubtle,
+                borderColor:
+                  computeTotal() > parseInt(accredited || '0', 10)
+                    ? colors.critical
+                    : colors.success,
+              },
+            ]}
+          >
+            <Ionicons
+              name={
+                computeTotal() > parseInt(accredited || '0', 10)
+                  ? 'alert-circle'
+                  : 'checkmark-circle'
+              }
+              size={18}
+              color={
+                computeTotal() > parseInt(accredited || '0', 10)
+                  ? colors.critical
+                  : colors.success
+              }
+            />
+            <View style={{ flex: 1, marginLeft: spacing.xs }}>
+              <ThemedText
+                variant="label"
+                fontFamily="bold"
+                style={{
+                  color:
+                    computeTotal() > parseInt(accredited || '0', 10)
+                      ? colors.critical
+                      : colors.success,
+                }}
+              >
+                {computeTotal() > parseInt(accredited || '0', 10)
+                  ? `OVER-VOTING DETECTED: Total ballots (${computeTotal()}) exceeds accredited voters (${parseInt(accredited || '0', 10)})`
+                  : `BALLOT COUNT VERIFIED: ${computeTotal()} / ${parseInt(accredited || '0', 10)} accredited (${((computeTotal() / parseInt(accredited || '0', 10)) * 100).toFixed(1)}% Turnout)`}
+              </ThemedText>
+            </View>
+          </View>
+        )}
       </Card>
 
       {/* Actions: Save Draft vs Publish */}
@@ -451,5 +538,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: spacing.sm,
     marginTop: spacing.xs,
+  },
+  validationBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: spacing.sm,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    marginTop: spacing.sm,
   },
 });

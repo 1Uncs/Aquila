@@ -14,7 +14,10 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.alabiansolutions.aquila",
-      "backgroundColor": "#070C09"
+      "backgroundColor": "#070C09",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "Aquila requires your location to geotag submitted electoral results and field incident evidence."
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -22,7 +25,11 @@
         "backgroundColor": "#0D6338"
       },
       "package": "com.alabiansolutions.aquila",
-      "softwareKeyboardLayoutMode": "pan"
+      "softwareKeyboardLayoutMode": "pan",
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION"
+      ]
     },
     "web": {
       "bundler": "metro",

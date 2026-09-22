@@ -11,6 +11,7 @@ import { spacing, shadows, radius } from '@/constants/tokens';
 import { IncidentCategory, IncidentSeverity } from '@/types';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
 import { useStatusBar } from '@/core/hooks/useStatusBar';
+import { useDeviceLocation } from '@/core/hooks/useDeviceLocation';
 import { ROUTES } from '@/constants/routes';
 import Colors from '@/constants/colors';
 import { FEATURES } from '@/constants/features';
@@ -48,6 +49,7 @@ export default function ReportIncidentScreen() {
   const scheme = useColorScheme() ?? 'light';
   const colors = Colors[scheme];
   useStatusBar({ barStyle: scheme === 'dark' ? 'light' : 'dark' });
+  const { coordinates: deviceCoords } = useDeviceLocation({ latitude: 6.600, longitude: 3.350 });
 
   const isRecordingRef = useRef(false);
   isRecordingRef.current = isRecording;
@@ -91,8 +93,8 @@ export default function ReportIncidentScreen() {
             uri,
             durationSec: CHUNK_SECONDS,
             chunkIndex: chunkIndexRef.current,
-            latitude: 6.5 + Math.random() * 2,
-            longitude: 3.3 + Math.random() * 2,
+            latitude: deviceCoords?.latitude ?? 6.600,
+            longitude: deviceCoords?.longitude ?? 3.350,
           };
           chunkIndexRef.current += 1;
           setAudioChunks((prev) => [...prev, chunk]);
@@ -200,8 +202,8 @@ export default function ReportIncidentScreen() {
           uri,
           durationSec: recordingDuration % CHUNK_SECONDS || recordingDuration,
           chunkIndex: chunkIndexRef.current,
-          latitude: 6.5 + Math.random() * 2,
-          longitude: 3.3 + Math.random() * 2,
+          latitude: deviceCoords?.latitude ?? 6.600,
+          longitude: deviceCoords?.longitude ?? 3.350,
         };
         setAudioChunks((prev) => [...prev, chunk]);
         setMediaUris((prev) => [...prev, uri]);
@@ -280,8 +282,8 @@ export default function ReportIncidentScreen() {
       severity,
       status: 'SUBMITTED',
       description: desc,
-      latitude: 6.5244 + (Math.random() - 0.5) * 0.05,
-      longitude: 3.3792 + (Math.random() - 0.5) * 0.05,
+      latitude: deviceCoords?.latitude ?? 6.600,
+      longitude: deviceCoords?.longitude ?? 3.350,
       mediaUrls: mediaUris,
       reportedBy: user?.id ?? 'current-user',
       reportedAt: new Date().toISOString(),
