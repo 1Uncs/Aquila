@@ -36,7 +36,7 @@ export default function RootLayout() {
   }
 
   return (
-    <GestureHandlerRootView style={[styles.root, { backgroundColor: '#0B1220' }]}>
+    <GestureHandlerRootView style={[styles.root, { backgroundColor: '#070C09' }]}>
       <SafeAreaProvider>
         <QueryClientProvider client={queryClient}>
           <AuthProvider>

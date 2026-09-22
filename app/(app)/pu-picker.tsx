@@ -1,42 +1,51 @@
-import React, { useState } from 'react';
-import { View, StyleSheet } from 'react-native';
+import React, { useState, useMemo, useCallback } from 'react';
+import { View, StyleSheet, Pressable } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import { ScreenView } from '@/core/components/ScreenView';
-import { ThemedText, FlashListItem, EmptyState, Input, Button } from '@/core/components';
+import { ThemedText, Card, EmptyState, Input } from '@/core/components';
 import { router, useLocalSearchParams } from 'expo-router';
-import { spacing, radius } from '@/constants/tokens';
+import { spacing, radius, shadows, border } from '@/constants/tokens';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
 import { useStatusBar } from '@/core/hooks/useStatusBar';
 import { usePollingUnitsQuery, useLgasQuery, useStatesQuery } from '@/features/elections/hooks';
-import { useAuthStore } from '@/features/auth/store';
+import { useRefreshControl, useForegroundRefresh, useHaptics } from '@/core/hooks';
+import { useAuthStore, PollingUnit } from '@/features/auth/store';
 import Colors from '@/constants/colors';
 import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 
 export default function PUPickerScreen() {
   const params = useLocalSearchParams<{ mode?: string; electionId?: string }>();
   const mode = params.mode === 'incident' ? 'incident' : 'result';
-  const { data: pollingUnits = [], isLoading: pusLoading } = usePollingUnitsQuery();
-  const { data: lgas = [] } = useLgasQuery();
-  const { data: states = [] } = useStatesQuery();
+  const { data: pollingUnits = [], isLoading: pusLoading, refetch } = usePollingUnitsQuery();
+  const { data: lgas = [], isLoading: lgasLoading } = useLgasQuery();
+  const { data: states = [], isLoading: statesLoading } = useStatesQuery();
   const [search, setSearch] = useState('');
-  const [selectedLga, setSelectedLga] = useState<string | null>(null);
+  const loading = pusLoading || lgasLoading || statesLoading;
   const scheme = useColorScheme() ?? 'light';
   const colors = Colors[scheme];
+  const { refreshControl } = useRefreshControl(loading, refetch);
   useStatusBar({ barStyle: scheme === 'dark' ? 'light' : 'dark' });
+  useForegroundRefresh([['polling-units', 'list']], 10 * 60 * 1000);
+  const { impact } = useHaptics();
 
-  const lgaMap = new Map(lgas.map((l) => [l.id, l]));
-  const stateMap = new Map(states.map((s) => [s.id, s]));
+  const lgaMap = useMemo(() => new Map(lgas.map((l) => [l.id, l])), [lgas]);
+  const stateMap = useMemo(() => new Map(states.map((s) => [s.id, s])), [states]);
 
-  const filtered = search
-    ? pollingUnits.filter((p) =>
-        p.name.toLowerCase().includes(search.toLowerCase()) ||
-        p.code.toLowerCase().includes(search.toLowerCase())
-      )
-    : selectedLga
-      ? pollingUnits.filter((p) => p.lgaId === selectedLga)
-      : pollingUnits;
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return pollingUnits;
+    return pollingUnits.filter((p) => {
+      const matchName = p.name.toLowerCase().includes(q);
+      const matchCode = p.code.toLowerCase().includes(q);
+      const matchLga = p.lgaName?.toLowerCase().includes(q);
+      const matchState = p.stateName?.toLowerCase().includes(q);
+      return matchName || matchCode || matchLga || matchState;
+    });
+  }, [pollingUnits, search]);
 
-  const handleSelect = (pu: typeof pollingUnits[0]) => {
+  const handleSelect = (pu: PollingUnit) => {
+    impact(Haptics.ImpactFeedbackStyle.Medium);
     useAuthStore.getState().setSelectedPollingUnit(pu.id, pu.name);
     const route = mode === 'incident' ? '/incident-report' : '/result-submit';
     router.replace({
@@ -49,95 +58,108 @@ export default function PUPickerScreen() {
     });
   };
 
-  return (
-    <ScreenView scrollable keyboardShouldPersistTaps="handled" skipAndroidTopPadding>
-      <FlashList
-        data={filtered}
-        keyExtractor={(item) => item.id}
-        ListHeaderComponent={
-          <View>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.xs }}>
-              <View style={[styles.titleIndicator, { backgroundColor: colors.primary }]} />
-              <ThemedText variant="h2" style={{ flex: 1 }}>Select Polling Unit</ThemedText>
-            </View>
-            <ThemedText variant="body" color="textSecondary" style={{ marginBottom: spacing.lg }}>
-              {mode === 'incident' ? 'Choose location for this incident' : 'Choose polling unit to submit results for'}
-            </ThemedText>
+  const renderPUItem = useCallback(({ item }: { item: PollingUnit }) => {
+    const lga = lgaMap.get(item.lgaId);
+    const state = item.stateId ? stateMap.get(item.stateId) : null;
+    const parentState = item.stateName || state?.name || 'Lagos State';
+    const parentLga = item.lgaName || lga?.name || 'Ikeja LGA';
 
-            <Input
-              label="Search"
-              placeholder="Search by name or code..."
-              value={search}
-              onChangeText={setSearch}
-              leftIcon="search"
-              containerStyle={{ marginBottom: spacing.md }}
-            />
-
-            <ThemedText variant="label" style={{ marginBottom: spacing.sm }}>
-              Filter by LGA
-            </ThemedText>
-            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.xs, marginBottom: spacing.lg }}>
-              <Button
-                label="All"
-                size="sm"
-                variant={selectedLga === null ? 'primary' : 'outline'}
-                onPress={() => setSelectedLga(null)}
-                style={{ marginBottom: spacing.sm }}
-              />
-              {lgas.slice(0, 20).map((lga) => (
-                <Button
-                  key={lga.id}
-                  label={lga.name}
-                  size="sm"
-                  variant={selectedLga === lga.id ? 'primary' : 'outline'}
-                  onPress={() => setSelectedLga(lga.id === selectedLga ? null : lga.id)}
-                  style={{ marginBottom: spacing.sm }}
-                />
-              ))}
-            </View>
-
-            {pusLoading ? (
-              <ThemedText variant="body" color="textSecondary" style={{ textAlign: 'center', marginTop: spacing.xl }}>
-                Loading polling units...
-              </ThemedText>
-            ) : filtered.length === 0 ? (
-              <EmptyState icon="location-outline" title="No Polling Units" subtitle="Try adjusting your search" />
-            ) : null}
+    return (
+      <Card
+        pressable
+        style={styles.puCard}
+        onPress={() => handleSelect(item)}
+      >
+        <View style={styles.puItemRow}>
+          <View style={[styles.puIconBadge, { backgroundColor: colors.primary + '16' }]}>
+            <Ionicons name="location" size={20} color={colors.primary} />
           </View>
-        }
-        renderItem={({ item: pu }) => {
-          const lga = lgaMap.get(pu.lgaId);
-          const state = stateMap.get(pu.stateId);
-          return (
-            <FlashListItem id={pu.id} pressable onPress={() => handleSelect(pu)}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
-                <View style={[styles.puIcon, { backgroundColor: colors.accent + '20' }]}>
-                  <Ionicons name="location" size={20} color={colors.accent} />
-                </View>
-                <View style={{ flex: 1 }}>
-                  <ThemedText variant="body" style={{ fontWeight: '600' }}>{pu.name}</ThemedText>
-                  <ThemedText variant="caption" color="textSecondary">
-                    {pu.code} · {lga?.name ?? pu.lgaName} · {state?.name ?? pu.stateName}
-                  </ThemedText>
-                </View>
-                <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
-              </View>
-            </FlashListItem>
-          );
-        }}
-        contentContainerStyle={{ paddingBottom: spacing.xxl }}
-      />
+          <View style={{ flex: 1, marginLeft: spacing.sm }}>
+            <ThemedText variant="body" color="text" fontFamily="bold">
+              {item.name}
+            </ThemedText>
+            {/* Qualified with parent state (Audio Part 8) */}
+            <ThemedText variant="caption" color="primary" fontFamily="medium">
+              {item.code} · {parentLga}, {parentState}
+            </ThemedText>
+          </View>
+          <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
+        </View>
+      </Card>
+    );
+  }, [colors, lgaMap, stateMap]);
+
+  return (
+    <ScreenView scrollable={false} noScrollPadding>
+      <View style={styles.container}>
+        {/* Header Search Section */}
+        <View style={styles.headerBlock}>
+          <ThemedText variant="title" color="text" fontFamily="bold">
+            Select Polling Unit
+          </ThemedText>
+          <ThemedText variant="caption" color="textSecondary" style={{ marginBottom: spacing.sm }}>
+            {mode === 'incident' ? 'Link incident evidence to a specific polling unit' : 'Select polling unit to record EC8A ballots'}
+          </ThemedText>
+
+          <Input
+            placeholder="Type name, code (e.g. PU/001), or LGA..."
+            value={search}
+            onChangeText={setSearch}
+            leftIcon="search-outline"
+            rightIcon={search ? 'close-circle' : undefined}
+            onRightIconPress={() => setSearch('')}
+          />
+        </View>
+
+        {/* Unnested Native FlashList */}
+        <FlashList
+          data={filtered}
+          keyExtractor={(item) => item.id}
+          renderItem={renderPUItem}
+          refreshControl={refreshControl}
+          contentContainerStyle={styles.listContent}
+          ItemSeparatorComponent={() => <View style={{ height: spacing.xs }} />}
+          ListEmptyComponent={
+            <EmptyState
+              icon="search-outline"
+              title="No Polling Units Found"
+              subtitle={`No stations matched "${search}". Try searching by LGA or station code.`}
+            />
+          }
+        />
+      </View>
     </ScreenView>
   );
 }
 
 const styles = StyleSheet.create({
-  puIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: radius.full,
+  container: {
+    flex: 1,
+  },
+  headerBlock: {
+    paddingHorizontal: spacing.md,
+    paddingTop: spacing.sm,
+    paddingBottom: spacing.xs,
+  },
+  listContent: {
+    paddingHorizontal: spacing.md,
+    paddingTop: spacing.xs,
+    paddingBottom: spacing.xxl,
+  },
+  puCard: {
+    padding: spacing.sm,
+    borderRadius: radius.md,
+    ...shadows.sm,
+  },
+  puItemRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  puIconBadge: {
+    width: 36,
+    height: 36,
+    borderRadius: radius.md,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  titleIndicator: { width: 4, height: 20, borderRadius: radius.full },
 });

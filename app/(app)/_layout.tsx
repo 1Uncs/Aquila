@@ -20,7 +20,7 @@ export default function AppLayout() {
   return (
     <Stack
       screenOptions={{
-        contentStyle: { backgroundColor: '#0B1220' },
+        contentStyle: { backgroundColor: '#070C09' },
         animation: 'slide_from_right',
         animationDuration: 250,
       }}
@@ -28,11 +28,12 @@ export default function AppLayout() {
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       <Stack.Screen name="election-detail" options={pushOptions('Election Details')} />
       <Stack.Screen name="result-submit" options={pushOptions('Submit Result')} />
+      <Stack.Screen name="result-detail" options={pushOptions('Result Details')} />
       <Stack.Screen name="result-collation" options={pushOptions('Result Collation')} />
       <Stack.Screen name="result-search" options={pushOptions('Search Results')} />
       <Stack.Screen name="incident-report" options={pushOptions('Report Incident')} />
       <Stack.Screen name="incident-search" options={pushOptions('Search Incidents')} />
-      <Stack.Screen name="result-drafts" options={pushOptions('Drafts')} />
+      <Stack.Screen name="result-drafts" options={pushOptions('Drafts Queue')} />
       <Stack.Screen name="pu-picker" options={pushOptions('Select Polling Unit')} />
       <Stack.Screen name="locations" options={pushOptions('Locations')} />
       <Stack.Screen name="parties" options={pushOptions('Political Parties')} />

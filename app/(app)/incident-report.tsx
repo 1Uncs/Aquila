@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { ScrollView, View, Platform, KeyboardAvoidingView, Alert, StyleSheet } from 'react-native';
 import { useAudioRecorder, useAudioRecorderState, AudioModule, RecordingPresets, setAudioModeAsync } from 'expo-audio';
 import * as ImagePicker from 'expo-image-picker';
-import * as DocumentPicker from 'expo-document-picker';
 import { ScreenView } from '@/core/components/ScreenView';
 import { ThemedText, Input, Button, Card } from '@/core/components';
 import { IncidentReport } from '@/features/auth/store';
@@ -15,6 +14,7 @@ import { useStatusBar } from '@/core/hooks/useStatusBar';
 import { ROUTES } from '@/constants/routes';
 import Colors from '@/constants/colors';
 import { FEATURES } from '@/constants/features';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const CATEGORIES = [
   'VIOLENCE', 'BALLOT_SNATCHING', 'VOTE_BUYING', 'VOTER_INTIMIDATION',
@@ -39,9 +39,8 @@ export default function ReportIncidentScreen() {
   const audioRecorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
   const recorderState = useAudioRecorderState(audioRecorder, 500);
   const isRecording = recorderState.isRecording;
-  // durationMillis is the ground truth (native), survives background throttling unlike setInterval
   const recordingDuration = Math.round((recorderState.durationMillis ?? 0) / 1000);
-  const CHUNK_SECONDS = 120; // 2-min chunks per transcript; app supports up to 5 chunks (~10 min)
+  const CHUNK_SECONDS = 120;
   const MAX_CHUNKS = 5;
   const { addIncident } = useIncidentsStore();
   const { user } = useAuthStore();
@@ -61,7 +60,6 @@ export default function ReportIncidentScreen() {
     };
   }, []);
 
-  // Auto-chunk: at CHUNK_SECONDS, finalize chunk and immediately start next (geotagged, up to MAX_CHUNKS)
   useEffect(() => {
     if (!FEATURES.ENABLE_STEALTH_RECORDING) return;
     if (!isRecording) return;
@@ -121,21 +119,6 @@ export default function ReportIncidentScreen() {
     }
   };
 
-  const handleAttachAudio = async () => {
-    try {
-      const result = await DocumentPicker.getDocumentAsync({
-        type: 'audio/*',
-        copyToCacheDirectory: true,
-      });
-      if (!result.canceled && result.assets.length > 0) {
-        setMediaUris((prev) => [...prev, ...result.assets.map((a) => a.uri)]);
-      }
-    } catch (error) {
-      console.error('Error picking audio:', error);
-      Alert.alert('Error', 'Failed to attach audio file.');
-    }
-  };
-
   const confirmStealthRecording = () =>
     new Promise<boolean>((resolve) => {
       Alert.alert(
@@ -159,7 +142,6 @@ export default function ReportIncidentScreen() {
         Alert.alert('Permission needed', 'Microphone permission is required to record audio.');
         return;
       }
-      // POST_NOTIFICATIONS required on Android 13+ for foreground service notification ("Recording audio")
       if (Platform.OS === 'android') {
         try {
           await AudioModule.requestNotificationPermissionsAsync();
@@ -195,7 +177,6 @@ export default function ReportIncidentScreen() {
       await setAudioModeAsync({ allowsRecording: false, allowsBackgroundRecording: false });
       if (uri) {
         setRecordingUri(uri);
-        // Final partial chunk (may be < CHUNK_SECONDS)
         const chunk = {
           uri,
           durationSec: recordingDuration % CHUNK_SECONDS || recordingDuration,
@@ -217,24 +198,6 @@ export default function ReportIncidentScreen() {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
-
-  const handleAddPhoto = async () => {
-    const ok = await requestPermission('camera');
-    if (!ok) return;
-    try {
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ['images'],
-        quality: 0.8,
-        allowsMultipleSelection: true,
-      });
-      if (!result.canceled) {
-        setMediaUris((prev) => [...prev, ...result.assets.map((a) => a.uri)]);
-      }
-    } catch (error) {
-      console.error('Error picking photo:', error);
-      Alert.alert('Error', 'Failed to attach photo.');
-    }
   };
 
   const handleTakePhoto = async () => {
@@ -295,6 +258,28 @@ export default function ReportIncidentScreen() {
     setSubmitting(false);
     router.back();
   };
+
+  if (user?.role === 'ELECTION_OFFICER') {
+    return (
+      <ScreenView>
+        <View style={{ padding: spacing.lg, alignItems: 'center', marginTop: spacing.xxl }}>
+          <Card style={{ padding: spacing.xl, width: '100%', alignItems: 'center' }}>
+            <ThemedText variant="h3" style={{ textAlign: 'center', marginBottom: spacing.md, color: colors.critical }}>
+              Supervisory Access Restricted
+            </ThemedText>
+            <ThemedText variant="body" color="textSecondary" style={{ textAlign: 'center', marginBottom: spacing.lg }}>
+              As an Election Officer (Situation Room Director), your mandate focuses on incident monitoring, triage, and task-force dispatches. Incident reporting in the field is reserved for Polling Unit Agents and Observers.
+            </ThemedText>
+            <Button
+              label="Go to Incident Triage Center"
+              variant="primary"
+              onPress={() => router.replace('/(app)/(tabs)/incidents' as any)}
+            />
+          </Card>
+        </View>
+      </ScreenView>
+    );
+  }
 
   return (
     <ScreenView>
@@ -389,10 +374,8 @@ export default function ReportIncidentScreen() {
           </ThemedText>
 
           <View style={{ flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.md, flexWrap: 'wrap', alignItems: 'center' }}>
-            <Button label="Photo" variant="outline" size="sm" onPress={handleTakePhoto} leftIcon="camera" style={{ minWidth: 80 }} />
-            <Button label="Gallery" variant="outline" size="sm" onPress={handleAddPhoto} leftIcon="image" style={{ minWidth: 80 }} />
-            <Button label="Video" variant="outline" size="sm" onPress={handleRecordVideo} leftIcon="videocam" style={{ minWidth: 80 }} />
-            <Button label="Audio" variant="outline" size="sm" onPress={handleAttachAudio} leftIcon="musical-notes-outline" style={{ minWidth: 80 }} />
+            <Button label="Live Photo" variant="outline" size="sm" onPress={handleTakePhoto} leftIcon="camera" style={{ minWidth: 100 }} />
+            <Button label="Live Video" variant="outline" size="sm" onPress={handleRecordVideo} leftIcon="videocam" style={{ minWidth: 100 }} />
           </View>
 
           <View style={{ flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.md, flexWrap: 'wrap', alignItems: 'center' }}>

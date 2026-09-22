@@ -35,6 +35,8 @@ export interface User {
   email: string;
   name: string;
   role: UserRole;
+  organizationId: string;
+  organizationName: string;
   assignedLocations?: string[];
   avatarUrl?: string;
   token?: string;
@@ -63,16 +65,46 @@ export interface ElectionCycle {
   status: ElectionStatus;
 }
 
+export interface CandidatePartyHistory {
+  electionYear: number;
+  electionName: string;
+  partyAcronym: string;
+  partyName: string;
+  votes: number;
+  percentage: number;
+}
+
 export interface Candidate {
   id: string;
+  candidateNumber?: number;
   electionId: string;
   partyId: string;
   partyName: string;
   partyAcronym: string;
   partyLogoUrl?: string;
   fullName: string;
+  shortName?: string;
+  runningMate?: string;
   photoUrl?: string;
   status: 'ACTIVE' | 'WITHDRAWN';
+  partyHistory?: CandidatePartyHistory[];
+}
+
+export interface AIProjectionResult {
+  candidateId: string;
+  candidateName: string;
+  partyAcronym: string;
+  projectedVoteShare: number;
+  projectedVotes: number;
+  winProbability: number;
+  confidenceScore: number;
+  leadingMargin: string;
+  swingDelta: string;
+  historicalBaselineYear: '2023' | '2019' | 'Combined';
+  historicalParty: string;
+  locationScope: string;
+  keyInsights: string[];
+  disclaimer: string;
 }
 
 export interface ResultSubmission {

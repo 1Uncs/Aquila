@@ -120,7 +120,7 @@ function delay(ms: number) {
 }
 
 export const mockApi = {
-  login: async (email: string, _password: string): Promise<User> => {
+  login: async (email: string, _password: string, organizationId: string, organizationName: string): Promise<User> => {
     await delay(600);
     const lower = email.toLowerCase();
     let role: User['role'] = 'FIELD_AGENT';
@@ -136,6 +136,8 @@ export const mockApi = {
       email,
       name: email.split('@')[0] ?? email,
       role,
+      organizationId,
+      organizationName,
       assignedLocations,
       token: `mock-token-${email}-${Date.now()}`,
     };
@@ -200,12 +202,73 @@ export const mockApi = {
   },
 
   getCandidates: async (electionId: string): Promise<Candidate[]> => {
-    await delay(400);
+    await delay(350);
     return [
-      { id: 'cand1', electionId, partyId: 'p1', partyName: 'APC', partyAcronym: 'APC', fullName: 'Adeyemi Oluwaseun', status: 'ACTIVE' },
-      { id: 'cand2', electionId, partyId: 'p2', partyName: 'PDP', partyAcronym: 'PDP', fullName: 'Nwosu Chinedu', status: 'ACTIVE' },
-      { id: 'cand3', electionId, partyId: 'p3', partyName: 'LP', partyAcronym: 'LP', fullName: 'Okonkwo Emeka', status: 'ACTIVE' },
-      { id: 'cand4', electionId, partyId: 'p4', partyName: 'NNPP', partyAcronym: 'NNPP', fullName: 'Musa Ibrahim', status: 'ACTIVE' },
+      {
+        id: 'cand1',
+        candidateNumber: 1,
+        electionId,
+        partyId: 'p1',
+        partyName: 'All Progressives Congress',
+        partyAcronym: 'APC',
+        fullName: 'Bola Ahmed Tinubu',
+        shortName: 'Tinubu',
+        runningMate: 'Kashim Shettima',
+        status: 'ACTIVE',
+        partyHistory: [
+          { electionYear: 2023, electionName: '2023 General Election', partyAcronym: 'APC', partyName: 'All Progressives Congress', votes: 8794726, percentage: 36.6 },
+          { electionYear: 2019, electionName: '2019 General Election', partyAcronym: 'APC', partyName: 'All Progressives Congress', votes: 15191847, percentage: 55.6 },
+        ],
+      },
+      {
+        id: 'cand2',
+        candidateNumber: 2,
+        electionId,
+        partyId: 'p2',
+        partyName: 'Peoples Democratic Party',
+        partyAcronym: 'PDP',
+        fullName: 'Atiku Abubakar',
+        shortName: 'Atiku',
+        runningMate: 'Ifeanyi Okowa',
+        status: 'ACTIVE',
+        partyHistory: [
+          { electionYear: 2023, electionName: '2023 General Election', partyAcronym: 'PDP', partyName: 'Peoples Democratic Party', votes: 6984520, percentage: 29.1 },
+          { electionYear: 2019, electionName: '2019 General Election', partyAcronym: 'PDP', partyName: 'Peoples Democratic Party', votes: 11262978, percentage: 41.2 },
+          { electionYear: 2015, electionName: '2015 Presidential Primary', partyAcronym: 'APC', partyName: 'All Progressives Congress', votes: 954, percentage: 12.0 },
+        ],
+      },
+      {
+        id: 'cand3',
+        candidateNumber: 7,
+        electionId,
+        partyId: 'p3',
+        partyName: 'Labour Party',
+        partyAcronym: 'LP',
+        fullName: 'Peter Gregory Obi',
+        shortName: 'Obi',
+        runningMate: 'Datti Baba-Ahmed',
+        status: 'ACTIVE',
+        partyHistory: [
+          { electionYear: 2023, electionName: '2023 General Election', partyAcronym: 'LP', partyName: 'Labour Party', votes: 6101533, percentage: 25.4 },
+          { electionYear: 2019, electionName: '2019 General Election', partyAcronym: 'PDP', partyName: 'Peoples Democratic Party (VP Nominee)', votes: 11262978, percentage: 41.2 },
+        ],
+      },
+      {
+        id: 'cand4',
+        candidateNumber: 4,
+        electionId,
+        partyId: 'p4',
+        partyName: 'New Nigeria Peoples Party',
+        partyAcronym: 'NNPP',
+        fullName: 'Rabiu Musa Kwankwaso',
+        shortName: 'Kwankwaso',
+        runningMate: 'Isaac Idahosa',
+        status: 'ACTIVE',
+        partyHistory: [
+          { electionYear: 2023, electionName: '2023 General Election', partyAcronym: 'NNPP', partyName: 'New Nigeria Peoples Party', votes: 1496687, percentage: 6.2 },
+          { electionYear: 2019, electionName: '2019 General Election', partyAcronym: 'PDP', partyName: 'Peoples Democratic Party', votes: 1250000, percentage: 4.8 },
+        ],
+      },
     ];
   },
 
@@ -351,5 +414,186 @@ export const mockApi = {
     await delay(300);
     const filtered = stateId ? CONSTITUENCIES.filter((c) => c.stateId === stateId) : CONSTITUENCIES;
     return filtered.slice(0, 10);
+  },
+
+  getAIProjection: async (params?: {
+    candidateId?: string;
+    currentData?: boolean;
+    pastData?: 0 | 1 | 2;
+    locationId?: string;
+    locationText?: string;
+  }): Promise<import('@/features/auth/store').AIProjectionResult> => {
+    await delay(300);
+    const candidateId = params?.candidateId ?? 'cand1';
+    const pastData = params?.pastData ?? 0;
+    const locationName = params?.locationText?.trim() || 'National (All 36 States + FCT)';
+
+    const pastLabelMap: Record<0 | 1 | 2, string> = {
+      0: '2023 General Election Baseline',
+      1: '2019 General Election Baseline',
+      2: 'Combined 2019 + 2023 Historical Baseline',
+    };
+
+    const pastDataLabel = pastLabelMap[pastData];
+
+    const profiles: Record<string, {
+      name: string;
+      party: string;
+      baseWinProb: number;
+      baseVoteShare: number;
+      totalVotes: number;
+      margin: string;
+      swing: string;
+      insight: string;
+      histParty: string;
+    }> = {
+      cand1: {
+        name: 'Bola Ahmed Tinubu',
+        party: 'APC',
+        baseWinProb: pastData === 1 ? 52.4 : pastData === 2 ? 61.8 : 64.7,
+        baseVoteShare: pastData === 1 ? 42.1 : pastData === 2 ? 40.5 : 44.2,
+        totalVotes: 9840300,
+        margin: '+1,480,200 votes ahead',
+        swing: '+3.8% in South-West corridor',
+        insight: `Aquila Neural Model projects a strong incumbency retention corridor across the South-West and North-West axis based on ${pastDataLabel}. Polling Unit collation shows steady turnout resilience in commercial urban centres.`,
+        histParty: 'APC',
+      },
+      cand2: {
+        name: 'Atiku Abubakar',
+        party: 'PDP',
+        baseWinProb: pastData === 1 ? 48.6 : pastData === 2 ? 38.2 : 31.5,
+        baseVoteShare: pastData === 1 ? 39.8 : pastData === 2 ? 33.4 : 29.8,
+        totalVotes: 6640100,
+        margin: '-1,720,000 votes behind',
+        swing: '-4.2% across North-Central',
+        insight: `Analysis reveals vote fragmentation in traditional North-East strongholds combined with split opposition ballot shares in South-South wards under ${pastDataLabel}.`,
+        histParty: pastData === 1 ? 'PDP' : 'PDP (Ex-APC 2015)',
+      },
+      cand3: {
+        name: 'Peter Gregory Obi',
+        party: 'LP',
+        baseWinProb: pastData === 1 ? 22.0 : pastData === 2 ? 46.5 : 51.2,
+        baseVoteShare: pastData === 1 ? 18.4 : pastData === 2 ? 31.8 : 34.6,
+        totalVotes: 7720900,
+        margin: '+380,000 votes in high-density PUs',
+        swing: '+12.4% urban momentum',
+        insight: `Simulations indicate exponential youth-voter surges and massive gains in South-East, South-South, and urban FCT/Lagos polling units when cross-referenced against ${pastDataLabel}. Note: Historical 2019 baseline mapped via PDP VP candidacy.`,
+        histParty: pastData === 1 ? 'PDP (VP Candidate)' : 'LP (Ex-PDP)',
+      },
+      cand4: {
+        name: 'Rabiu Musa Kwankwaso',
+        party: 'NNPP',
+        baseWinProb: pastData === 1 ? 8.5 : pastData === 2 ? 11.2 : 14.8,
+        baseVoteShare: pastData === 1 ? 6.0 : pastData === 2 ? 7.8 : 9.4,
+        totalVotes: 2100400,
+        margin: 'Regional concentration (Kano & Jigawa)',
+        swing: '+1.5% localized growth',
+        insight: `Concentrated territorial density in Kano metropolitan corridor. High single-state margin with limited cross-zonal conversion under ${pastDataLabel}.`,
+        histParty: pastData === 1 ? 'PDP' : 'NNPP (Ex-PDP)',
+      },
+    };
+
+    const target = profiles[candidateId] ?? profiles.cand1!;
+
+    return {
+      candidateId,
+      candidateName: target.name,
+      partyAcronym: target.party,
+      projectedVoteShare: target.baseVoteShare,
+      projectedVotes: target.totalVotes,
+      winProbability: target.baseWinProb,
+      confidenceScore: 91.4,
+      leadingMargin: target.margin,
+      swingDelta: target.swing,
+      historicalBaselineYear: pastData === 0 ? '2023' : pastData === 1 ? '2019' : 'Combined',
+      historicalParty: target.histParty,
+      locationScope: locationName,
+      keyInsights: [
+        target.insight,
+        `Collation rate weighting applied across ${locationName} with 99.4% precinct integrity threshold.`,
+      ],
+      disclaimer: 'This projection is based on available data and AI simulation. It may not be 100% accurate.',
+    };
+  },
+
+  searchLocations: async (query: string): Promise<Array<{
+    id: string;
+    name: string;
+    type: 'PU' | 'WARD' | 'LGA' | 'SENATORIAL' | 'STATE';
+    qualification: string;
+  }>> => {
+    const q = query.trim().toLowerCase();
+    if (!q) return [];
+    await delay(150);
+
+    const results: Array<{
+      id: string;
+      name: string;
+      type: 'PU' | 'WARD' | 'LGA' | 'SENATORIAL' | 'STATE';
+      qualification: string;
+    }> = [];
+
+    // Search Polling Units
+    POLLING_UNITS.forEach((pu) => {
+      if (pu.name.toLowerCase().includes(q) || pu.code.toLowerCase().includes(q) || pu.lgaName.toLowerCase().includes(q)) {
+        results.push({
+          id: pu.id,
+          name: `${pu.name} (${pu.code})`,
+          type: 'PU',
+          qualification: `${pu.lgaName}, ${pu.stateName} State`,
+        });
+      }
+    });
+
+    // Search Wards
+    WARDS.forEach((w) => {
+      if (w.name.toLowerCase().includes(q) || w.lgaName.toLowerCase().includes(q)) {
+        results.push({
+          id: w.id,
+          name: w.name,
+          type: 'WARD',
+          qualification: `${w.lgaName}, ${w.stateName} State`,
+        });
+      }
+    });
+
+    // Search LGAs
+    LGAS.forEach((l) => {
+      if (l.name.toLowerCase().includes(q)) {
+        const stateName = NIGERIA_STATES.find((s) => s.id === l.stateId)?.name ?? 'State';
+        results.push({
+          id: l.id,
+          name: l.name,
+          type: 'LGA',
+          qualification: `${stateName} State`,
+        });
+      }
+    });
+
+    // Search Senatorial Districts
+    SENATORIAL_DISTRICTS.forEach((sd) => {
+      if (sd.name.toLowerCase().includes(q)) {
+        results.push({
+          id: sd.id,
+          name: sd.name,
+          type: 'SENATORIAL',
+          qualification: `${sd.stateName} State`,
+        });
+      }
+    });
+
+    // Search States
+    NIGERIA_STATES.forEach((s) => {
+      if (s.name.toLowerCase().includes(q)) {
+        results.push({
+          id: s.id,
+          name: `${s.name} State`,
+          type: 'STATE',
+          qualification: 'Federal Republic of Nigeria',
+        });
+      }
+    });
+
+    return results.slice(0, 25);
   },
 };

@@ -1,12 +1,12 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { login as loginApi, logout as logoutApi } from '@/features/auth/service';
 
-type LoginInput = { email: string; password: string };
+type LoginInput = { email: string; password: string; organizationId: string; organizationName: string };
 
 export function useLoginMutation() {
   const queryClient = useQueryClient();
   return useMutation<unknown, Error, LoginInput>({
-    mutationFn: ({ email, password }) => loginApi(email, password),
+    mutationFn: ({ email, password, organizationId, organizationName }) => loginApi(email, password, organizationId, organizationName),
     onSettled: () => {
       queryClient.invalidateQueries();
     },

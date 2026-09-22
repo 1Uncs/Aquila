@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, View, Alert } from 'react-native';
+import { StyleSheet, View, Alert, Image, Pressable } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { ScreenView } from '@/core/components/ScreenView';
@@ -7,142 +7,313 @@ import { ThemedText, Card, Button } from '@/core/components';
 import { useAuthStore } from '@/features/auth/store';
 import { useLogoutMutation } from '@/features/auth/hooks';
 import { ROUTES } from '@/constants/routes';
-import { spacing, radius, shadows, sizes, gradientPresets, border } from '@/constants/tokens';
+import { spacing, radius, shadows, border } from '@/constants/tokens';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
 import { useStatusBar } from '@/core/hooks/useStatusBar';
-import { useElectionsQuery } from '@/features/elections/hooks';
+import { useElectionsQuery, useResultsQuery, useIncidentsQuery } from '@/features/elections/hooks';
 import Colors from '@/constants/colors';
 import { UserRole } from '@/types';
 import { Ionicons } from '@expo/vector-icons';
-import { useForegroundRefresh } from '@/core/hooks';
+import * as Haptics from 'expo-haptics';
 
 export default function ProfileTabScreen() {
-  const { user } = useAuthStore();
+  const { user, login } = useAuthStore();
   const logoutMutation = useLogoutMutation();
   const { data: elections = [] } = useElectionsQuery();
-  const electionCount = elections.length;
+  const { data: results = [] } = useResultsQuery();
+  const { data: incidents = [] } = useIncidentsQuery();
+
   const scheme = useColorScheme() ?? 'light';
   const colors = Colors[scheme];
-  useStatusBar({ barStyle: scheme === 'dark' ? 'light' : 'dark' });
-  useForegroundRefresh([['elections', 'list']], 5 * 60 * 1000);
+  useStatusBar({ barStyle: 'light' });
 
   const roleLabels: Record<UserRole, string> = {
-    ELECTION_OFFICER: 'Election Officer',
-    POLLING_AGENT: 'Polling Unit Agent',
-    FIELD_AGENT: 'Field Agent',
+    ELECTION_OFFICER: 'Situation Room Director',
+    POLLING_AGENT: 'Polling Unit Observer',
+    FIELD_AGENT: 'Field Collation Agent',
   };
 
-  const menuItems = [
-    { label: 'Locations', icon: '📍', route: ROUTES.LOCATIONS },
-    { label: 'Political Parties', icon: '👥', route: ROUTES.PARTIES },
-  ];
+  const handleRoleSwitch = (newRole: UserRole, email: string) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    if (!user) return;
+    login({
+      ...user,
+      role: newRole,
+      email,
+      name: email.split('@')[0] ?? email,
+    });
+    Alert.alert('Role Switched', `Active session updated to ${roleLabels[newRole]}.`);
+  };
+
+  const handleLogout = () => {
+    Alert.alert('Sign Out', 'Are you sure you want to disconnect from this station console?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Sign Out',
+        style: 'destructive',
+        onPress: async () => {
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+          await logoutMutation.mutateAsync();
+        },
+      },
+    ]);
+  };
 
   return (
-    <ScreenView scrollable keyboardShouldPersistTaps="handled">
-      <View style={{ paddingBottom: spacing.xxl, gap: spacing.screen.sectionGap }}>
-        <LinearGradient colors={[...gradientPresets.primary]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.header}>
-          <View style={[styles.avatar, shadows.lg]}>
-            <LinearGradient colors={['rgba(255,255,255,0.25)', 'rgba(255,255,255,0.15)']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.avatarBg}>
-              <ThemedText variant="xxl" style={{ color: '#fff', fontWeight: '700' }}>
-                {user?.name?.charAt(0)?.toUpperCase() ?? 'U'}
+    <ScreenView scrollable contentContainerStyle={styles.scrollContent}>
+      {/* 1. Profile Hero Card with Eagle Brand Identity */}
+      <LinearGradient
+        colors={['#070C09', '#0A331D', '#0D6338']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={[styles.profileHero, shadows.md]}
+      >
+        <View style={styles.heroContent}>
+          <View style={[styles.avatarBadge, { borderColor: colors.primaryLight + '55' }]}>
+            <Image
+              // eslint-disable-next-line @typescript-eslint/no-require-imports
+              source={require('@/assets/eagle-head.png')}
+              style={styles.avatarImg}
+              resizeMode="contain"
+            />
+          </View>
+
+          <ThemedText variant="title" color="#FFFFFF" fontFamily="bold" style={{ marginTop: spacing.xs }}>
+            {user?.name ?? 'Field Agent'}
+          </ThemedText>
+
+          <View style={[styles.roleChip, { backgroundColor: 'rgba(16, 185, 129, 0.2)' }]}>
+            <ThemedText variant="label" color="#34D399" fontFamily="bold">
+              {user?.role ? roleLabels[user.role] : 'Field Agent'}
+            </ThemedText>
+          </View>
+
+          <ThemedText variant="caption" color="#A3B8AC" style={{ marginTop: 2 }}>
+            {user?.email ?? 'agent@aquila.ng'}
+          </ThemedText>
+        </View>
+      </LinearGradient>
+
+      {/* 2. Organization Multi-Tenant Card (Audio Part 1) */}
+      <Card style={styles.sectionCard}>
+        <ThemedText variant="label" color="textMuted" fontFamily="bold">
+          ORGANIZATION & TENANT CONSOLE
+        </ThemedText>
+
+        <View style={styles.orgRow}>
+          <View style={[styles.orgIconWrap, { backgroundColor: colors.primary + '18' }]}>
+            <Ionicons name="business" size={22} color={colors.primary} />
+          </View>
+          <View style={{ flex: 1, marginLeft: spacing.sm }}>
+            <ThemedText variant="body" color="text" fontFamily="bold">
+              {user?.organizationName ?? 'Aquila Situation Room HQ'}
+            </ThemedText>
+            <ThemedText variant="caption" color="textSecondary">
+              Tenant ID: {user?.organizationId ?? 'org-aquila'} · Multi-Tenant SaaS
+            </ThemedText>
+          </View>
+        </View>
+      </Card>
+
+      {/* 3. Field Agent Covert & Security Settings (Audio Part 5) */}
+      <Card style={styles.sectionCard}>
+        <ThemedText variant="title" color="text" fontFamily="bold">
+          Field Security & Covert Protocol
+        </ThemedText>
+        <ThemedText variant="caption" color="textSecondary" style={{ marginBottom: spacing.sm }}>
+          Standardized precautions for agents reporting in sensitive polling environments
+        </ThemedText>
+
+        <View style={{ gap: spacing.xs }}>
+          <View style={styles.prefRow}>
+            <Ionicons name="flash-off-outline" size={18} color={colors.primary} />
+            <View style={{ flex: 1, marginLeft: spacing.xs }}>
+              <ThemedText variant="body" color="text" fontFamily="medium">
+                Stealth Capture (Flash Muted)
               </ThemedText>
-            </LinearGradient>
+              <ThemedText variant="caption" color="textSecondary">
+                Camera flash disabled by default to prevent drawing crowd attention
+              </ThemedText>
+            </View>
+            <Ionicons name="checkmark-circle" size={20} color={colors.success} />
           </View>
-          <ThemedText variant="lg" style={{ color: '#fff', marginTop: spacing.sm, fontWeight: '700' }}>
-            {user?.name ?? 'User'}
-          </ThemedText>
-          <ThemedText variant="caption" style={{ color: 'rgba(255,255,255,0.85)', marginTop: spacing.xs }}>
-            {user?.role ? roleLabels[user.role] : 'User'}
-          </ThemedText>
-          <ThemedText variant="caption" style={{ color: 'rgba(255,255,255,0.6)', marginTop: spacing.xs }}>
-            {user?.email}
-          </ThemedText>
-        </LinearGradient>
 
-         <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.sm }}>
-           <View style={[styles.sectionIndicator, { backgroundColor: colors.primary }]} />
-           <ThemedText variant="h3" style={{ flex: 1 }} minFontSize={16} maxFontSize={22}>Management</ThemedText>
-         </View>
-        {menuItems.map((item) => (
-          <Card key={item.label} pressable onPress={() => router.push(item.route)} style={styles.menuItem}>
-            <View style={styles.menuItemRow}>
-              <ThemedText variant="body" style={{ fontWeight: '500' }}>{item.icon} {item.label}</ThemedText>
-              <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
+          <View style={styles.prefRow}>
+            <Ionicons name="volume-mute-outline" size={18} color={colors.primary} />
+            <View style={{ flex: 1, marginLeft: spacing.xs }}>
+              <ThemedText variant="body" color="text" fontFamily="medium">
+                Covert Shutter Sound Muted
+              </ThemedText>
+              <ThemedText variant="caption" color="textSecondary">
+                Audio shutter clicks eliminated for night-time incident recording
+              </ThemedText>
             </View>
-          </Card>
-        ))}
-
-         <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.sm }}>
-           <View style={[styles.sectionIndicator, { backgroundColor: colors.accent }]} />
-           <ThemedText variant="h3" style={{ flex: 1 }} minFontSize={16} maxFontSize={22}>Account</ThemedText>
-         </View>
-        <Card style={[shadows.md]}>
-          <View style={styles.statsRow}>
-            <View style={styles.statItem}>
-              <ThemedText variant="xxl" style={{ fontWeight: '700', color: colors.primary }}>{electionCount}</ThemedText>
-              <ThemedText variant="caption" color="textSecondary">Elections Configured</ThemedText>
-            </View>
-            <View style={[styles.statDivider, { backgroundColor: colors.border }]} />
-            <View style={styles.statItem}>
-              <ThemedText variant="body" style={{ fontWeight: '600' }}>{user?.role ? roleLabels[user.role] : '—'}</ThemedText>
-              <ThemedText variant="caption" color="textSecondary">Role</ThemedText>
-            </View>
+            <Ionicons name="checkmark-circle" size={20} color={colors.success} />
           </View>
-        </Card>
 
-        <Button
-          label="Sign Out"
-          variant="outline"
-          loading={logoutMutation.isPending}
-          onPress={() => {
-            if (__DEV__) console.log('[profile] sign out pressed, isAuthenticated', useAuthStore.getState().isAuthenticated);
-            Alert.alert('Sign out', 'Are you sure you want to sign out?', [
-              { text: 'Cancel', style: 'cancel', onPress: () => { if (__DEV__) console.log('[profile] cancel'); } },
-              {
-                text: 'Sign Out',
-                style: 'destructive',
-                onPress: () => {
-                  if (__DEV__) console.log('[profile] confirm sign out');
-                  logoutMutation.mutate(undefined, {
-                    onSuccess: () => { if (__DEV__) console.log('[profile] logout success'); },
-                    onError: (e) => console.warn('[profile] logout failed', e),
-                  });
-                },
-              },
-            ]);
-          }}
-          fullWidth
-        />
-      </View>
+          <View style={styles.prefRow}>
+            <Ionicons name="timer-outline" size={18} color={colors.primary} />
+            <View style={{ flex: 1, marginLeft: spacing.xs }}>
+              <ThemedText variant="body" color="text" fontFamily="medium">
+                2-Minute Evidence Auto-Save
+              </ThemedText>
+              <ThemedText variant="caption" color="textSecondary">
+                Audio/video auto-saves every 120s if phone is unattended in tense situations
+              </ThemedText>
+            </View>
+            <Ionicons name="checkmark-circle" size={20} color={colors.success} />
+          </View>
+        </View>
+      </Card>
+
+      {/* 4. Quick Navigation Modules */}
+      <Card style={styles.sectionCard}>
+        <ThemedText variant="title" color="text" fontFamily="bold">
+          Operational Modules
+        </ThemedText>
+
+        <View style={{ gap: spacing.xs, marginTop: spacing.xs }}>
+          {[
+            { label: 'Electoral Geography & Autocomplete', icon: 'map-outline', route: ROUTES.LOCATIONS },
+            { label: 'Political Parties & Candidate Directory', icon: 'people-outline', route: ROUTES.PARTIES },
+            { label: 'National Result Collation Room', icon: 'bar-chart-outline', route: ROUTES.RESULT_COLLATION },
+            { label: 'Draft Results Queue', icon: 'save-outline', route: ROUTES.RESULT_DRAFTS },
+          ].map((item) => (
+            <Pressable
+              key={item.label}
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                router.push(item.route as any);
+              }}
+              style={[styles.moduleLink, { borderColor: colors.border }]}
+            >
+              <View style={[styles.moduleIconWrap, { backgroundColor: colors.primary + '14' }]}>
+                <Ionicons name={item.icon as any} size={18} color={colors.primary} />
+              </View>
+              <ThemedText variant="body" color="text" fontFamily="medium" style={{ flex: 1, marginLeft: spacing.xs }}>
+                {item.label}
+              </ThemedText>
+              <Ionicons name="chevron-forward" size={16} color={colors.textMuted} />
+            </Pressable>
+          ))}
+        </View>
+      </Card>
+
+      {/* 5. Role Switcher for Demo Evaluation */}
+      <Card style={styles.sectionCard}>
+        <ThemedText variant="title" color="text" fontFamily="bold">
+          Demo Role Simulator
+        </ThemedText>
+        <ThemedText variant="caption" color="textSecondary" style={{ marginBottom: spacing.sm }}>
+          Switch perspective to test Field Agent, Polling Observer, or Collation Director flows
+        </ThemedText>
+
+        <View style={{ flexDirection: 'row', gap: spacing.xs }}>
+          <Button
+            label="Field Agent"
+            variant={user?.role === 'FIELD_AGENT' ? 'primary' : 'outline'}
+            size="sm"
+            onPress={() => handleRoleSwitch('FIELD_AGENT', 'agent@aquila.ng')}
+            style={{ flex: 1 }}
+          />
+          <Button
+            label="PU Observer"
+            variant={user?.role === 'POLLING_AGENT' ? 'primary' : 'outline'}
+            size="sm"
+            onPress={() => handleRoleSwitch('POLLING_AGENT', 'polling@aquila.ng')}
+            style={{ flex: 1 }}
+          />
+          <Button
+            label="Director"
+            variant={user?.role === 'ELECTION_OFFICER' ? 'primary' : 'outline'}
+            size="sm"
+            onPress={() => handleRoleSwitch('ELECTION_OFFICER', 'officer@aquila.ng')}
+            style={{ flex: 1 }}
+          />
+        </View>
+      </Card>
+
+      {/* 6. Sign Out Button */}
+      <Button
+        label="Disconnect & Sign Out"
+        variant="outline"
+        size="lg"
+        leftIcon="log-out-outline"
+        onPress={handleLogout}
+        loading={logoutMutation.isPending}
+        style={{ borderColor: colors.critical }}
+      />
     </ScreenView>
   );
 }
 
 const styles = StyleSheet.create({
-  header: {
+  scrollContent: {
+    paddingHorizontal: spacing.md,
+    paddingBottom: spacing.xxl,
+    gap: spacing.md,
+  },
+  profileHero: {
+    padding: spacing.lg,
+    borderRadius: radius.lg,
     alignItems: 'center',
-    paddingVertical: spacing.xxl,
-    paddingHorizontal: spacing.lg,
-    borderBottomLeftRadius: radius.xl,
-    borderBottomRightRadius: radius.xl,
   },
-  avatar: {
-    width: sizes.avatar,
-    height: sizes.avatar,
-    borderRadius: sizes.avatar / 2,
-    overflow: 'hidden',
+  heroContent: {
+    alignItems: 'center',
   },
-  avatarBg: {
-    width: '100%',
-    height: '100%',
-    borderRadius: sizes.avatar / 2,
+  avatarBadge: {
+    width: 72,
+    height: 72,
+    borderRadius: 24,
+    borderWidth: 1.5,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(13, 99, 56, 0.4)',
+  },
+  avatarImg: {
+    width: 52,
+    height: 52,
+  },
+  roleChip: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: radius.full,
+    marginTop: 4,
+  },
+  sectionCard: {
+    padding: spacing.md,
+    borderRadius: radius.lg,
+    ...shadows.sm,
+  },
+  orgRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: spacing.xs,
+  },
+  orgIconWrap: {
+    width: 44,
+    height: 44,
+    borderRadius: radius.md,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  menuItem: { marginVertical: spacing.md },
-  menuItemRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  statsRow: { flexDirection: 'row', alignItems: 'center' },
-  statItem: { flex: 1, paddingVertical: spacing.sm },
-  statDivider: { width: border.thin, height: 40, marginHorizontal: spacing.md },
-  sectionIndicator: { width: 4, height: 16, borderRadius: radius.full },
+  prefRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: spacing.xs,
+  },
+  moduleLink: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: spacing.sm,
+    borderRadius: radius.md,
+    borderWidth: 1,
+  },
+  moduleIconWrap: {
+    width: 32,
+    height: 32,
+    borderRadius: radius.sm,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
 });

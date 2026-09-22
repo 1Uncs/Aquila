@@ -110,3 +110,27 @@ export function useConstituenciesQuery(stateId?: string) {
     queryFn: () => mockApi.getConstituencies(stateId),
   });
 }
+
+export function useAIProjectionQuery(params?: {
+  candidateId?: string;
+  currentData?: boolean;
+  pastData?: 0 | 1 | 2;
+  locationId?: string;
+  locationText?: string;
+}) {
+  return useQuery({
+    queryKey: ['elections', 'aiProjection', params?.candidateId, params?.pastData, params?.currentData, params?.locationId],
+    queryFn: () => mockApi.getAIProjection(params),
+    staleTime: 60 * 1000,
+  });
+}
+
+export function useLocationSearchQuery(query: string) {
+  return useQuery({
+    queryKey: ['locations', 'search', query],
+    queryFn: () => mockApi.searchLocations(query),
+    enabled: query.trim().length >= 2,
+    staleTime: 30 * 1000,
+  });
+}
+

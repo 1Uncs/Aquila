@@ -1,113 +1,281 @@
 import React, { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
-import { FlashList } from '@shopify/flash-list';
+import { StyleSheet, View, Pressable, ScrollView } from 'react-native';
 import { ScreenView } from '@/core/components/ScreenView';
-import { ThemedText, FlashListItem, Card, Button } from '@/core/components';
+import { ThemedText, Card, Button, Input } from '@/core/components';
 import { Ionicons } from '@expo/vector-icons';
-import { spacing, radius, shadows, sizes } from '@/constants/tokens';
+import { spacing, radius, shadows, border } from '@/constants/tokens';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
 import { useStatusBar } from '@/core/hooks/useStatusBar';
-import { useStatesQuery, useLgasQuery, usePollingUnitsQuery, useWardsQuery, useSenatorialDistrictsQuery, useConstituenciesQuery } from '@/features/elections/hooks';
+import {
+  useStatesQuery,
+  useLgasQuery,
+  usePollingUnitsQuery,
+  useWardsQuery,
+  useLocationSearchQuery,
+} from '@/features/elections/hooks';
 import Colors from '@/constants/colors';
+import { LinearGradient } from 'expo-linear-gradient';
+import * as Haptics from 'expo-haptics';
 
 export default function LocationsScreen() {
   const { data: states = [] } = useStatesQuery();
   const { data: lgas = [] } = useLgasQuery();
   const { data: pollingUnits = [] } = usePollingUnitsQuery();
   const { data: wards = [] } = useWardsQuery();
-  const { data: senatorialDistricts = [] } = useSenatorialDistrictsQuery();
-  const { data: constituencies = [] } = useConstituenciesQuery();
+
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedStateId, setSelectedStateId] = useState<string | null>('s25'); // default Lagos
+
+  const { data: searchResults = [], isLoading: searchLoading } = useLocationSearchQuery(searchQuery);
+
   const scheme = useColorScheme() ?? 'light';
   const colors = Colors[scheme];
   useStatusBar({ barStyle: scheme === 'dark' ? 'light' : 'dark' });
 
-  const [selectedStateId, setSelectedStateId] = useState<string | null>(null);
-
-  const countsFor = (stateId: string) => ({
-    lgas: lgas.filter((l) => l.stateId === stateId).length,
-    wards: wards.filter((w) => {
-      const lga = lgas.find((l) => l.id === w.lgaId);
-      return lga?.stateId === stateId;
-    }).length,
-    pus: pollingUnits.filter((p) => p.stateId === stateId || lgas.find((l) => l.id === p.lgaId)?.stateId === stateId).length,
-    senatorial: senatorialDistricts.filter((d) => d.stateId === stateId).length,
-    constituencies: constituencies.filter((c) => c.stateId === stateId).length,
-  });
-
-  const selected = states.find((s) => s.id === selectedStateId);
-  const selectedCounts = selectedStateId ? countsFor(selectedStateId) : null;
+  const selectedState = states.find((s) => s.id === selectedStateId);
+  const stateLgas = selectedStateId ? lgas.filter((l) => l.stateId === selectedStateId) : [];
 
   return (
-    <ScreenView scrollable keyboardShouldPersistTaps="handled" skipAndroidTopPadding>
-      <View>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.sm }}>
-          <View style={[styles.titleIndicator, { backgroundColor: colors.primary }]} />
-          <ThemedText variant="h2" style={{ flex: 1, marginBottom: 0 }}>Electoral Geography</ThemedText>
-        </View>
-        <ThemedText variant="body" color="textSecondary" style={{ marginBottom: spacing.lg }}>
-          Manage electoral locations across Nigeria
+    <ScreenView scrollable contentContainerStyle={styles.scrollContent}>
+      {/* 1. Header Overview Banner */}
+      <LinearGradient
+        colors={['#0D6338', '#0A4A2A']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={[styles.headerHero, shadows.md]}
+      >
+        <ThemedText variant="label" color="#A3E6C2" fontFamily="bold">
+          ELECTORAL GEOGRAPHY & HIERARCHY
+        </ThemedText>
+        <ThemedText variant="h2" color="#FFFFFF" fontFamily="bold" style={{ marginTop: 2 }}>
+          Electoral Location Engine
+        </ThemedText>
+        <ThemedText variant="caption" color="#D1FAE5" style={{ marginTop: 2 }}>
+          National directory of 36 States, FCT, 774 LGAs, and 176,846 Polling Units
         </ThemedText>
 
-        <Card style={shadows.md}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.md }}>
-            <View style={[styles.titleIndicator, { backgroundColor: colors.accent }]} />
-            <ThemedText variant="h3" style={{ flex: 1 }}>States & FCT ({states.length})</ThemedText>
+        <View style={styles.statsStrip}>
+          <View style={styles.statCol}>
+            <ThemedText variant="title" color="#FFFFFF" fontFamily="bold">{states.length}</ThemedText>
+            <ThemedText variant="label" color="#A3E6C2">STATES + FCT</ThemedText>
           </View>
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm }}>
-            {states.map((state) => (
-              <Button
-                key={state.id}
-                label={state.name}
-                size="sm"
-                variant={selectedStateId === state.id ? 'primary' : 'outline'}
-                onPress={() => setSelectedStateId(selectedStateId === state.id ? null : state.id)}
-                style={{ marginBottom: spacing.sm }}
-              />
-            ))}
+          <View style={styles.statDivider} />
+          <View style={styles.statCol}>
+            <ThemedText variant="title" color="#FFFFFF" fontFamily="bold">774</ThemedText>
+            <ThemedText variant="label" color="#A3E6C2">LGAS</ThemedText>
           </View>
-        </Card>
+          <View style={styles.statDivider} />
+          <View style={styles.statCol}>
+            <ThemedText variant="title" color="#FFFFFF" fontFamily="bold">176,846</ThemedText>
+            <ThemedText variant="label" color="#A3E6C2">POLLING UNITS</ThemedText>
+          </View>
+        </View>
+      </LinearGradient>
 
-        {selected && selectedCounts && (
-          <Card style={[{ marginTop: spacing.lg }, shadows.md]}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.md }}>
-              <View style={[styles.titleIndicator, { backgroundColor: colors.primary }]} />
-              <ThemedText variant="h3" style={{ flex: 1 }}>{selected.name} overview</ThemedText>
-            </View>
-            <FlashList
-              data={[
-                { id: 'lgas', icon: 'map-outline' as const, label: 'LGAs / Area Councils', value: selectedCounts.lgas },
-                { id: 'wards', icon: 'git-branch-outline' as const, label: 'Wards', value: selectedCounts.wards },
-                { id: 'pus', icon: 'business-outline' as const, label: 'Polling Units', value: selectedCounts.pus },
-                { id: 'senatorial', icon: 'map' as const, label: 'Senatorial Districts', value: selectedCounts.senatorial },
-                { id: 'constituencies', icon: 'people-outline' as const, label: 'Constituencies', value: selectedCounts.constituencies },
-              ]}
-              keyExtractor={(item) => item.id}
-              renderItem={({ item }) => (
-                <FlashListItem id={item.id}>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
-                    <View style={[styles.iconCircle, { backgroundColor: colors.accent + '20' }]}>
-                      <Ionicons name={item.icon} size={22} color={colors.accent} />
-                    </View>
-                    <ThemedText variant="body" style={{ fontWeight: '600', flex: 1 }}>{item.label}</ThemedText>
-                    <ThemedText variant="body" color="textSecondary">{item.value}</ThemedText>
-                  </View>
-                </FlashListItem>
-              )}
-            />
-          </Card>
+      {/* 2. Typeahead Location Autocomplete Search (Audio Part 8) */}
+      <Card style={styles.sectionCard}>
+        <ThemedText variant="title" color="text" fontFamily="bold">
+          Location Autocomplete Search
+        </ThemedText>
+        <ThemedText variant="caption" color="textSecondary" style={{ marginBottom: spacing.sm }}>
+          Type any polling unit, ward, or LGA. All results are qualified by parent state.
+        </ThemedText>
+
+        <Input
+          placeholder="Search e.g. 'Ikoyi', 'Kaduna', 'Alausa'..."
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          leftIcon="search-outline"
+          rightIcon={searchQuery ? 'close-circle' : undefined}
+          onRightIconPress={() => setSearchQuery('')}
+        />
+
+        {searchLoading && (
+          <ThemedText variant="caption" color="textMuted" style={{ marginTop: spacing.xs }}>
+            Searching national electoral registry...
+          </ThemedText>
         )}
-      </View>
+
+        {/* Autocomplete Search Results */}
+        {searchQuery.trim().length >= 2 && (
+          <View style={{ gap: spacing.xs, marginTop: spacing.sm }}>
+            {searchResults.length === 0 && !searchLoading ? (
+              <ThemedText variant="caption" color="textMuted" style={{ paddingVertical: spacing.xs }}>
+                No matching locations found for "{searchQuery}".
+              </ThemedText>
+            ) : (
+              searchResults.map((item) => {
+                const typeColors: Record<string, string> = {
+                  PU: colors.primary,
+                  WARD: colors.accentDark,
+                  LGA: '#2563EB',
+                  SENATORIAL: '#7C3AED',
+                  STATE: '#059669',
+                };
+                const tagColor = typeColors[item.type] ?? colors.primary;
+
+                return (
+                  <View
+                    key={item.id}
+                    style={[styles.searchResultItem, { borderColor: colors.border }]}
+                  >
+                    <View style={[styles.typeBadge, { backgroundColor: tagColor + '18' }]}>
+                      <ThemedText variant="label" style={{ color: tagColor }} fontFamily="bold">
+                        {item.type}
+                      </ThemedText>
+                    </View>
+
+                    <View style={{ flex: 1, marginLeft: spacing.xs }}>
+                      <ThemedText variant="body" color="text" fontFamily="bold">
+                        {item.name}
+                      </ThemedText>
+                      {/* Parent State Qualification (Audio Part 8: 'Ikoyi, Lagos State' vs 'Ikoyi, Osun State') */}
+                      <ThemedText variant="caption" color="primary" fontFamily="medium">
+                        {item.qualification}
+                      </ThemedText>
+                    </View>
+
+                    <Ionicons name="checkmark-circle-outline" size={18} color={colors.primary} />
+                  </View>
+                );
+              })
+            )}
+          </View>
+        )}
+      </Card>
+
+      {/* 3. State Hierarchy Explorer */}
+      <Card style={styles.sectionCard}>
+        <ThemedText variant="title" color="text" fontFamily="bold">
+          Electoral State Explorer
+        </ThemedText>
+        <ThemedText variant="caption" color="textSecondary" style={{ marginBottom: spacing.sm }}>
+          Select a state to inspect local government councils and jurisdiction wards
+        </ThemedText>
+
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.stateChipsScroll}>
+          {states.slice(0, 15).map((s) => {
+            const active = selectedStateId === s.id;
+            return (
+              <Pressable
+                key={s.id}
+                onPress={() => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  setSelectedStateId(s.id);
+                }}
+                style={[
+                  styles.stateChip,
+                  {
+                    backgroundColor: active ? colors.primary : colors.surfaceElevated,
+                    borderColor: active ? colors.primary : colors.border,
+                  },
+                ]}
+              >
+                <ThemedText
+                  variant="caption"
+                  color={active ? '#FFFFFF' : 'text'}
+                  fontFamily={active ? 'bold' : 'regular'}
+                >
+                  {s.name} ({s.code})
+                </ThemedText>
+              </Pressable>
+            );
+          })}
+        </ScrollView>
+
+        {selectedState && (
+          <View style={[styles.stateDetailBox, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }]}>
+            <ThemedText variant="body" color="text" fontFamily="bold">
+              {selectedState.name} State Administration
+            </ThemedText>
+            <ThemedText variant="caption" color="textSecondary" style={{ marginTop: 2 }}>
+              Zone: South-West · Preloaded with {stateLgas.length} sample LGAs & {pollingUnits.length} PUs
+            </ThemedText>
+
+            <View style={{ gap: spacing.xs, marginTop: spacing.sm }}>
+              {stateLgas.slice(0, 4).map((lga) => (
+                <View key={lga.id} style={[styles.lgaItem, { borderColor: colors.border }]}>
+                  <Ionicons name="location" size={14} color={colors.primary} />
+                  <ThemedText variant="caption" color="text" fontFamily="medium" style={{ marginLeft: 6, flex: 1 }}>
+                    {lga.name} Council Area · {selectedState.name} State
+                  </ThemedText>
+                  <ThemedText variant="label" color="primary">Active</ThemedText>
+                </View>
+              ))}
+            </View>
+          </View>
+        )}
+      </Card>
     </ScreenView>
   );
 }
 
 const styles = StyleSheet.create({
-  iconCircle: {
-    width: sizes.icon,
-    height: sizes.icon,
-    borderRadius: radius.full,
-    alignItems: 'center',
-    justifyContent: 'center',
+  scrollContent: {
+    paddingHorizontal: spacing.md,
+    paddingBottom: spacing.xxl,
+    gap: spacing.md,
   },
-  titleIndicator: { width: 4, height: 16, borderRadius: radius.full },
+  headerHero: {
+    padding: spacing.md,
+    borderRadius: radius.lg,
+  },
+  statsStrip: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: spacing.md,
+    paddingTop: spacing.sm,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255,255,255,0.15)',
+  },
+  statCol: {
+    flex: 1,
+  },
+  statDivider: {
+    width: 1,
+    height: 24,
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    marginHorizontal: spacing.xs,
+  },
+  sectionCard: {
+    padding: spacing.md,
+    borderRadius: radius.lg,
+    ...shadows.sm,
+  },
+  searchResultItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: spacing.sm,
+    borderRadius: radius.md,
+    borderWidth: 1,
+  },
+  typeBadge: {
+    paddingHorizontal: 6,
+    paddingVertical: 3,
+    borderRadius: radius.xs,
+  },
+  stateChipsScroll: {
+    gap: 6,
+    paddingVertical: 2,
+  },
+  stateChip: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: radius.full,
+    borderWidth: 1,
+  },
+  stateDetailBox: {
+    marginTop: spacing.md,
+    padding: spacing.sm,
+    borderRadius: radius.md,
+    borderWidth: 1,
+  },
+  lgaItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: spacing.xs,
+    borderRadius: radius.sm,
+    borderWidth: 1,
+  },
 });

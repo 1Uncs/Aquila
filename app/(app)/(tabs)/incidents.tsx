@@ -1,134 +1,374 @@
-import React, { useEffect, useState } from 'react';
-import { StyleSheet, ScrollView, View, LayoutAnimation } from 'react-native';
+import React, { useState, useMemo, useCallback } from 'react';
+import { StyleSheet, View, ScrollView, Pressable, Alert } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import { router } from 'expo-router';
 import { ScreenView } from '@/core/components/ScreenView';
-import { ThemedText, FlashListItem, EmptyState, Button, SkeletonCard } from '@/core/components';
-import { useIncidentsStore } from '@/features/auth/store';
+import { ThemedText, EmptyState, Button, Card } from '@/core/components';
+import { useIncidentsStore, useAuthStore, IncidentReport } from '@/features/auth/store';
 import { ROUTES } from '@/constants/routes';
-import { spacing, radius } from '@/constants/tokens';
+import { spacing, radius, shadows, border } from '@/constants/tokens';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
-import { incidentStatusColor, resultStatusSubtle } from '@/core/utils/resultStatus';
 import { useStatusBar } from '@/core/hooks/useStatusBar';
 import { useIncidentsQuery } from '@/features/elections/hooks';
-import { useRefreshControl, useForegroundRefresh } from '@/core/hooks';
+import { useRefreshControl, useForegroundRefresh, useHaptics } from '@/core/hooks';
 import Colors from '@/constants/colors';
-import { IncidentSeverity } from '@/types';
+import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 
-const SEVERITY_FILTERS = ['ALL', 'LOW', 'MEDIUM', 'HIGH', 'CRITICAL'] as const;
-
-const SEVERITY_COLORS: Record<IncidentSeverity, string> = {
-  LOW: 'success',
-  MEDIUM: 'warning',
-  HIGH: 'error',
-  CRITICAL: 'critical',
-};
+const CATEGORY_FILTERS = [
+  'ALL',
+  'VIOLENCE',
+  'BALLOT_SNATCHING',
+  'VOTE_BUYING',
+  'BVAS_FAILURE',
+  'SECURITY_INCIDENT',
+] as const;
 
 export default function IncidentsScreen() {
-  const { data: incidents = [], isLoading: loading, refetch: refetchIncidents } = useIncidentsQuery();
-  const { setIncidents: storeSetIncidents } = useIncidentsStore();
-  const [filter, setFilter] = useState<IncidentSeverity | 'ALL'>('ALL');
+  const { data: apiIncidents = [], isLoading: loading, refetch: refetchIncidents } = useIncidentsQuery();
+  const { incidents: storeIncidents, updateIncident } = useIncidentsStore();
+  const { user } = useAuthStore();
+  const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
+  const [statusFilter, setStatusFilter] = useState<'ALL' | 'UNRESOLVED' | 'RESOLVED'>('ALL');
+
   const scheme = useColorScheme() ?? 'light';
   const colors = Colors[scheme];
   useStatusBar({ barStyle: scheme === 'dark' ? 'light' : 'dark' });
   const { refreshControl } = useRefreshControl(loading, refetchIncidents);
   useForegroundRefresh([['incidents', 'list']], 5 * 60 * 1000);
+  const { impact } = useHaptics();
 
-  useEffect(() => {
-    storeSetIncidents(incidents);
-  }, [incidents, storeSetIncidents]);
+  // Combine store incidents with API incidents
+  const allIncidents = useMemo(() => {
+    const ids = new Set(storeIncidents.map((i) => i.id));
+    const remoteUnique = apiIncidents.filter((i) => !ids.has(i.id));
+    return [...storeIncidents, ...remoteUnique];
+  }, [storeIncidents, apiIncidents]);
 
-  const filtered = filter === 'ALL' ? incidents : incidents.filter((i) => i.severity === filter);
+  // Filter by category and resolution status (Audio Part 4 & 7)
+  const filtered = useMemo(() => {
+    return allIncidents.filter((item) => {
+      const matchCat = selectedCategory === 'ALL' || item.category === selectedCategory;
+      const matchStatus =
+        statusFilter === 'ALL'
+          ? true
+          : statusFilter === 'RESOLVED'
+            ? item.status === 'RESOLVED'
+            : item.status !== 'RESOLVED';
+      return matchCat && matchStatus;
+    });
+  }, [allIncidents, selectedCategory, statusFilter]);
 
-  LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+  const handleUpdateStatus = (id: string, newStatus: 'UNDER_REVIEW' | 'RESOLVED') => {
+    impact(Haptics.ImpactFeedbackStyle.Medium);
+    updateIncident(id, { status: newStatus as any });
+  };
+
+  const renderIncidentCard = useCallback(({ item }: { item: IncidentReport }) => {
+    const isCritical = item.severity === 'CRITICAL';
+    const isHigh = item.severity === 'HIGH';
+    const isResolved = item.status === 'RESOLVED';
+    const isReviewing = item.status === 'UNDER_REVIEW' || item.status === 'SUBMITTED';
+
+    const sevColors: Record<string, string> = {
+      CRITICAL: colors.critical,
+      HIGH: colors.error,
+      MEDIUM: colors.warning,
+      LOW: colors.success,
+    };
+    const sevColor = sevColors[item.severity] ?? colors.warning;
+
+    return (
+      <Card style={styles.incidentCard}>
+        {/* Severity & Status Header */}
+        <View style={styles.cardHeader}>
+          <View style={[styles.sevBadge, { backgroundColor: sevColor + '18', borderColor: sevColor }]}>
+            <Ionicons
+              name={isCritical || isHigh ? 'warning' : 'alert-circle-outline'}
+              size={14}
+              color={sevColor}
+            />
+            <ThemedText variant="label" style={{ color: sevColor, marginLeft: 4 }} fontFamily="bold">
+              {item.severity} SEVERITY
+            </ThemedText>
+          </View>
+
+          <View style={[styles.statusBadge, { backgroundColor: isResolved ? colors.successSubtle : colors.warningSubtle }]}>
+            <ThemedText
+              variant="label"
+              color={isResolved ? 'success' : 'warning'}
+              fontFamily="bold"
+            >
+              {isResolved ? 'RESOLVED' : isReviewing ? 'REVIEWING' : item.status}
+            </ThemedText>
+          </View>
+        </View>
+
+        {/* Category & Description */}
+        <ThemedText variant="body" color="text" fontFamily="bold" style={{ marginTop: spacing.xs }}>
+          {item.category.replace(/_/g, ' ')}
+        </ThemedText>
+        <ThemedText variant="caption" color="textSecondary" style={{ marginTop: 2 }}>
+          {item.description}
+        </ThemedText>
+
+        {/* Location & Metadata Tag */}
+        <View style={styles.metaRow}>
+          <View style={styles.metaItem}>
+            <Ionicons name="location-outline" size={13} color={colors.primary} />
+            <ThemedText variant="label" color="primary" fontFamily="medium" style={{ marginLeft: 4 }}>
+              {item.electoralArea} {item.pollingUnitId ? `· ${item.pollingUnitId}` : ''}
+            </ThemedText>
+          </View>
+
+          {item.latitude && item.longitude ? (
+            <View style={styles.metaItem}>
+              <Ionicons name="navigate-outline" size={12} color={colors.textMuted} />
+              <ThemedText variant="label" color="textMuted" style={{ marginLeft: 4 }}>
+                {item.latitude.toFixed(3)}, {item.longitude.toFixed(3)}
+              </ThemedText>
+            </View>
+          ) : null}
+
+          {item.mediaUrls?.length ? (
+            <View style={styles.metaItem}>
+              <Ionicons name="camera-outline" size={12} color={colors.accentDark} />
+              <ThemedText variant="label" color="accent" style={{ marginLeft: 4 }}>
+                {item.mediaUrls.length} live evidence
+              </ThemedText>
+            </View>
+          ) : null}
+        </View>
+
+        {/* Triage Actions: Reviewing & Resolved (Audio Part 7) */}
+        <View style={styles.cardActionsRow}>
+          <ThemedText variant="label" color="textMuted">
+            {new Date(item.reportedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+          </ThemedText>
+
+          <View style={{ flexDirection: 'row', gap: spacing.xs }}>
+            {!isResolved && (
+              <Button
+                label="Reviewing"
+                variant={isReviewing ? 'primary' : 'outline'}
+                size="sm"
+                onPress={() => handleUpdateStatus(item.id, 'UNDER_REVIEW')}
+              />
+            )}
+            <Button
+              label={isResolved ? 'Mark Reopened' : 'Resolve'}
+              variant={isResolved ? 'outline' : 'primary'}
+              size="sm"
+              leftIcon={isResolved ? 'refresh-outline' : 'checkmark-circle-outline'}
+              onPress={() => handleUpdateStatus(item.id, isResolved ? 'UNDER_REVIEW' : 'RESOLVED')}
+            />
+          </View>
+        </View>
+      </Card>
+    );
+  }, [colors, impact]);
 
   return (
-    <ScreenView scrollable keyboardShouldPersistTaps="handled" refreshControl={refreshControl}>
-      <FlashList
-        data={filtered}
-        keyExtractor={(item) => item.id}
-        ListHeaderComponent={
-          <View>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.sm }}>
-              <View style={[styles.sectionIndicator, { backgroundColor: colors.primary }]} />
-              <ThemedText variant="xl" style={{ flex: 1 }} minFontSize={20} maxFontSize={26}>Incidents</ThemedText>
-            </View>
-
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipRow} keyboardShouldPersistTaps="handled">
-              {SEVERITY_FILTERS.map((f) => (
-                <Button
-                  key={f}
-                  label={f === 'ALL' ? 'All' : f}
-                  size="sm"
-                  variant={filter === f ? 'primary' : 'outline'}
-                  onPress={() => setFilter(f)}
-                  style={styles.chip}
-                />
-              ))}
-            </ScrollView>
-
-            <View style={styles.actionRow}>
-              <Button label="Report" variant="primary" size="sm" onPress={() => router.push(ROUTES.INCIDENT_REPORT)} style={styles.actionBtn} />
-              <Button label="Search" variant="outline" size="sm" onPress={() => router.push(ROUTES.INCIDENT_SEARCH)} style={styles.actionBtn} />
-            </View>
-
-            {loading ? (
-              <View style={{ gap: spacing.md, paddingBottom: spacing.md }}>
-                <SkeletonCard />
-                <SkeletonCard />
-                <SkeletonCard />
-              </View>
-            ) : filtered.length === 0 ? (
-              <EmptyState icon="shield-checkmark-outline" title="No Incidents" subtitle="All quiet — no incidents reported" />
-            ) : null}
+    <ScreenView scrollable={false} noScrollPadding>
+      <View style={styles.container}>
+        {/* Top Control Bar with File Incident CTA */}
+        <View style={styles.topControlBar}>
+          <View style={{ flex: 1 }}>
+            <ThemedText variant="title" color="text" fontFamily="bold">
+              Incident Control Room
+            </ThemedText>
+            <ThemedText variant="caption" color="textSecondary">
+              {allIncidents.length} total logged incidents across operational sectors
+            </ThemedText>
           </View>
-        }
-        renderItem={({ item: incident }) => {
-          const sevColorKey = SEVERITY_COLORS[incident.severity] || 'textSecondary';
-          const sevColor = colors[sevColorKey as keyof typeof Colors.light] as string;
-          const statusColor = incidentStatusColor(incident.status, scheme);
-          return (
-            <FlashListItem id={incident.id}>
-              <View style={styles.row}>
-                <View style={[styles.severityDot, { backgroundColor: sevColor }]} />
-                <View style={styles.incidentInfo}>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
-                    <ThemedText variant="body" style={{ fontWeight: '600', flex: 1 }}>
-                      {incident.category.replace(/_/g, ' ')}
-                    </ThemedText>
-                    <View style={{ backgroundColor: resultStatusSubtle(incident.status, scheme), paddingHorizontal: spacing.sm, paddingVertical: spacing['2xs'], borderRadius: radius.full }}>
-                      <ThemedText variant="caption" style={{ color: statusColor, fontWeight: '700' }}>
-                        {incident.status.replace(/_/g, ' ')}
-                      </ThemedText>
-                    </View>
-                  </View>
-                  <ThemedText variant="caption" color="textSecondary" style={{ marginTop: spacing.xs }}>
-                    {incident.electoralArea}
+
+          <Button
+            label="+ File Incident"
+            variant="primary"
+            size="sm"
+            onPress={() => {
+              impact(Haptics.ImpactFeedbackStyle.Medium);
+              router.push(ROUTES.INCIDENT_REPORT);
+            }}
+          />
+        </View>
+
+        {/* Status Filter Toggle: All vs Unresolved vs Resolved (Audio Part 4) */}
+        <View style={[styles.statusToggleBar, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }]}>
+          {(['ALL', 'UNRESOLVED', 'RESOLVED'] as const).map((s) => (
+            <Pressable
+              key={s}
+              onPress={() => {
+                impact(Haptics.ImpactFeedbackStyle.Light);
+                setStatusFilter(s);
+              }}
+              style={[
+                styles.statusToggleBtn,
+                statusFilter === s && [styles.activeStatusToggle, { backgroundColor: colors.primary }],
+              ]}
+            >
+              <ThemedText
+                variant="caption"
+                color={statusFilter === s ? '#FFFFFF' : 'textSecondary'}
+                fontFamily={statusFilter === s ? 'bold' : 'medium'}
+              >
+                {s}
+              </ThemedText>
+            </Pressable>
+          ))}
+        </View>
+
+        {/* Category Filter Chips Horizontal Scroll (Audio Part 4) */}
+        <View style={styles.catChipsWrapper}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.catScrollContent}
+          >
+            {CATEGORY_FILTERS.map((cat) => {
+              const active = selectedCategory === cat;
+              return (
+                <Pressable
+                  key={cat}
+                  onPress={() => {
+                    impact(Haptics.ImpactFeedbackStyle.Light);
+                    setSelectedCategory(cat);
+                  }}
+                  style={[
+                    styles.catChip,
+                    {
+                      backgroundColor: active ? colors.primary : colors.surface,
+                      borderColor: active ? colors.primary : colors.border,
+                    },
+                  ]}
+                >
+                  <ThemedText
+                    variant="caption"
+                    color={active ? '#FFFFFF' : 'textSecondary'}
+                    fontFamily={active ? 'bold' : 'regular'}
+                  >
+                    {cat.replace(/_/g, ' ')}
                   </ThemedText>
-                  <ThemedText variant="caption" color="textMuted" numberOfLines={2}>
-                    {incident.description.length > 80 ? incident.description.slice(0, 80) + '...' : incident.description}
-                  </ThemedText>
-                  <ThemedText variant="caption" color="textMuted" style={{ marginTop: spacing.xs }}>
-                    {new Date(incident.reportedAt).toLocaleString()}
-                  </ThemedText>
-                </View>
-              </View>
-            </FlashListItem>
-          );
-        }}
-        contentContainerStyle={{ paddingBottom: spacing.xxl }}
-      />
+                </Pressable>
+              );
+            })}
+          </ScrollView>
+        </View>
+
+        {/* Unnested FlashList */}
+        <FlashList
+          data={filtered}
+          keyExtractor={(item) => item.id}
+          renderItem={renderIncidentCard}
+          refreshControl={refreshControl}
+          contentContainerStyle={styles.listContent}
+          ItemSeparatorComponent={() => <View style={{ height: spacing.sm }} />}
+          ListEmptyComponent={
+            <EmptyState
+              icon="shield-checkmark-outline"
+              title="No Incidents Reported"
+              subtitle="All polling units in this category are operating normally without security disruption."
+              actionLabel="+ Report Incident"
+              onAction={() => router.push(ROUTES.INCIDENT_REPORT)}
+            />
+          }
+        />
+      </View>
     </ScreenView>
   );
 }
 
 const styles = StyleSheet.create({
-  chipRow: { gap: spacing.sm, marginBottom: spacing.lg, paddingRight: spacing.md },
-  chip: { marginRight: spacing.sm },
-  actionRow: { flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.lg },
-  actionBtn: { flex: 1 },
-  row: { flexDirection: 'row', alignItems: 'flex-start', gap: spacing.sm },
-  incidentInfo: { flex: 1 },
-  severityDot: { width: spacing.sm, height: spacing.sm, borderRadius: radius.sm, marginTop: spacing.xs },
-  sectionIndicator: { width: 4, height: 16, borderRadius: radius.full },
+  container: {
+    flex: 1,
+  },
+  topControlBar: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: spacing.md,
+    paddingTop: spacing.sm,
+    paddingBottom: spacing.xs,
+  },
+  statusToggleBar: {
+    flexDirection: 'row',
+    marginHorizontal: spacing.md,
+    marginVertical: spacing.xs,
+    padding: 3,
+    borderRadius: radius.md,
+    borderWidth: 1,
+  },
+  statusToggleBtn: {
+    flex: 1,
+    paddingVertical: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: radius.sm,
+  },
+  activeStatusToggle: {
+    ...shadows.sm,
+  },
+  catChipsWrapper: {
+    paddingVertical: spacing.xs,
+  },
+  catScrollContent: {
+    paddingHorizontal: spacing.md,
+    gap: 6,
+  },
+  catChip: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: radius.full,
+    borderWidth: 1,
+  },
+  listContent: {
+    paddingHorizontal: spacing.md,
+    paddingTop: spacing.xs,
+    paddingBottom: spacing.xxl,
+  },
+  incidentCard: {
+    padding: spacing.md,
+    borderRadius: radius.lg,
+    ...shadows.sm,
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  sevBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: radius.full,
+    borderWidth: 1,
+  },
+  statusBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: radius.full,
+  },
+  metaRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+    marginTop: spacing.xs,
+    paddingTop: spacing.xs,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(0,0,0,0.04)',
+  },
+  metaItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  cardActionsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: spacing.sm,
+    paddingTop: spacing.xs,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(0,0,0,0.04)',
+  },
 });

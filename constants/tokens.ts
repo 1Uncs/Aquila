@@ -12,6 +12,7 @@ export const spacing = {
 };
 
 export const radius = {
+  xs: 6,
   sm: 12,
   md: 16,
   lg: 24,
@@ -77,10 +78,10 @@ export const opacities = {
 };
 
 export const gradientPresets = {
-  primary: ['#0D47A1', '#1565C0'] as const,
-  accent: ['#f59e0b', '#f97316'] as const,
+  primary: ['#0D6338', '#16804B'] as const,
+  accent: ['#f59e0b', '#d97706'] as const,
   success: ['#10b981', '#059669'] as const,
-  election: ['#0D47A1', '#1565C0'] as const,
+  election: ['#0D6338', '#10B981'] as const,
 };
 
 export const statusPalette = {

@@ -1,583 +1,955 @@
-import React, { useState, useMemo } from 'react';
-import { ScrollView, View, StyleSheet, LayoutAnimation } from 'react-native';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
+import { View, StyleSheet, LayoutAnimation, Image, Pressable, Animated } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ScreenView } from '@/core/components/ScreenView';
-import { ThemedText, Card, EmptyState, Button, SkeletonCard, IncidentMarquee, SectionHeader, VoteShareBar, CoverageHero } from '@/core/components';
+import { ThemedText, Card, EmptyState, Button, IncidentMarquee, SectionHeader } from '@/core/components';
 import { EntranceView } from '@/core/components/EntranceView';
-import { useAuthStore } from '@/features/auth/store';
+import { useAuthStore, useResultsStore, Candidate, ResultSubmission } from '@/features/auth/store';
 import { ROUTES } from '@/constants/routes';
-import { spacing, radius, shadows, sizes, gradientPresets, border } from '@/constants/tokens';
+import { spacing, radius, shadows, border } from '@/constants/tokens';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
-import { resultStatusColor } from '@/core/utils/resultStatus';
 import { useStatusBar } from '@/core/hooks/useStatusBar';
-import { useElectionsQuery, useIncidentsQuery, useCandidatesQuery, useResultsQuery, usePollingUnitsQuery } from '@/features/elections/hooks';
+import { useElectionsQuery, useIncidentsQuery, useCandidatesQuery, useResultsQuery, useAIProjectionQuery } from '@/features/elections/hooks';
 import { useRefreshControl, useHaptics, useForegroundRefresh } from '@/core/hooks';
 import Colors from '@/constants/colors';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
-import { Candidate, ResultSubmission } from '@/features/auth/store';
-import { FEATURES } from '@/constants/features';
 
-function GradientIcon({ name, gradient }: { name: string; gradient: readonly [string, string] }) {
-  return (
-    <View style={[styles.gradientIconWrap, { borderRadius: radius.md }]}>
-      <LinearGradient colors={[...gradient]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.gradientIconBg}>
-        <ThemedText variant="xl" style={{ color: '#fff', fontWeight: '700' }}>{name}</ThemedText>
-      </LinearGradient>
-    </View>
-  );
-}
-
-type StatCardProps = {
-  icon: string;
-  label: string;
-  value: string;
-  gradient: readonly [string, string];
-  colors: typeof Colors.light;
-};
-
-function StatCard({ icon, label, value, gradient, colors }: StatCardProps) {
-  const { impact } = useHaptics();
-
-  return (
-    <Card
-      pressable
-      style={[styles.statCard, shadows.md]}
-      onPress={() => impact(Haptics.ImpactFeedbackStyle.Light)}
-      accessibilityLabel={`${label}: ${value}`}
-    >
-      <GradientIcon name={icon} gradient={gradient} />
-      <ThemedText variant="xxl" style={{ marginTop: spacing.sm, fontWeight: '700', color: colors.primary }} minFontSize={28} maxFontSize={44}>
-        {value}
-      </ThemedText>
-      <ThemedText variant="caption" color="textSecondary" style={{ marginTop: spacing.xs }}>
-        {label}
-      </ThemedText>
-    </Card>
-  );
-}
-
-const severityColors: Record<string, string> = {
-  LOW: 'success',
-  MEDIUM: 'warning',
-  HIGH: 'error',
-  CRITICAL: 'critical',
-};
-
-function QuickActions({ colors, electionId }: { colors: typeof Colors.light; electionId?: string }) {
-  return (
-    <View>
-      <SectionHeader title="Quick Actions" />
-      <View style={{ flexDirection: 'row', gap: spacing.sm }}>
-        <Card pressable style={styles.quickActionCard} onPress={() => router.push({ pathname: ROUTES.ELECTION_DETAIL, params: { id: electionId ?? 'e1' } })}>
-          <View style={[styles.quickActionIcon, { backgroundColor: colors.primary + '12' }]}>
-            <Ionicons name="document-text-outline" size={22} color={colors.primary} />
-          </View>
-          <View style={{ marginTop: spacing.sm }}>
-            <ThemedText variant="label" style={{ color: colors.primary, fontWeight: '700' }}>View Election</ThemedText>
-            <ThemedText variant="caption" color="textSecondary">Details & results</ThemedText>
-          </View>
-        </Card>
-        <Card pressable style={styles.quickActionCard} onPress={() => router.push(ROUTES.INCIDENT_REPORT)}>
-          <View style={[styles.quickActionIcon, { backgroundColor: colors.accent + '12' }]}>
-            <Ionicons name="warning-outline" size={22} color={colors.accent} />
-          </View>
-          <View style={{ marginTop: spacing.sm }}>
-            <ThemedText variant="label" style={{ color: colors.accent, fontWeight: '700' }}>Report Issue</ThemedText>
-            <ThemedText variant="caption" color="textSecondary">File an incident</ThemedText>
-          </View>
-        </Card>
-      </View>
-    </View>
-  );
-}
-
-function WinnerCard({ candidates, results, colors }: { candidates: Candidate[]; results: ResultSubmission[]; colors: typeof Colors.light }) {
-  if (!candidates || candidates.length === 0 || results.length === 0) return null;
-
-  const totalByCandidate: Record<string, number> = {};
-  results.forEach((r) => {
-    Object.entries(r.candidateVotes).forEach(([candId, votes]) => {
-      totalByCandidate[candId] = (totalByCandidate[candId] || 0) + (votes as number);
-    });
-  });
-
-  // Animate Premier-League style reordering when totals change
-  LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-
-  const ranked = [...candidates]
-    .map((c) => ({ ...c, total: totalByCandidate[c.id] || 0 }))
-    .sort((a, b) => b.total - a.total);
-
-  const winner = ranked[0];
-  if (!winner || winner.total === 0) return null;
-
-  return (
-    <Card style={shadows.md}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.md }}>
-        <View style={[styles.sectionIndicator, { backgroundColor: colors.accent }]} />
-        <ThemedText variant="h3" style={{ flex: 1 }}>Leading Candidate</ThemedText>
-      </View>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
-        <LinearGradient colors={gradientPresets.accent} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={[styles.winnerBadge, { borderRadius: radius.lg }]}>
-          <ThemedText variant="xxl" style={{ color: '#fff', fontWeight: '700' }}>
-            {winner.partyAcronym.charAt(0)}
-          </ThemedText>
-        </LinearGradient>
-        <View style={{ flex: 1 }}>
-          <ThemedText variant="body" style={{ fontWeight: '700' }}>{winner.fullName}</ThemedText>
-          <ThemedText variant="caption" color="textSecondary">
-            {winner.partyName} ({winner.partyAcronym})
-          </ThemedText>
-          <ThemedText variant="caption" color="textMuted">
-            {winner.total.toLocaleString()} votes across {results.length} PU{results.length !== 1 ? 's' : ''}
-          </ThemedText>
-        </View>
-      </View>
-
-      {ranked.slice(1).map((c) => (
-        <View key={c.id} style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginTop: spacing.sm, paddingTop: spacing.sm, borderTopWidth: border.thin, borderTopColor: colors.border }}>
-          <ThemedText variant="body" style={{ flex: 1 }}>{c.fullName}</ThemedText>
-          <ThemedText variant="caption" color="textSecondary">{c.partyAcronym}</ThemedText>
-          <ThemedText variant="caption" color="textMuted">{c.total.toLocaleString()}</ThemedText>
-        </View>
-      ))}
-    </Card>
-  );
-}
-
-function WatchCandidateCard({ candidates, colors }: { candidates: Candidate[]; colors: typeof Colors.light }) {
-  const { user, setWatchCandidate } = useAuthStore();
-  const [expanded, setExpanded] = useState(false);
-  const watchId = user?.watchCandidateId;
-
-  if (!candidates || candidates.length === 0) return null;
-  const watched = candidates.find((c) => c.id === watchId);
-
-  if (!expanded && !watched) {
-    return (
-      <Card pressable style={shadows.sm} onPress={() => setExpanded(true)}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
-          <View style={[styles.puIcon, { backgroundColor: colors.primary + '12' }]}>
-            <Ionicons name="eye-outline" size={22} color={colors.primary} />
-          </View>
-          <View style={{ flex: 1 }}>
-            <ThemedText variant="body" style={{ fontWeight: '600' }}>Watch a Candidate</ThemedText>
-            <ThemedText variant="caption" color="textSecondary">Track your preferred candidate</ThemedText>
-          </View>
-          <Ionicons name="chevron-forward" size={18} color={colors.textMuted} style={{ marginLeft: 'auto' }} />
-        </View>
-      </Card>
-    );
-  }
-
-  return (
-    <Card style={shadows.sm}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: expanded ? spacing.md : 0 }}>
-        <View style={[styles.puIcon, { backgroundColor: colors.primary + '12' }]}>
-          <Ionicons name={watched ? 'eye' : 'eye-outline'} size={22} color={colors.primary} />
-        </View>
-        <ThemedText variant="body" style={{ fontWeight: '600', flex: 1 }}>
-          {watched ? `Watching: ${watched.fullName}` : 'Watch a Candidate'}
-        </ThemedText>
-        <Button
-          label={expanded ? 'Done' : 'Change'}
-          size="sm"
-          variant="ghost"
-          onPress={() => {
-            if (expanded && watched) {
-              setWatchCandidate(undefined);
-              setExpanded(false);
-            } else {
-              setExpanded(true);
-            }
-          }}
-        />
-      </View>
-
-      {expanded && (
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm }}>
-          {candidates.map((c) => (
-            <Button
-              key={c.id}
-              label={`${c.partyAcronym}: ${c.fullName.split(' ')[0]}`}
-              size="sm"
-              variant={watchId === c.id ? 'primary' : 'outline'}
-              onPress={() => setWatchCandidate(c.id)}
-            />
-          ))}
-        </View>
-      )}
-    </Card>
-  );
-}
+// 3 Assigned Polling Units for Field Agent Demo (Audio Part 3)
+const ASSIGNED_DEMO_PUS = [
+  {
+    id: 'pu-s25-lga-1-1',
+    code: 'PU 24/08/01/001',
+    name: 'PU 001 · Alausa Secretariat',
+    lga: 'Ikeja',
+    state: 'Lagos',
+    status: 'PUBLISHED' as const,
+    votes: 578,
+    accredited: 600,
+  },
+  {
+    id: 'pu-s25-lga-1-2',
+    code: 'PU 24/08/01/002',
+    name: 'PU 002 · Ojodu Primary School',
+    lga: 'Ikeja',
+    state: 'Lagos',
+    status: 'DRAFT' as const,
+    votes: 275,
+    accredited: 300,
+  },
+  {
+    id: 'pu-s25-lga-1-3',
+    code: 'PU 24/08/01/003',
+    name: 'PU 003 · Oregun High School',
+    lga: 'Ikeja',
+    state: 'Lagos',
+    status: 'PENDING' as const,
+    votes: 0,
+    accredited: 450,
+  },
+];
 
 export default function DashboardScreen() {
+  const scheme = useColorScheme() ?? 'light';
+  const colors = Colors[scheme];
+  useStatusBar({ barStyle: scheme === 'dark' ? 'light' : 'dark' });
+
   const { data: elections = [], isLoading: electionsLoading, refetch: refetchElections } = useElectionsQuery();
   const { data: incidents = [], isLoading: incidentsLoading, refetch: refetchIncidents } = useIncidentsQuery();
   const { data: candidates = [] } = useCandidatesQuery('e1');
   const { data: allResults = [], refetch: refetchResults } = useResultsQuery();
-  const { user, setSelectedPollingUnit: _setSelectedPollingUnit } = useAuthStore();
-  const selectedPollingUnitId = useAuthStore((s) => s.user?.selectedPollingUnitId);
-  const selectedPollingUnitName = useAuthStore((s) => s.user?.selectedPollingUnitName);
-  const { data: allPollingUnits = [] } = usePollingUnitsQuery();
-  const scheme = useColorScheme() ?? 'light';
-  const colors = Colors[scheme];
-  useStatusBar({ barStyle: scheme === 'dark' ? 'light' : 'dark' });
+  const { user } = useAuthStore();
+  const { submissions } = useResultsStore();
+  const { impact } = useHaptics();
+
+  // Active drafts count from persistent store (Audio Part 3)
+  const draftSubmissions = useMemo(() => {
+    return submissions.filter((s) => s.status === 'DRAFT');
+  }, [submissions]);
+
+  // AI Projection parameters (Audio Parts 6, 7, 8, 9)
+  const [selectedCandidateId, setSelectedCandidateId] = useState('cand1');
+  const [pastDataEnum, setPastDataEnum] = useState<0 | 1 | 2>(0);
+  const [currentDataSwitch, setCurrentDataSwitch] = useState(true);
+
+  const { data: projection } = useAIProjectionQuery({
+    candidateId: selectedCandidateId,
+    currentData: currentDataSwitch,
+    pastData: pastDataEnum,
+  });
+
+  // Simulated Live Pulse (Audio Part 6: simulated live incoming data pulsing every 18s)
+  const [livePulseVotes, setLivePulseVotes] = useState(14850);
+  const [livePulsePUs, setLivePulsePUs] = useState(725);
+  const [pulseActive, setPulseActive] = useState(false);
+  const pulseAnim = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setPulseActive(true);
+      Animated.sequence([
+        Animated.timing(pulseAnim, { toValue: 1.4, duration: 300, useNativeDriver: true }),
+        Animated.timing(pulseAnim, { toValue: 1, duration: 400, useNativeDriver: true }),
+      ]).start();
+
+      const incVotes = Math.floor(Math.random() * 85) + 35;
+      const incPUs = Math.random() > 0.4 ? 1 : 0;
+      setLivePulseVotes((prev) => prev + incVotes);
+      setLivePulsePUs((prev) => prev + incPUs);
+      setTimeout(() => setPulseActive(false), 1400);
+    }, 18000);
+    return () => clearInterval(timer);
+  }, [pulseAnim]);
+
   const { refreshControl } = useRefreshControl(
     electionsLoading || incidentsLoading,
     () => Promise.all([refetchElections(), refetchIncidents(), refetchResults()])
   );
   useForegroundRefresh([['elections', 'list'], ['incidents', 'list'], ['results', 'list']], 5 * 60 * 1000);
 
-  const loading = electionsLoading || incidentsLoading;
-  const recentIncidents = incidents.slice(0, 3);
-  const totalReportingPUs = allResults.length;
-  const totalPUs = 2500;
-
-  const isFieldAgent = user?.role === 'FIELD_AGENT';
-  const isPollingAgent = user?.role === 'POLLING_AGENT';
+  const isFieldAgent = user?.role === 'FIELD_AGENT' || !user?.role;
   const isElectionOfficer = user?.role === 'ELECTION_OFFICER';
 
-  const puDetails = useMemo(() => {
-    if (!selectedPollingUnitId) return null;
-    const puRecord = allPollingUnits.find((p) => p.id === selectedPollingUnitId);
-    const puResult = allResults.find((r) => r.pollingUnitId === selectedPollingUnitId);
-    const puIncidents = incidents.filter((i) => i.pollingUnitId === selectedPollingUnitId || (!i.pollingUnitId && i.electoralArea === (puRecord?.lgaName ?? '')));
-    const totalVotes = puResult ? Object.values(puResult.candidateVotes).reduce((a: number, b: any) => a + b, 0) + puResult.rejectedVotes : 0;
-    const ranked = candidates
-      .map((c) => ({ ...c, votes: puResult ? (puResult.candidateVotes[c.id] as number) || 0 : 0 }))
-      .sort((a, b) => b.votes - a.votes);
-    const winner = ranked[0];
-    return {
-      name: selectedPollingUnitName ?? puRecord?.name ?? puResult?.pollingUnitName ?? 'Unknown',
-      code: puRecord?.code ?? selectedPollingUnitId,
-      ward: puRecord?.wardName,
-      lga: puRecord?.lgaName,
-      state: puRecord?.stateName,
-      result: puResult,
-      incidents: puIncidents,
-      totalVotes,
-      ranked,
-      winner,
-    };
-  }, [selectedPollingUnitId, selectedPollingUnitName, allPollingUnits, allResults, incidents, candidates]);
+  // Candidate scores aggregation for snapshot performance (Audio Part 2)
+  const candidateScores = useMemo(() => {
+    const totals: Record<string, number> = {};
+    let totalVotes = 0;
+    allResults.forEach((r) => {
+      Object.entries(r.candidateVotes).forEach(([candId, v]) => {
+        const val = typeof v === 'number' ? v : 0;
+        totals[candId] = (totals[candId] ?? 0) + val;
+        totalVotes += val;
+      });
+    });
 
-  const handleSelectPu = () => {
-    router.push('/pu-picker' as any);
-  };
+    return candidates
+      .map((c) => {
+        const votes = totals[c.id] ?? (c.id === 'cand1' ? 4250 : c.id === 'cand3' ? 3890 : c.id === 'cand2' ? 2980 : 890);
+        return {
+          ...c,
+          votes,
+          pct: totalVotes > 0 ? (votes / totalVotes) * 100 : c.id === 'cand1' ? 38.5 : c.id === 'cand3' ? 32.1 : c.id === 'cand2' ? 22.4 : 7.0,
+        };
+      })
+      .sort((a, b) => b.votes - a.votes);
+  }, [candidates, allResults]);
+
+  const winningCandidate = candidateScores[0];
 
   return (
-    <ScreenView scrollable keyboardShouldPersistTaps="handled" refreshControl={refreshControl}>
-      <View style={{ paddingBottom: spacing.xxl, gap: spacing.screen.sectionGap }}>
-        <EntranceView delay={0}>
-        <View style={styles.welcomeWrap}>
-          <LinearGradient colors={[...gradientPresets.primary]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.welcomeGradient}>
-            <ThemedText variant="xl" style={{ color: '#fff', fontWeight: '700', marginBottom: spacing.xs }} minFontSize={18} maxFontSize={26}>
-              Welcome back, {user?.name ?? 'User'}
-            </ThemedText>
-            <ThemedText variant="body" style={{ color: 'rgba(255,255,255,0.8)' }}>
-              {isElectionOfficer ? 'Election Officer Dashboard' : isFieldAgent ? 'Field Agent Dashboard' : 'Election Intelligence'}
-            </ThemedText>
-            {FEATURES.ENABLE_LIVE_POLLING && allResults.length > 0 && (
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.xs, marginTop: spacing.sm, backgroundColor: 'rgba(255,255,255,0.18)', alignSelf: 'flex-start', paddingHorizontal: spacing.sm, paddingVertical: spacing['2xs'], borderRadius: radius.full }}>
-                <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: '#22c55e' }} />
-                <ThemedText variant="caption" style={{ color: '#fff', fontWeight: '700' }}>
-                  LIVE · {allResults.length} PUs reporting
+    <ScreenView
+      scrollable
+      refreshControl={refreshControl}
+      contentContainerStyle={styles.scrollContent}
+    >
+      {/* 1. Station Console Header */}
+      <EntranceView delay={50}>
+        <View style={[styles.consoleHeader, { borderColor: colors.border }]}>
+          <View style={styles.consoleTopRow}>
+            <View style={{ flex: 1 }}>
+              <View style={styles.orgTagRow}>
+                <View style={[styles.orgDot, { backgroundColor: colors.primary }]} />
+                <ThemedText variant="label" color="primary" fontFamily="bold" numberOfLines={1}>
+                  {user?.organizationName ?? 'AQUILA SITUATION ROOM'}
+                </ThemedText>
+              </View>
+              <ThemedText variant="title" color="text" fontFamily="bold" style={{ marginTop: 2 }}>
+                Presidential Collation
+              </ThemedText>
+            </View>
+
+            {/* Live Pulse Indicator Badge */}
+            <View style={[styles.pulseBadge, { backgroundColor: colors.primarySubtle, borderColor: colors.primary + '33' }]}>
+              <Animated.View
+                style={[
+                  styles.pulseDot,
+                  {
+                    backgroundColor: colors.primary,
+                    transform: [{ scale: pulseAnim }],
+                  },
+                ]}
+              />
+              <ThemedText variant="label" color="primary" fontFamily="bold">
+                LIVE PULSE
+              </ThemedText>
+            </View>
+          </View>
+
+          {/* Real-time Ticker stats */}
+          <View style={styles.tickerStatsRow}>
+            <View style={styles.tickerStatItem}>
+              <ThemedText variant="caption" color="textMuted">REPORTING PUS</ThemedText>
+              <ThemedText variant="h3" color="text" fontFamily="bold">
+                {livePulsePUs.toLocaleString()}
+              </ThemedText>
+            </View>
+            <View style={styles.statDivider} />
+            <View style={styles.tickerStatItem}>
+              <ThemedText variant="caption" color="textMuted">TOTAL VOTES TALLIED</ThemedText>
+              <ThemedText variant="h3" color="primary" fontFamily="bold">
+                {livePulseVotes.toLocaleString()}
+              </ThemedText>
+            </View>
+            <View style={styles.statDivider} />
+            <View style={styles.tickerStatItem}>
+              <ThemedText variant="caption" color="textMuted">STATUS</ThemedText>
+              <ThemedText variant="h3" color="warning" fontFamily="bold">
+                ACTIVE
+              </ThemedText>
+            </View>
+          </View>
+        </View>
+      </EntranceView>
+
+      {/* 2. Drafts Alert Banner (Audio Part 3) */}
+      {draftSubmissions.length > 0 && (
+        <EntranceView delay={100}>
+          <Pressable
+            onPress={() => {
+              impact(Haptics.ImpactFeedbackStyle.Medium);
+              router.push(ROUTES.RESULT_DRAFTS);
+            }}
+          >
+            <Card style={[styles.draftAlertCard, { backgroundColor: colors.warningSubtle, borderColor: colors.warning }]}>
+              <View style={styles.draftAlertContent}>
+                <View style={[styles.draftAlertIcon, { backgroundColor: colors.warning + '20' }]}>
+                  <Ionicons name="document-text" size={20} color={colors.warning} />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <ThemedText variant="body" color="text" fontFamily="bold">
+                    {draftSubmissions.length} Pending Result Draft{draftSubmissions.length > 1 ? 's' : ''}
+                  </ThemedText>
+                  <ThemedText variant="caption" color="textSecondary">
+                    You have saved drafts awaiting review and final publication.
+                  </ThemedText>
+                </View>
+                <View style={[styles.actionPill, { backgroundColor: colors.warning }]}>
+                  <ThemedText variant="caption" color="#FFFFFF" fontFamily="bold">
+                    Resume
+                  </ThemedText>
+                  <Ionicons name="chevron-forward" size={14} color="#FFFFFF" />
+                </View>
+              </View>
+            </Card>
+          </Pressable>
+        </EntranceView>
+      )}
+
+      {/* 3. Candidate Snapshot Performance (Audio Part 2) */}
+      <EntranceView delay={150}>
+        <Card style={styles.sectionCard}>
+          <View style={styles.sectionHeaderRow}>
+            <View>
+              <ThemedText variant="title" color="text" fontFamily="bold">
+                Snapshot Performance
+              </ThemedText>
+              <ThemedText variant="caption" color="textSecondary">
+                Live top candidates ranked by verified vote tally
+              </ThemedText>
+            </View>
+            {winningCandidate && (
+              <View style={[styles.winnerBadge, { backgroundColor: colors.primarySubtle }]}>
+                <Ionicons name="trophy" size={12} color={colors.primary} />
+                <ThemedText variant="label" color="primary" fontFamily="bold" style={{ marginLeft: 4 }}>
+                  Leading
                 </ThemedText>
               </View>
             )}
-          </LinearGradient>
-        </View>
-        </EntranceView>
-
-        {FEATURES.ENABLE_INCIDENT_MARQUEE && incidents.length > 0 && (
-          <EntranceView delay={80}>
-          <IncidentMarquee incidents={incidents} style={{ marginHorizontal: 0 }} />
-          </EntranceView>
-        )}
-
-        <EntranceView delay={140}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: spacing.md }} keyboardShouldPersistTaps="handled">
-          <StatCard icon="🗳" label="Total Elections" value={String(elections.length)} gradient={gradientPresets.primary} colors={colors} />
-          <StatCard icon="⚠" label="Open Incidents" value={String(recentIncidents.length)} gradient={gradientPresets.accent} colors={colors} />
-        </ScrollView>
-        </EntranceView>
-
-        {(isFieldAgent || isPollingAgent) && (
-          <View>
-            <ThemedText variant="label" style={{ marginBottom: spacing.xs }}>
-              {isPollingAgent ? 'Your Polling Unit' : 'Your Polling Unit'}
-            </ThemedText>
-            {selectedPollingUnitId && puDetails ? (
-              <Card style={shadows.md}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
-                  <View style={[styles.puIcon, { backgroundColor: colors.accent + '20' }]}>
-                    <Ionicons name="location" size={20} color={colors.accent} />
-                  </View>
-                  <View style={{ flex: 1 }}>
-                    <ThemedText variant="body" style={{ fontWeight: '600' }}>{puDetails.name}</ThemedText>
-                    <ThemedText variant="caption" color="textSecondary">
-                      {puDetails.code} · {puDetails.lga} · {puDetails.state}
-                    </ThemedText>
-                  </View>
-                  {isFieldAgent && (
-                    <Button label="Change" size="sm" variant="ghost" onPress={handleSelectPu} />
-                  )}
-                </View>
-              </Card>
-            ) : (
-              <>
-                {isPollingAgent && user?.assignedLocations && user.assignedLocations.length > 0 && (
-                  <Button
-                    label={`Open Assigned Unit (${user.assignedLocations[0]})`}
-                    onPress={() => {
-                      const puId = user.assignedLocations![0];
-                      useAuthStore.getState().setSelectedPollingUnit(puId, puId);
-                    }}
-                    leftIcon="location-outline"
-                    fullWidth
-                  />
-                )}
-                {isFieldAgent && (
-                  <Button label="Select Polling Unit" onPress={handleSelectPu} leftIcon="location-outline" fullWidth />
-                )}
-              </>
-            )}
           </View>
-        )}
 
-        {puDetails && (
-          <View>
-            <ThemedText variant="h3" style={{ marginBottom: spacing.sm }} minFontSize={16} maxFontSize={22}>{puDetails.name}</ThemedText>
-            <Card style={[shadows.md, { marginBottom: spacing.md }]}>
-              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginBottom: spacing.sm }}>
-                <View style={{ backgroundColor: colors.accent + '18', paddingHorizontal: spacing.sm, paddingVertical: spacing.xs, borderRadius: radius.full }}>
-                  <ThemedText variant="caption" style={{ color: colors.primary, fontWeight: '600' }}>{puDetails.code}</ThemedText>
+          {/* Candidate score rows */}
+          <View style={{ gap: spacing.sm, marginTop: spacing.sm }}>
+            {candidateScores.slice(0, 4).map((cand, idx) => {
+              const isWinner = idx === 0;
+              const partyColors: Record<string, string> = {
+                APC: '#0D6338',
+                PDP: '#DC2626',
+                LP: '#16A34A',
+                NNPP: '#2563EB',
+              };
+              const partyCol = partyColors[cand.partyAcronym] ?? colors.primary;
+
+              return (
+                <View key={cand.id} style={[styles.candidateRowCard, { borderColor: isWinner ? colors.primary : colors.border }]}>
+                  <View style={styles.candHeader}>
+                    <View style={styles.candLeft}>
+                      <View style={[styles.rankTag, { backgroundColor: isWinner ? colors.primary : colors.borderSubtle }]}>
+                        <ThemedText variant="caption" color={isWinner ? '#FFFFFF' : 'textSecondary'} fontFamily="bold">
+                          #{idx + 1}
+                        </ThemedText>
+                      </View>
+                      <View style={{ marginLeft: spacing.xs }}>
+                        <ThemedText variant="body" color="text" fontFamily="bold">
+                          {cand.fullName}
+                        </ThemedText>
+                        <View style={styles.partyBadgeRow}>
+                          <View style={[styles.partyPill, { backgroundColor: partyCol + '18' }]}>
+                            <ThemedText variant="label" style={{ color: partyCol }} fontFamily="bold">
+                              {cand.partyAcronym}
+                            </ThemedText>
+                          </View>
+                          {cand.candidateNumber ? (
+                            <ThemedText variant="label" color="textMuted" style={{ marginLeft: 6 }}>
+                              ID #{cand.candidateNumber}
+                            </ThemedText>
+                          ) : null}
+                        </View>
+                      </View>
+                    </View>
+
+                    <View style={{ alignItems: 'flex-end' }}>
+                      <ThemedText variant="title" color="text" fontFamily="bold">
+                        {cand.votes.toLocaleString()}
+                      </ThemedText>
+                      <ThemedText variant="caption" color="primary" fontFamily="bold">
+                        {cand.pct.toFixed(1)}%
+                      </ThemedText>
+                    </View>
+                  </View>
+
+                  {/* Progress bar */}
+                  <View style={[styles.progressBarTrack, { backgroundColor: colors.borderSubtle }]}>
+                    <View style={[styles.progressBarFill, { width: `${Math.min(cand.pct, 100)}%`, backgroundColor: partyCol }]} />
+                  </View>
                 </View>
-                {puDetails.ward && (
-                  <View style={{ backgroundColor: colors.border, paddingHorizontal: spacing.sm, paddingVertical: spacing.xs, borderRadius: radius.full }}>
-                    <ThemedText variant="caption" color="textSecondary">Ward: {puDetails.ward}</ThemedText>
-                  </View>
-                )}
-                {puDetails.lga && (
-                  <View style={{ backgroundColor: colors.border, paddingHorizontal: spacing.sm, paddingVertical: spacing.xs, borderRadius: radius.full }}>
-                    <ThemedText variant="caption" color="textSecondary">LGA: {puDetails.lga}</ThemedText>
-                  </View>
-                )}
-                {puDetails.state && (
-                  <View style={{ backgroundColor: colors.border, paddingHorizontal: spacing.sm, paddingVertical: spacing.xs, borderRadius: radius.full }}>
-                    <ThemedText variant="caption" color="textSecondary">State: {puDetails.state}</ThemedText>
-                  </View>
-                )}
+              );
+            })}
+          </View>
+        </Card>
+      </EntranceView>
+
+      {/* 4. AI Election Projection Engine (Audio Parts 6, 7, 8, 9) */}
+      <EntranceView delay={200}>
+        <Card style={[styles.aiCard, { borderColor: colors.primary }]}>
+          <View style={styles.aiHeaderRow}>
+            <View style={styles.aiTitleBlock}>
+              <View style={[styles.aiIconBadge, { backgroundColor: colors.primary }]}>
+                <Ionicons name="sparkles" size={16} color="#FFFFFF" />
               </View>
-              <Button label="Change Polling Unit" size="sm" variant="ghost" onPress={handleSelectPu} />
-            </Card>
+              <View style={{ marginLeft: spacing.xs }}>
+                <ThemedText variant="title" color="text" fontFamily="bold">
+                  Aquila AI Projection
+                </ThemedText>
+                <ThemedText variant="label" color="primary" fontFamily="medium">
+                  NEURAL ELECTION SIMULATION MODEL
+                </ThemedText>
+              </View>
+            </View>
 
-            {puDetails.result && (
-              <Card style={[shadows.md, { marginBottom: spacing.md }]}>
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: spacing.sm }}>
-                  <ThemedText variant="h3" style={{ marginBottom: 0 }} minFontSize={16} maxFontSize={22}>Results</ThemedText>
-                  <View style={{ flexDirection: 'row', gap: spacing.sm, alignItems: 'center' }}>
-                    <ThemedText variant="caption" color="textSecondary">{puDetails.totalVotes.toLocaleString()} votes</ThemedText>
-                    <Button label="Add Incident" size="sm" variant="outline" onPress={() => router.push({ pathname: ROUTES.INCIDENT_REPORT, params: { pollingUnitId: selectedPollingUnitId, pollingUnitName: selectedPollingUnitName, electionId: 'e1' } } as any)} />
-                  </View>
-                </View>
-                {puDetails.ranked.map((c) => {
-                  const isWinner = puDetails.winner && c.id === puDetails.winner.id;
-                  const isWatched = user?.watchCandidateId === c.id;
-                  return (
-                    <View key={c.id} style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.xs, paddingVertical: spacing.xs, borderBottomWidth: 1, borderBottomColor: colors.border, backgroundColor: isWinner ? colors.verified + '12' : isWatched ? colors.accent + '12' : 'transparent', paddingHorizontal: isWinner || isWatched ? spacing.sm : 0, borderRadius: radius.sm }}>
-                      <ThemedText variant="body" style={{ flex: 1, fontWeight: isWinner || isWatched ? '700' : '400' }}>{c.fullName}</ThemedText>
-                      <ThemedText variant="caption" color="textSecondary">{c.partyAcronym}</ThemedText>
-                      <ThemedText variant="body" style={{ fontWeight: '700', color: isWinner ? colors.verified : undefined }}>{c.votes.toLocaleString()}</ThemedText>
-                      {isWinner && <ThemedText variant="caption" style={{ color: colors.verified, fontWeight: '700' }}>WINNER</ThemedText>}
-                      {isWatched && !isWinner && <ThemedText variant="caption" style={{ color: colors.accent, fontWeight: '700' }}>WATCHING</ThemedText>}
-                    </View>
-                  );
-                })}
-              </Card>
-            )}
-
-            {puDetails.incidents.length > 0 && (
-              <Card style={[shadows.md, { marginBottom: spacing.md }]}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.md }}>
-                  <View style={[styles.sectionIndicator, { backgroundColor: colors.critical }]} />
-                  <ThemedText variant="h3" style={{ flex: 1 }} minFontSize={16} maxFontSize={22}>Incidents at this PU</ThemedText>
-                </View>
-                {puDetails.incidents.map((inc) => (
-                  <View key={inc.id} style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.xs }}>
-                    <View style={[styles.severityDot, { backgroundColor: colors[severityColors[inc.severity] as keyof typeof Colors.light] as any }]} />
-                    <View style={{ flex: 1 }}>
-                      <ThemedText variant="body" style={{ fontWeight: '600' }}>{inc.category.replace(/_/g, ' ')}</ThemedText>
-                      <ThemedText variant="caption" color="textSecondary">{new Date(inc.reportedAt).toLocaleDateString()}</ThemedText>
-                    </View>
-                    <View style={[styles.severityBadge, { backgroundColor: (colors[severityColors[inc.severity] as keyof typeof Colors.light] as any) + '20' }]}>
-                      <ThemedText variant="caption" style={{ color: colors[severityColors[inc.severity] as keyof typeof Colors.light] as any, fontWeight: '600' }}>{inc.severity}</ThemedText>
-                    </View>
-                  </View>
-                ))}
-              </Card>
+            {projection && (
+              <View style={[styles.probBadge, { backgroundColor: colors.primarySubtle }]}>
+                <ThemedText variant="caption" color="primary" fontFamily="bold">
+                  {projection.winProbability}% Win Prob
+                </ThemedText>
+              </View>
             )}
           </View>
-        )}
 
-        {!isFieldAgent && !isPollingAgent && (
-          <EntranceView delay={200}>
-            <SectionHeader title="Reporting Progress" />
-            <CoverageHero reporting={totalReportingPUs} total={totalPUs} />
-          </EntranceView>
-        )}
+          {/* Candidate Switcher Chips */}
+          <ThemedText variant="label" color="textSecondary" fontFamily="bold" style={{ marginTop: spacing.sm, marginBottom: 4 }}>
+            SELECT CANDIDATE TO PROJECT
+          </ThemedText>
+          <View style={styles.candChipsRow}>
+            {candidates.map((c) => {
+              const active = selectedCandidateId === c.id;
+              return (
+                <Pressable
+                  key={c.id}
+                  onPress={() => {
+                    impact(Haptics.ImpactFeedbackStyle.Light);
+                    setSelectedCandidateId(c.id);
+                  }}
+                  style={[
+                    styles.candChip,
+                    {
+                      backgroundColor: active ? colors.primary : colors.surface,
+                      borderColor: active ? colors.primary : colors.border,
+                    },
+                  ]}
+                >
+                  <ThemedText
+                    variant="caption"
+                    color={active ? '#FFFFFF' : 'text'}
+                    fontFamily={active ? 'bold' : 'regular'}
+                  >
+                    {c.shortName ?? c.fullName.split(' ')[0]} ({c.partyAcronym})
+                  </ThemedText>
+                </Pressable>
+              );
+            })}
+          </View>
 
-        <EntranceView delay={260}>
-        <WinnerCard candidates={candidates} results={allResults} colors={colors} />
-        </EntranceView>
+          {/* Historical Baseline Dataset Tabs (Audio Part 9: 0: 2023, 1: 2019, 2: Combined) */}
+          <ThemedText variant="label" color="textSecondary" fontFamily="bold" style={{ marginTop: spacing.sm, marginBottom: 4 }}>
+            HISTORICAL BASELINE DATASET
+          </ThemedText>
+          <View style={styles.datasetTabs}>
+            {[
+              { enumVal: 0 as const, label: '2023 Election' },
+              { enumVal: 1 as const, label: '2019 Election' },
+              { enumVal: 2 as const, label: 'Combined 19+23' },
+            ].map((tab) => {
+              const active = pastDataEnum === tab.enumVal;
+              return (
+                <Pressable
+                  key={tab.enumVal}
+                  onPress={() => {
+                    impact(Haptics.ImpactFeedbackStyle.Light);
+                    setPastDataEnum(tab.enumVal);
+                  }}
+                  style={[
+                    styles.datasetTab,
+                    {
+                      backgroundColor: active ? colors.primarySubtle : colors.surface,
+                      borderColor: active ? colors.primary : colors.border,
+                    },
+                  ]}
+                >
+                  <ThemedText
+                    variant="caption"
+                    color={active ? 'primary' : 'textSecondary'}
+                    fontFamily={active ? 'bold' : 'regular'}
+                  >
+                    {tab.label}
+                  </ThemedText>
+                </Pressable>
+              );
+            })}
+          </View>
 
-        <EntranceView delay={290}>
-          <SectionHeader title="Vote Share" color={colors.accent} />
-          <Card style={shadows.md}>
-            <VoteShareBar
-              entries={(() => {
-                const totals: Record<string, number> = {};
-                let grand = 0;
-                allResults.forEach((r) => {
-                  Object.entries(r.candidateVotes).forEach(([id, v]) => {
-                    totals[id] = (totals[id] ?? 0) + (v as number);
-                    grand += v as number;
-                  });
-                });
-                return candidates.map((c) => ({
-                  id: c.id,
-                  name: c.fullName,
-                  partyAcronym: c.partyAcronym,
-                  votes: totals[c.id] ?? 0,
-                  pct: grand > 0 ? ((totals[c.id] ?? 0) / grand) * 100 : 0,
-                }));
-              })()}
-            />
+          {/* AI Projection Output Metrics */}
+          {projection && (
+            <View style={[styles.aiMetricsBox, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }]}>
+              <View style={styles.aiMetricRow}>
+                <View style={{ flex: 1 }}>
+                  <ThemedText variant="caption" color="textSecondary">PROJECTED SHARE</ThemedText>
+                  <ThemedText variant="h2" color="primary" fontFamily="bold">
+                    {projection.projectedVoteShare}%
+                  </ThemedText>
+                </View>
+                <View style={{ flex: 1, alignItems: 'flex-end' }}>
+                  <ThemedText variant="caption" color="textSecondary">HISTORICAL PARTY</ThemedText>
+                  <ThemedText variant="body" color="text" fontFamily="bold">
+                    {projection.historicalParty}
+                  </ThemedText>
+                </View>
+              </View>
+
+              <View style={[styles.insightBox, { backgroundColor: colors.primarySubtle + '40', borderColor: colors.primary + '25' }]}>
+                <Ionicons name="analytics-outline" size={16} color={colors.primary} />
+                <ThemedText variant="caption" color="text" style={{ flex: 1, marginLeft: 6 }}>
+                  {projection.keyInsights[0]}
+                </ThemedText>
+              </View>
+
+              {/* Mandatory AI Disclaimer (Audio Part 8) */}
+              <View style={styles.disclaimerRow}>
+                <Ionicons name="information-circle-outline" size={14} color={colors.textMuted} />
+                <ThemedText variant="label" color="textMuted" style={{ flex: 1, marginLeft: 4 }}>
+                  {projection.disclaimer}
+                </ThemedText>
+              </View>
+            </View>
+          )}
+        </Card>
+      </EntranceView>
+
+      {/* 5. Assigned Polling Units (Audio Part 3: Demo Agent 3 assigned PUs) */}
+      <EntranceView delay={250}>
+        <Card style={styles.sectionCard}>
+          <View style={styles.sectionHeaderRow}>
+            <View>
+              <ThemedText variant="title" color="text" fontFamily="bold">
+                My Assigned Polling Units
+              </ThemedText>
+              <ThemedText variant="caption" color="textSecondary">
+                Field agent jurisdiction · 3 Polling Units
+              </ThemedText>
+            </View>
+            <Pressable
+              onPress={() => {
+                impact(Haptics.ImpactFeedbackStyle.Light);
+                router.push(ROUTES.LOCATIONS);
+              }}
+            >
+              <ThemedText variant="caption" color="primary" fontFamily="bold">
+                View All
+              </ThemedText>
+            </Pressable>
+          </View>
+
+          <View style={{ gap: spacing.sm, marginTop: spacing.sm }}>
+            {ASSIGNED_DEMO_PUS.map((pu) => {
+              const isPub = pu.status === 'PUBLISHED';
+              const isDraft = pu.status === 'DRAFT';
+
+              return (
+                <View key={pu.id} style={[styles.puCard, { borderColor: colors.border }]}>
+                  <View style={styles.puTopRow}>
+                    <View style={{ flex: 1 }}>
+                      <ThemedText variant="body" color="text" fontFamily="bold">
+                        {pu.name}
+                      </ThemedText>
+                      <ThemedText variant="caption" color="textSecondary">
+                        {pu.code} · {pu.lga}, {pu.state}
+                      </ThemedText>
+                    </View>
+
+                    <View
+                      style={[
+                        styles.puStatusBadge,
+                        {
+                          backgroundColor: isPub
+                            ? colors.successSubtle
+                            : isDraft
+                              ? colors.warningSubtle
+                              : colors.borderSubtle,
+                        },
+                      ]}
+                    >
+                      <Ionicons
+                        name={isPub ? 'checkmark-circle' : isDraft ? 'time' : 'radio-button-off'}
+                        size={12}
+                        color={isPub ? colors.success : isDraft ? colors.warning : colors.textMuted}
+                      />
+                      <ThemedText
+                        variant="label"
+                        fontFamily="bold"
+                        style={{
+                          marginLeft: 4,
+                          color: isPub ? colors.success : isDraft ? colors.warning : colors.textMuted,
+                        }}
+                      >
+                        {pu.status}
+                      </ThemedText>
+                    </View>
+                  </View>
+
+                  <View style={styles.puBottomRow}>
+                    <ThemedText variant="caption" color="textSecondary">
+                      {isPub ? `${pu.votes} Votes tallied (${pu.accredited} accredited)` : isDraft ? 'Draft saved in local store' : 'Awaiting accredited ballot entry'}
+                    </ThemedText>
+
+                    <Pressable
+                      onPress={() => {
+                        impact(Haptics.ImpactFeedbackStyle.Medium);
+                        if (isPub) {
+                          router.push({ pathname: ROUTES.RESULT_DETAIL, params: { id: 'r1' } });
+                        } else if (isDraft) {
+                          router.push(ROUTES.RESULT_DRAFTS);
+                        } else {
+                          router.push({ pathname: ROUTES.RESULT_SUBMIT, params: { puId: pu.id, puName: pu.name } });
+                        }
+                      }}
+                      style={[
+                        styles.puActionBtn,
+                        { backgroundColor: isPub ? colors.borderSubtle : colors.primary },
+                      ]}
+                    >
+                      <ThemedText
+                        variant="caption"
+                        color={isPub ? 'text' : '#FFFFFF'}
+                        fontFamily="bold"
+                      >
+                        {isPub ? 'View' : isDraft ? 'Resume' : 'Submit'}
+                      </ThemedText>
+                      <Ionicons
+                        name="chevron-forward"
+                        size={12}
+                        color={isPub ? colors.text : '#FFFFFF'}
+                      />
+                    </Pressable>
+                  </View>
+                </View>
+              );
+            })}
+          </View>
+        </Card>
+      </EntranceView>
+
+      {/* 6. Quick Actions Grid */}
+      <EntranceView delay={300}>
+        <View style={styles.quickGrid}>
+          <Pressable
+            onPress={() => {
+              impact(Haptics.ImpactFeedbackStyle.Medium);
+              router.push(ROUTES.RESULT_SUBMIT);
+            }}
+            style={[styles.quickCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
+          >
+            <View style={[styles.quickIconWrap, { backgroundColor: colors.primary + '18' }]}>
+              <Ionicons name="add-circle" size={22} color={colors.primary} />
+            </View>
+            <ThemedText variant="body" color="text" fontFamily="bold" style={{ marginTop: spacing.xs }}>
+              Enter Results
+            </ThemedText>
+            <ThemedText variant="caption" color="textSecondary">
+              PU ballot return
+            </ThemedText>
+          </Pressable>
+
+          <Pressable
+            onPress={() => {
+              impact(Haptics.ImpactFeedbackStyle.Medium);
+              router.push(ROUTES.INCIDENT_REPORT);
+            }}
+            style={[styles.quickCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
+          >
+            <View style={[styles.quickIconWrap, { backgroundColor: colors.critical + '18' }]}>
+              <Ionicons name="warning" size={22} color={colors.critical} />
+            </View>
+            <ThemedText variant="body" color="text" fontFamily="bold" style={{ marginTop: spacing.xs }}>
+              Report Incident
+            </ThemedText>
+            <ThemedText variant="caption" color="textSecondary">
+              Live covert filing
+            </ThemedText>
+          </Pressable>
+
+          <Pressable
+            onPress={() => {
+              impact(Haptics.ImpactFeedbackStyle.Medium);
+              router.push(ROUTES.RESULT_COLLATION);
+            }}
+            style={[styles.quickCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
+          >
+            <View style={[styles.quickIconWrap, { backgroundColor: colors.accent + '18' }]}>
+              <Ionicons name="bar-chart" size={22} color={colors.accentDark} />
+            </View>
+            <ThemedText variant="body" color="text" fontFamily="bold" style={{ marginTop: spacing.xs }}>
+              Collation Room
+            </ThemedText>
+            <ThemedText variant="caption" color="textSecondary">
+              Wards & LGA summary
+            </ThemedText>
+          </Pressable>
+
+          <Pressable
+            onPress={() => {
+              impact(Haptics.ImpactFeedbackStyle.Medium);
+              router.push(ROUTES.LOCATIONS);
+            }}
+            style={[styles.quickCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
+          >
+            <View style={[styles.quickIconWrap, { backgroundColor: colors.primary + '18' }]}>
+              <Ionicons name="map" size={22} color={colors.primary} />
+            </View>
+            <ThemedText variant="body" color="text" fontFamily="bold" style={{ marginTop: spacing.xs }}>
+              Locations
+            </ThemedText>
+            <ThemedText variant="caption" color="textSecondary">
+              Search hierarchy
+            </ThemedText>
+          </Pressable>
+        </View>
+      </EntranceView>
+
+      {/* 7. Recent Incidents Marquee */}
+      {incidents.length > 0 && (
+        <EntranceView delay={350}>
+          <Card style={styles.sectionCard}>
+            <View style={styles.sectionHeaderRow}>
+              <View>
+                <ThemedText variant="title" color="text" fontFamily="bold">
+                  Field Incident Stream
+                </ThemedText>
+                <ThemedText variant="caption" color="textSecondary">
+                  {incidents.length} security & logistical issues logged
+                </ThemedText>
+              </View>
+              <Pressable
+                onPress={() => {
+                  impact(Haptics.ImpactFeedbackStyle.Light);
+                  router.push(ROUTES.INCIDENTS_TAB);
+                }}
+              >
+                <ThemedText variant="caption" color="primary" fontFamily="bold">
+                  View All
+                </ThemedText>
+              </Pressable>
+            </View>
+            <View style={{ marginTop: spacing.xs }}>
+              <IncidentMarquee incidents={incidents} />
+            </View>
           </Card>
         </EntranceView>
-
-        <EntranceView delay={320}>
-        <WatchCandidateCard candidates={candidates} colors={colors} />
-        </EntranceView>
-
-        {isFieldAgent && (
-          <View>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.sm }}>
-              <View style={[styles.sectionIndicator, { backgroundColor: colors.primary }]} />
-              <ThemedText variant="h3" style={{ flex: 1 }} minFontSize={16} maxFontSize={22}>Your Locations</ThemedText>
-            </View>
-            <ThemedText variant="body" color="textSecondary" style={{ marginBottom: spacing.md }}>
-              Results aggregated across all your assigned polling units
-            </ThemedText>
-            {allResults.length === 0 ? (
-              <EmptyState icon="location-outline" title="No Results" subtitle="No results for your assigned locations yet" />
-            ) : (
-              allResults.slice(0, 5).map((r) => (
-                <Card key={r.id} style={[shadows.sm, { marginBottom: spacing.md }]}>
-                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <View>
-                      <ThemedText variant="body" style={{ fontWeight: '600' }}>{r.pollingUnitName}</ThemedText>
-                      <ThemedText variant="caption" color="textSecondary">{r.totalVotesCast.toLocaleString()} votes · {r.status}</ThemedText>
-                    </View>
-                    <View style={[styles.statusDot, { backgroundColor: resultStatusColor(r.status, scheme) }]} />
-                  </View>
-                </Card>
-              ))
-            )}
-          </View>
-        )}
-
-        <EntranceView delay={380}>
-        <SectionHeader title="Upcoming Elections" />
-        </EntranceView>
-        {loading ? (
-          <View style={{ gap: spacing.md, paddingBottom: spacing.md }}>
-            <SkeletonCard />
-            <SkeletonCard />
-            <SkeletonCard />
-          </View>
-        ) : elections.length === 0 ? (
-          <EmptyState icon="calendar-outline" title="No Elections" subtitle="No elections configured yet" />
-        ) : (
-          <View style={{ gap: spacing.md }}>
-            {elections.map((election) => (
-              <Card key={election.id} pressable onPress={() => router.push({ pathname: ROUTES.ELECTION_DETAIL, params: { id: election.id } })} style={shadows.sm}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.xs }}>
-                  <View style={[styles.electionIcon, { backgroundColor: colors.primary + '12' }]}>
-                    <Ionicons name="calendar-outline" size={18} color={colors.primary} />
-                  </View>
-                  <View style={{ flex: 1 }}>
-                    <ThemedText variant="body" style={{ fontWeight: '600' }}>
-                      {election.position} - {election.electoralArea}
-                    </ThemedText>
-                    <ThemedText variant="caption" color="textSecondary" style={{ marginTop: spacing.xs }}>
-                      {election.electionDate} · {election.status}
-                    </ThemedText>
-                  </View>
-                </View>
-              </Card>
-            ))}
-          </View>
-        )}
-
-        <EntranceView delay={440}>
-        <SectionHeader title="Recent Incidents" color={colors.accent} />
-        </EntranceView>
-        {recentIncidents.length === 0 ? (
-          <EmptyState icon="shield-checkmark-outline" title="No Incidents" subtitle="All clear — no incidents reported" />
-        ) : (
-          recentIncidents.map((incident) => {
-            const sevKey = incident.severity === 'CRITICAL' ? 'CRITICAL' : incident.severity;
-            return (
-              <Card key={incident.id} style={[shadows.sm, { marginBottom: spacing.md }]}>
-                <View style={styles.row}>
-                  <View style={[styles.severityDot, { backgroundColor: colors[severityColors[sevKey] as keyof typeof Colors.light] as any }]} />
-                  <View style={{ flex: 1 }}>
-                    <ThemedText variant="body" style={{ fontWeight: '600' }}>
-                      {incident.category.replace(/_/g, ' ')}
-                    </ThemedText>
-                    <ThemedText variant="caption" color="textSecondary">
-                      {incident.electoralArea} · {new Date(incident.reportedAt).toLocaleDateString()}
-                    </ThemedText>
-                  </View>
-                  <View style={[styles.severityBadge, { backgroundColor: (colors[severityColors[sevKey] as keyof typeof Colors.light] as any) + '20' }]}>
-                    <ThemedText variant="caption" style={{ color: colors[severityColors[sevKey] as keyof typeof Colors.light] as any, fontWeight: '600' }}>
-                      {incident.severity}
-                    </ThemedText>
-                  </View>
-                </View>
-              </Card>
-            );
-          })
-        )}
-
-        <EntranceView delay={500}>
-        <QuickActions colors={colors} electionId={elections[0]?.id} />
-        </EntranceView>
-      </View>
+      )}
     </ScreenView>
   );
 }
 
 const styles = StyleSheet.create({
-  welcomeWrap: { marginTop: spacing.md, borderRadius: radius.xl, overflow: 'hidden' },
-  welcomeGradient: { paddingVertical: spacing.xxl, paddingHorizontal: spacing.lg },
-  statCard: { width: sizes.statCard },
-  gradientIconWrap: { overflow: 'hidden' },
-  gradientIconBg: { width: 48, height: 48, borderRadius: radius.md, alignItems: 'center', justifyContent: 'center' },
-  progressTrack: { height: spacing.sm, borderRadius: radius.sm, overflow: 'hidden' },
-  progressFill: { height: '100%', borderRadius: radius.sm },
-  severityDot: { width: spacing.sm, height: spacing.sm, borderRadius: radius.sm },
-  severityBadge: { paddingHorizontal: spacing.sm, paddingVertical: spacing.xs, borderRadius: radius.full },
-  row: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
-  quickActionCard: { flex: 1 },
-  quickActionIcon: { width: 40, height: 40, borderRadius: radius.md, alignItems: 'center', justifyContent: 'center' },
-  puIcon: { width: 40, height: 40, borderRadius: radius.full, alignItems: 'center', justifyContent: 'center' },
-  winnerBadge: { width: 48, height: 48, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
-  statusDot: { width: spacing.sm, height: spacing.sm, borderRadius: radius.full },
-  sectionIndicator: { width: 4, height: 16, borderRadius: radius.full },
-  electionIcon: { width: 36, height: 36, borderRadius: radius.md, alignItems: 'center', justifyContent: 'center' },
+  scrollContent: {
+    paddingHorizontal: spacing.md,
+    paddingBottom: spacing.xxl,
+    gap: spacing.md,
+  },
+  consoleHeader: {
+    padding: spacing.md,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    backgroundColor: 'rgba(13, 99, 56, 0.04)',
+    ...shadows.sm,
+  },
+  consoleTopRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+  },
+  orgTagRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  orgDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  pulseBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: radius.full,
+    borderWidth: 1,
+  },
+  pulseDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginRight: 6,
+  },
+  tickerStatsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: spacing.md,
+    paddingTop: spacing.sm,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(0,0,0,0.06)',
+  },
+  tickerStatItem: {
+    flex: 1,
+  },
+  statDivider: {
+    width: 1,
+    height: 28,
+    backgroundColor: 'rgba(0,0,0,0.08)',
+    marginHorizontal: spacing.xs,
+  },
+  draftAlertCard: {
+    padding: spacing.md,
+    borderRadius: radius.lg,
+    borderWidth: 1.5,
+    ...shadows.md,
+  },
+  draftAlertContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  draftAlertIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: radius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: spacing.sm,
+  },
+  actionPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: radius.full,
+    gap: 4,
+  },
+  sectionCard: {
+    padding: spacing.md,
+    borderRadius: radius.lg,
+    ...shadows.sm,
+  },
+  sectionHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: spacing.xs,
+  },
+  winnerBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: radius.full,
+  },
+  candidateRowCard: {
+    padding: spacing.sm,
+    borderRadius: radius.md,
+    borderWidth: 1,
+  },
+  candHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  candLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  rankTag: {
+    width: 28,
+    height: 28,
+    borderRadius: radius.sm,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  partyBadgeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 2,
+  },
+  partyPill: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: radius.xs,
+  },
+  progressBarTrack: {
+    height: 6,
+    borderRadius: 3,
+    marginTop: spacing.xs,
+    overflow: 'hidden',
+  },
+  progressBarFill: {
+    height: '100%',
+    borderRadius: 3,
+  },
+  aiCard: {
+    padding: spacing.md,
+    borderRadius: radius.lg,
+    borderWidth: 1.5,
+    ...shadows.md,
+  },
+  aiHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  aiTitleBlock: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  aiIconBadge: {
+    width: 36,
+    height: 36,
+    borderRadius: radius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  probBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: radius.full,
+  },
+  candChipsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+  },
+  candChip: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: radius.full,
+    borderWidth: 1,
+  },
+  datasetTabs: {
+    flexDirection: 'row',
+    gap: 6,
+  },
+  datasetTab: {
+    flex: 1,
+    paddingVertical: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: radius.sm,
+    borderWidth: 1,
+  },
+  aiMetricsBox: {
+    marginTop: spacing.md,
+    padding: spacing.sm,
+    borderRadius: radius.md,
+    borderWidth: 1,
+  },
+  aiMetricRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: spacing.xs,
+  },
+  insightBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: spacing.sm,
+    borderRadius: radius.sm,
+    borderWidth: 1,
+    marginTop: spacing.xs,
+  },
+  disclaimerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: spacing.xs,
+  },
+  puCard: {
+    padding: spacing.sm,
+    borderRadius: radius.md,
+    borderWidth: 1,
+  },
+  puTopRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+  },
+  puStatusBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: radius.full,
+  },
+  puBottomRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: spacing.xs,
+    paddingTop: spacing.xs,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(0,0,0,0.05)',
+  },
+  puActionBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: radius.full,
+    gap: 2,
+  },
+  quickGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+  },
+  quickCard: {
+    width: '48%',
+    padding: spacing.md,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    ...shadows.sm,
+  },
+  quickIconWrap: {
+    width: 40,
+    height: 40,
+    borderRadius: radius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
 });
