@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { ScrollView, View, Platform, KeyboardAvoidingView, Alert, StyleSheet, Pressable } from 'react-native';
 import { useAudioRecorder, useAudioRecorderState, AudioModule, RecordingPresets, setAudioModeAsync } from 'expo-audio';
 import * as ImagePicker from 'expo-image-picker';
@@ -34,6 +34,17 @@ export default function ReportIncidentScreen() {
   const [selectedPuId, setSelectedPuId] = useState(preselectedPuId ?? '');
   const [selectedPuName, setSelectedPuName] = useState(preselectedPuName ?? '');
   const [mediaUris, setMediaUris] = useState<string[]>([]);
+
+  const addMediaUris = useCallback((newUris: (string | null | undefined)[]) => {
+    const valid = newUris.filter((u): u is string => typeof u === 'string' && u.length > 0);
+    setMediaUris((prev) => {
+      const next = [...prev];
+      valid.forEach((u) => {
+        if (!next.includes(u)) next.push(u);
+      });
+      return next;
+    });
+  }, []);
   const [submitting, setSubmitting] = useState(false);
   const [recordingUri, setRecordingUri] = useState<string | null>(null);
   const [audioChunks, setAudioChunks] = useState<{ uri: string; durationSec: number; chunkIndex: number; latitude: number; longitude: number }[]>([]);
@@ -98,7 +109,7 @@ export default function ReportIncidentScreen() {
           };
           chunkIndexRef.current += 1;
           setAudioChunks((prev) => [...prev, chunk]);
-          setMediaUris((prev) => [...prev, uri]);
+          addMediaUris([uri]);
         }
         if (chunkIndexRef.current < MAX_CHUNKS) {
           await setAudioModeAsync({ playsInSilentMode: true, allowsRecording: true, allowsBackgroundRecording: true });
@@ -206,7 +217,7 @@ export default function ReportIncidentScreen() {
           longitude: deviceCoords?.longitude ?? 3.350,
         };
         setAudioChunks((prev) => [...prev, chunk]);
-        setMediaUris((prev) => [...prev, uri]);
+        addMediaUris([uri]);
       }
     } catch (error) {
       console.error('Failed to stop recording:', error);
@@ -227,7 +238,7 @@ export default function ReportIncidentScreen() {
     try {
       const result = await ImagePicker.launchCameraAsync({ quality: 0.8 });
       if (!result.canceled) {
-        setMediaUris((prev) => [...prev, ...result.assets.map((a) => a.uri)]);
+        addMediaUris(result.assets.map((a) => a.uri));
       }
     } catch (error) {
       console.error('Error taking photo:', error);
@@ -245,7 +256,7 @@ export default function ReportIncidentScreen() {
         quality: 0.8,
       });
       if (!result.canceled) {
-        setMediaUris((prev) => [...prev, ...result.assets.map((a) => a.uri)]);
+        addMediaUris(result.assets.map((a) => a.uri));
       }
     } catch (error) {
       console.error('Error recording video:', error);
@@ -331,13 +342,8 @@ export default function ReportIncidentScreen() {
           keyboardDismissMode="on-drag"
           contentInsetAdjustmentBehavior="automatic"
           automaticallyAdjustKeyboardInsets={true}
-          contentContainerStyle={{ paddingBottom: spacing.xxl }}
+          contentContainerStyle={{ paddingBottom: spacing.xxl, paddingTop: spacing.xs }}
         >
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.lg }}>
-            <View style={[styles.titleIndicator, { backgroundColor: colors.critical }]} />
-            <ThemedText variant="h2" style={{ flex: 1 }}>Report Incident</ThemedText>
-          </View>
-
           {/* Location Scope: Specific Polling Unit vs Area-Wide Incident */}
           <ThemedText variant="label" style={{ marginBottom: spacing.xs }}>
             Incident Location Scope
@@ -489,32 +495,37 @@ export default function ReportIncidentScreen() {
                 {mediaUris.length} file{mediaUris.length !== 1 ? 's' : ''} attached
               </ThemedText>
               <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm }}>
-                {mediaUris
-                  .filter((u): u is string => typeof u === 'string' && u.length > 0)
-                  .map((uri, idx) => {
-                    const fileName = uri.includes('/') ? uri.split('/').pop() || `file-${idx + 1}` : uri;
-                    return (
-                      <View
-                        key={`media-${idx}-${uri.slice(-16)}`}
-                        style={[
-                          styles.mediaChip,
-                          { backgroundColor: colors.surfaceElevated, borderColor: colors.border },
-                        ]}
+                {mediaUris.map((uri, idx) => {
+                  const filename = typeof uri === 'string' && uri.includes('/') ? uri.split('/').pop() : `attachment-${idx + 1}`;
+                  return (
+                    <View
+                      key={`media-${idx}-${typeof uri === 'string' ? uri.slice(-12) : idx}`}
+                      style={{
+                        backgroundColor: colors.surface,
+                        borderColor: colors.border,
+                        borderWidth: 1,
+                        borderRadius: radius.md,
+                        paddingVertical: 6,
+                        paddingHorizontal: spacing.sm,
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        gap: spacing.xs,
+                      }}
+                    >
+                      <Ionicons name="attach" size={14} color={colors.primary} />
+                      <ThemedText variant="caption" color="text" numberOfLines={1} style={{ maxWidth: 120 }}>
+                        {filename || `file-${idx + 1}`}
+                      </ThemedText>
+                      <Pressable
+                        hitSlop={8}
+                        onPress={() => handleRemoveMedia(uri)}
+                        style={{ marginLeft: 2 }}
                       >
-                        <Ionicons name="document-attach-outline" size={14} color={colors.primary} />
-                        <ThemedText variant="caption" color="textSecondary" numberOfLines={1} style={{ maxWidth: 120 }}>
-                          {fileName}
-                        </ThemedText>
-                        <Pressable
-                          hitSlop={8}
-                          onPress={() => handleRemoveMedia(uri)}
-                          style={{ padding: 2 }}
-                        >
-                          <Ionicons name="close-circle" size={16} color={colors.textMuted} />
-                        </Pressable>
-                      </View>
-                    );
-                  })}
+                        <Ionicons name="close-circle" size={16} color={colors.textMuted} />
+                      </Pressable>
+                    </View>
+                  );
+                })}
               </View>
             </View>
           )}
@@ -531,13 +542,4 @@ export default function ReportIncidentScreen() {
 
 const styles = StyleSheet.create({
   titleIndicator: { width: 4, height: 20, borderRadius: radius.full },
-  mediaChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xs,
-    paddingVertical: 4,
-    paddingHorizontal: 8,
-    borderRadius: radius.full,
-    borderWidth: 1,
-  },
 });

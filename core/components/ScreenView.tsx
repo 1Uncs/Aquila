@@ -44,9 +44,10 @@ export function ScreenView({
   let resolvedTopPadding = 0;
   if (!skipTopSafeArea) {
     if (hasNoNativeHeader) {
-      // Screens with headerShown: false (auth, tabs) apply safe area insets on baseStyle
-      // so all tabs and auth screens start right below the status bar consistently across iOS & Android
-      if (!skipAndroidTopPadding) {
+      // Headerless screens (auth, tabs): if non-scrollable, apply insets.top on both iOS & Android so header is never covered
+      if (!scrollable) {
+        resolvedTopPadding = insets.top;
+      } else if (Platform.OS === 'android' && !skipAndroidTopPadding) {
         resolvedTopPadding = insets.top;
       }
     } else {
@@ -76,7 +77,7 @@ export function ScreenView({
         ? {}
         : {
             paddingHorizontal: spacing.screen.paddingHorizontal,
-            paddingTop: isTab ? spacing.xs : spacing.screen.padding,
+            paddingTop: isTab ? (Platform.OS === 'ios' ? insets.top + spacing.xs : spacing.xs) : spacing.screen.padding,
           },
       isTab ? { paddingBottom: Math.max(spacing.screen.padding, insets.bottom + 84) } : {},
       contentContainerStyle,
