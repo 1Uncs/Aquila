@@ -3,7 +3,7 @@ import { ScrollView, View, Platform, KeyboardAvoidingView, Alert, StyleSheet, Pr
 import { useAudioRecorder, useAudioRecorderState, AudioModule, RecordingPresets, setAudioModeAsync } from 'expo-audio';
 import * as ImagePicker from 'expo-image-picker';
 import { ScreenView } from '@/core/components/ScreenView';
-import { ThemedText, Input, Button, Card, ScreenHeader } from '@/core/components';
+import { ThemedText, Input, Button, Card } from '@/core/components';
 import { IncidentReport } from '@/features/auth/store';
 import { useIncidentsStore, useAuthStore } from '@/features/auth/store';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -331,15 +331,7 @@ export default function ReportIncidentScreen() {
   }
 
   return (
-    <ScreenView
-      header={
-        <ScreenHeader
-          title="Report Incident"
-          subtitle={selectedPuName ? `Station: ${selectedPuName}` : 'Field Evidence & Geotagged Memo'}
-          showBack
-        />
-      }
-    >
+    <ScreenView>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         enabled={Platform.OS === 'ios'}

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Platform, KeyboardAvoidingView, ScrollView, StyleSheet, Alert, Pressable } from 'react-native';
 import { ScreenView } from '@/core/components/ScreenView';
-import { ThemedText, Button, Input, Card, ScreenHeader } from '@/core/components';
+import { ThemedText, Button, Input, Card } from '@/core/components';
 import { useResultsStore, useAuthStore, ResultSubmission } from '@/features/auth/store';
 import { router, useLocalSearchParams } from 'expo-router';
 import { spacing, shadows, radius, border } from '@/constants/tokens';
@@ -258,17 +258,7 @@ export default function SubmitResultScreen() {
   }
 
   return (
-    <ScreenView
-      scrollable
-      header={
-        <ScreenHeader
-          title={draftId ? 'Edit Result Draft' : 'Submit Result'}
-          subtitle={resolvedPuName || 'Official EC8A Form'}
-          showBack
-        />
-      }
-      contentContainerStyle={styles.scrollContent}
-    >
+    <ScreenView scrollable contentContainerStyle={styles.scrollContent}>
       {/* Polling Unit Selector / Display */}
       <Card style={styles.sectionCard}>
         <ThemedText variant="label" color="textMuted" fontFamily="bold">

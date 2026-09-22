@@ -14,7 +14,6 @@ import { RootErrorBoundary } from '@/core/components/ErrorBoundary';
 import { mockApi } from '@/features/elections/service';
 import { ResultSubmission } from '@/features/auth/store';
 import { fontMap } from '@/constants/fonts';
-import * as SystemUI from 'expo-system-ui';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
 
 SplashScreen.preventAutoHideAsync();
@@ -29,9 +28,6 @@ export default function RootLayout() {
   const scheme = useColorScheme() ?? 'light';
   const rootBg = scheme === 'dark' ? '#070C09' : '#F8FAF9';
 
-  useEffect(() => {
-    SystemUI.setBackgroundColorAsync(rootBg).catch(() => {});
-  }, [rootBg]);
 
   useEffect(() => {
     if (fontsLoaded || fontError) {

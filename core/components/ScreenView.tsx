@@ -7,7 +7,6 @@ import { spacing } from '@/constants/tokens';
 
 type ScreenViewProps = {
   children: React.ReactNode;
-  header?: React.ReactNode;
   style?: ViewStyle;
   contentContainerStyle?: ViewStyle;
   scrollable?: boolean;
@@ -22,7 +21,6 @@ type ScreenViewProps = {
 
 export function ScreenView({
   children,
-  header,
   style,
   contentContainerStyle,
   scrollable = false,
@@ -44,11 +42,23 @@ export function ScreenView({
   const hasNoNativeHeader = isTab || isAuth;
 
   let resolvedTopPadding = 0;
-  if (!skipTopSafeArea && !header) {
-    if (!scrollable) {
-      resolvedTopPadding = insets.top;
-    } else if (Platform.OS === 'android' && !skipAndroidTopPadding) {
-      resolvedTopPadding = insets.top;
+  if (!skipTopSafeArea) {
+    if (hasNoNativeHeader) {
+      // Headerless screens (auth, tabs): if non-scrollable, apply insets.top on both iOS & Android so header is never covered
+      if (!scrollable) {
+        resolvedTopPadding = insets.top;
+      } else if (Platform.OS === 'android' && !skipAndroidTopPadding) {
+        resolvedTopPadding = insets.top;
+      }
+    } else {
+      // Push screens on iOS with headerTransparent: true
+      if (Platform.OS === 'ios') {
+        if (!scrollable) {
+          // Non-scrollable push screens need padding so content starts below transparent header
+          resolvedTopPadding = insets.top + 44;
+        }
+        // Scrollable push screens use contentInsetAdjustmentBehavior="automatic" so content scrolls natively under header!
+      }
     }
   }
 
@@ -67,7 +77,7 @@ export function ScreenView({
         ? {}
         : {
             paddingHorizontal: spacing.screen.paddingHorizontal,
-            paddingTop: !header && Platform.OS === 'ios' ? insets.top + spacing.xs : spacing.xs,
+            paddingTop: isTab ? (Platform.OS === 'ios' ? insets.top + spacing.xs : spacing.xs) : spacing.screen.padding,
           },
       isTab ? { paddingBottom: Math.max(spacing.screen.padding, insets.bottom + 84) } : {},
       contentContainerStyle,
@@ -75,7 +85,7 @@ export function ScreenView({
 
     const scrollViewProps: ScrollViewProps = {
       contentContainerStyle: scrollContentStyle,
-      contentInsetAdjustmentBehavior: 'never',
+      contentInsetAdjustmentBehavior: Platform.OS === 'ios' && !hasNoNativeHeader ? 'automatic' : 'never',
       keyboardShouldPersistTaps: keyboardShouldPersistTaps,
       bounces: true,
       overScrollMode: 'always',
@@ -87,7 +97,6 @@ export function ScreenView({
 
     return (
       <View style={[baseStyle, style]} testID={testID} collapsable={false}>
-        {header}
         <ScrollView style={styles.scrollView} {...scrollViewProps}>
           {children}
         </ScrollView>
@@ -97,7 +106,6 @@ export function ScreenView({
 
   return (
     <View style={[baseStyle, style]} testID={testID}>
-      {header}
       <View
         style={[
           styles.nonScrollContainer,

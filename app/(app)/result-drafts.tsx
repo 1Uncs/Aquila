@@ -2,7 +2,7 @@ import React from 'react';
 import { StyleSheet, View, Alert, Pressable } from 'react-native';
 import { router } from 'expo-router';
 import { ScreenView } from '@/core/components/ScreenView';
-import { ThemedText, EmptyState, Button, Card, ScreenHeader } from '@/core/components';
+import { ThemedText, EmptyState, Button, Card } from '@/core/components';
 import { ROUTES } from '@/constants/routes';
 import { spacing, radius, shadows, border } from '@/constants/tokens';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
@@ -61,17 +61,23 @@ export default function ResultDraftsScreen() {
   };
 
   return (
-    <ScreenView
-      scrollable
-      header={
-        <ScreenHeader
-          title="Drafts Queue"
-          subtitle={`${drafts.length} unpublished ballot return${drafts.length === 1 ? '' : 's'}`}
-          showBack
-        />
-      }
-      contentContainerStyle={styles.scrollContent}
-    >
+    <ScreenView scrollable contentContainerStyle={styles.scrollContent}>
+      {/* Header Banner */}
+      <Card style={styles.headerCard}>
+        <View style={styles.headerRow}>
+          <View style={[styles.headerIconWrap, { backgroundColor: colors.warningSubtle }]}>
+            <Ionicons name="document-text" size={24} color={colors.warning} />
+          </View>
+          <View style={{ flex: 1, marginLeft: spacing.sm }}>
+            <ThemedText variant="title" color="text" fontFamily="bold">
+              Draft Results Queue
+            </ThemedText>
+            <ThemedText variant="caption" color="textSecondary">
+              {drafts.length} incomplete or unpublished ballot return{drafts.length === 1 ? '' : 's'}
+            </ThemedText>
+          </View>
+        </View>
+      </Card>
 
       {drafts.length === 0 ? (
         <EmptyState

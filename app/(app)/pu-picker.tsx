@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { View, StyleSheet, Pressable, FlatList } from 'react-native';
 import { ScreenView } from '@/core/components/ScreenView';
-import { ThemedText, Card, EmptyState, Input, ScreenHeader } from '@/core/components';
+import { ThemedText, Card, EmptyState, Input } from '@/core/components';
 import { router, useLocalSearchParams } from 'expo-router';
 import { spacing, radius, shadows, border } from '@/constants/tokens';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
@@ -94,20 +94,14 @@ export default function PUPickerScreen() {
   }, [colors, lgaMap, stateMap]);
 
   return (
-    <ScreenView
-      scrollable={false}
-      noScrollPadding
-      header={
-        <ScreenHeader
-          title="Select Polling Unit"
-          subtitle={mode === 'incident' ? 'Tie incident to specific polling unit' : 'Select PU for EC8A return'}
-          showBack
-        />
-      }
-    >
+    <ScreenView scrollable={false} noScrollPadding>
       <View style={styles.container}>
         {/* Header Search Section */}
         <View style={styles.headerBlock}>
+          <ThemedText variant="caption" color="textSecondary" style={{ marginBottom: spacing.sm }}>
+            {mode === 'incident' ? 'Link incident evidence to a specific polling unit' : 'Select polling unit to record EC8A ballots'}
+          </ThemedText>
+
           <Input
             placeholder="Type name, code (e.g. PU/001), or LGA..."
             value={search}
@@ -118,7 +112,7 @@ export default function PUPickerScreen() {
           />
         </View>
 
-        {/* Native FlatList */}
+        {/* Unnested Native FlatList */}
         <FlatList
           data={filtered}
           keyExtractor={(item) => item.id}

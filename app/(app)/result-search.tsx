@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { StyleSheet, View, FlatList } from 'react-native';
 import { router } from 'expo-router';
 import { ScreenView } from '@/core/components/ScreenView';
-import { ThemedText, EmptyState, Card, Input, ScreenHeader } from '@/core/components';
+import { ThemedText, EmptyState, Card, Input } from '@/core/components';
 import { useResultsQuery } from '@/features/elections/hooks';
 import { ROUTES } from '@/constants/routes';
 import { spacing, radius, shadows, border } from '@/constants/tokens';
@@ -35,19 +35,16 @@ export default function ResultSearchScreen() {
   }, [query, results]);
 
   return (
-    <ScreenView
-      scrollable={false}
-      noScrollPadding
-      header={
-        <ScreenHeader
-          title="Search Results"
-          subtitle="Filter verified returns by Polling Unit"
-          showBack
-        />
-      }
-    >
+    <ScreenView scrollable={false} noScrollPadding>
       <View style={styles.container}>
         <View style={styles.headerBlock}>
+          <ThemedText variant="title" color="text" fontFamily="bold">
+            Search Ballot Returns
+          </ThemedText>
+          <ThemedText variant="caption" color="textSecondary" style={{ marginBottom: spacing.sm }}>
+            Filter verified returns by Polling Unit name or code
+          </ThemedText>
+
           <Input
             placeholder="Type PU name or code (e.g. Alausa, Ikeja)..."
             value={query}

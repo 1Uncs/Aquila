@@ -3,7 +3,7 @@ import { StyleSheet, View, Alert, Pressable } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router, useLocalSearchParams } from 'expo-router';
 import { ScreenView } from '@/core/components/ScreenView';
-import { ThemedText, EmptyState, Button, Card, ScreenHeader } from '@/core/components';
+import { ThemedText, EmptyState, Button, Card } from '@/core/components';
 import { useResultsQuery, useCandidatesQuery } from '@/features/elections/hooks';
 import { spacing, radius, shadows, border } from '@/constants/tokens';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
@@ -75,13 +75,6 @@ export default function ResultCollationScreen() {
   return (
     <ScreenView
       scrollable
-      header={
-        <ScreenHeader
-          title="Result Collation"
-          subtitle="National Collation Room"
-          showBack
-        />
-      }
       refreshControl={refreshControl}
       contentContainerStyle={styles.scrollContent}
     >

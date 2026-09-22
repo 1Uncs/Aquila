@@ -267,7 +267,7 @@ export default function IncidentsScreen() {
           </ScrollView>
         </View>
 
-        {/* Unnested FlatList */}
+        {/* Native FlatList */}
         <FlatList
           data={filtered}
           keyExtractor={(item) => item.id}
