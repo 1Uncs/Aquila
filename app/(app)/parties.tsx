@@ -1,15 +1,14 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, Pressable, ScrollView, FlatList } from 'react-native';
 import { ScreenView } from '@/core/components/ScreenView';
-import { ThemedText, Card, EmptyState } from '@/core/components';
+import { ThemedText, Card } from '@/core/components';
 import { Ionicons } from '@expo/vector-icons';
 import { usePartiesQuery, useCandidatesQuery } from '@/features/elections/hooks';
-import { spacing, radius, shadows, border } from '@/constants/tokens';
+import { spacing, radius, shadows } from '@/constants/tokens';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
 import { useStatusBar } from '@/core/hooks/useStatusBar';
 import { useRefreshControl, useForegroundRefresh, useHaptics } from '@/core/hooks';
 import Colors from '@/constants/colors';
-import { PoliticalParty } from '@/features/auth/store';
 import * as Haptics from 'expo-haptics';
 
 export default function PartiesScreen() {

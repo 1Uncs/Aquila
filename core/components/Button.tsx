@@ -14,7 +14,7 @@ import { DebouncedPressable } from './DebouncedPressable';
 import Colors from '@/constants/colors';
 import { ThemedText } from './ThemedText';
 import { Ionicons } from '@expo/vector-icons';
-import { radius, spacing, opacities, border, shadows } from '@/constants/tokens';
+import { radius, opacities, border, shadows } from '@/constants/tokens';
 
 type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost';
 

@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { View, Platform, KeyboardAvoidingView, ScrollView, StyleSheet, Alert, Pressable } from 'react-native';
+import { View, StyleSheet, Alert } from 'react-native';
 import { ScreenView } from '@/core/components/ScreenView';
 import { ThemedText, Button, Input, Card } from '@/core/components';
 import { useResultsStore, useAuthStore, ResultSubmission } from '@/features/auth/store';
 import { router, useLocalSearchParams } from 'expo-router';
-import { spacing, shadows, radius, border } from '@/constants/tokens';
+import { spacing, shadows, radius } from '@/constants/tokens';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
 import { useStatusBar } from '@/core/hooks/useStatusBar';
 import { useDeviceLocation } from '@/core/hooks/useDeviceLocation';
@@ -37,7 +37,7 @@ export default function SubmitResultScreen() {
   }>();
 
   const resolvedElectionId = electionId ?? 'e1';
-  const { data: candidates = [], isLoading: candidatesLoading } = useCandidatesQuery(resolvedElectionId);
+  const { data: candidates = [] } = useCandidatesQuery(resolvedElectionId);
   const { data: allPollingUnits = [] } = usePollingUnitsQuery();
   const { user } = useAuthStore();
   const { submissions, addSubmission, updateSubmission } = useResultsStore();

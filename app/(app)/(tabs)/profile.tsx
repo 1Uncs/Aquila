@@ -7,10 +7,9 @@ import { ThemedText, Card, Button } from '@/core/components';
 import { useAuthStore } from '@/features/auth/store';
 import { useLogoutMutation } from '@/features/auth/hooks';
 import { ROUTES } from '@/constants/routes';
-import { spacing, radius, shadows, border } from '@/constants/tokens';
+import { spacing, radius, shadows } from '@/constants/tokens';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
 import { useStatusBar } from '@/core/hooks/useStatusBar';
-import { useElectionsQuery, useResultsQuery, useIncidentsQuery } from '@/features/elections/hooks';
 import Colors from '@/constants/colors';
 import { UserRole } from '@/types';
 import { Ionicons } from '@expo/vector-icons';
@@ -19,9 +18,6 @@ import * as Haptics from 'expo-haptics';
 export default function ProfileTabScreen() {
   const { user, login } = useAuthStore();
   const logoutMutation = useLogoutMutation();
-  const { data: elections = [] } = useElectionsQuery();
-  const { data: results = [] } = useResultsQuery();
-  const { data: incidents = [] } = useIncidentsQuery();
 
   const scheme = useColorScheme() ?? 'light';
   const colors = Colors[scheme];

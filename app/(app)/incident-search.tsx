@@ -5,14 +5,13 @@ import { ScreenView } from '@/core/components/ScreenView';
 import { ThemedText, Card, EmptyState, Input } from '@/core/components';
 import { ROUTES } from '@/constants/routes';
 import { useIncidentsStore } from '@/features/auth/store';
-import { spacing, radius, shadows, border } from '@/constants/tokens';
+import { spacing, radius, shadows } from '@/constants/tokens';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
 import { useStatusBar } from '@/core/hooks/useStatusBar';
 import { useIncidentsQuery } from '@/features/elections/hooks';
-import { useRefreshControl, useForegroundRefresh, useHaptics } from '@/core/hooks';
+import { useRefreshControl, useForegroundRefresh } from '@/core/hooks';
 import Colors from '@/constants/colors';
 import { Ionicons } from '@expo/vector-icons';
-import * as Haptics from 'expo-haptics';
 
 export default function IncidentSearchScreen() {
   const { data: incidents = [], isLoading: loading, refetch } = useIncidentsQuery();
@@ -23,7 +22,6 @@ export default function IncidentSearchScreen() {
   const { refreshControl } = useRefreshControl(loading, refetch);
   useStatusBar({ barStyle: scheme === 'dark' ? 'light' : 'dark' });
   useForegroundRefresh([['incidents', 'list']], 5 * 60 * 1000);
-  const { impact } = useHaptics();
 
   const pool = useMemo(() => {
     const ids = new Set(storeIncidents.map((i) => i.id));

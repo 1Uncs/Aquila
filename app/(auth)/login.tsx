@@ -3,7 +3,7 @@ import { Platform, KeyboardAvoidingView, ScrollView, View, StyleSheet, Image, Pr
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ThemedText, Input, Button, Card } from '@/core/components';
-import { spacing, radius, shadows, border } from '@/constants/tokens';
+import { spacing, radius, shadows } from '@/constants/tokens';
 import { useLoginMutation } from '@/features/auth/hooks';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
 import { useStatusBar } from '@/core/hooks/useStatusBar';

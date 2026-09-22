@@ -1,11 +1,11 @@
 import React, { useMemo } from 'react';
-import { StyleSheet, View, ScrollView } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useLocalSearchParams, router } from 'expo-router';
 import { ScreenView } from '@/core/components/ScreenView';
 import { ThemedText, Card, EmptyState, Button } from '@/core/components';
 import { useResultsQuery, useCandidatesQuery, usePollingUnitsQuery } from '@/features/elections/hooks';
-import { spacing, radius, shadows, border } from '@/constants/tokens';
+import { spacing, radius, shadows } from '@/constants/tokens';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
 import { useStatusBar } from '@/core/hooks/useStatusBar';
 import Colors from '@/constants/colors';

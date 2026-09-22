@@ -1,18 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { View, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router, useLocalSearchParams } from 'expo-router';
 import { ScreenView } from '@/core/components/ScreenView';
 import { ThemedText, Card, EmptyState, Button } from '@/core/components';
 import { ROUTES } from '@/constants/routes';
-import { spacing, shadows, radius, border } from '@/constants/tokens';
+import { spacing, shadows, radius } from '@/constants/tokens';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
 import { useStatusBar } from '@/core/hooks/useStatusBar';
 import { useElectionDetailQuery, useCandidatesQuery } from '@/features/elections/hooks';
 import Colors from '@/constants/colors';
 import { useForegroundRefresh } from '@/core/hooks';
-import * as Haptics from 'expo-haptics';
 
 export default function ElectionDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();

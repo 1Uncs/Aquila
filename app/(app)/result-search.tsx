@@ -5,7 +5,7 @@ import { ScreenView } from '@/core/components/ScreenView';
 import { ThemedText, EmptyState, Card, Input } from '@/core/components';
 import { useResultsQuery } from '@/features/elections/hooks';
 import { ROUTES } from '@/constants/routes';
-import { spacing, radius, shadows, border } from '@/constants/tokens';
+import { spacing, radius, shadows } from '@/constants/tokens';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
 import { useStatusBar } from '@/core/hooks/useStatusBar';
 import { useRefreshControl, useForegroundRefresh, useHaptics } from '@/core/hooks';

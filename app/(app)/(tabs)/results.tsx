@@ -4,7 +4,7 @@ import { router } from 'expo-router';
 import { ScreenView } from '@/core/components/ScreenView';
 import { ThemedText, Card, EmptyState, Button } from '@/core/components';
 import { ROUTES } from '@/constants/routes';
-import { spacing, radius, shadows, border } from '@/constants/tokens';
+import { spacing, radius, shadows } from '@/constants/tokens';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
 import { useStatusBar } from '@/core/hooks/useStatusBar';
 import { useResultsQuery, useCandidatesQuery } from '@/features/elections/hooks';

@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { AppState, Platform } from 'react-native';
+import { AppState } from 'react-native';
 import { useColorScheme as _useRNColorScheme } from 'react-native';
 import { setStatusBarStyle, setStatusBarHidden } from 'expo-status-bar';
 import { useFocusEffect } from 'expo-router';

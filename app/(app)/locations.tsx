@@ -1,16 +1,15 @@
 import React, { useState } from 'react';
 import { StyleSheet, View, Pressable, ScrollView } from 'react-native';
 import { ScreenView } from '@/core/components/ScreenView';
-import { ThemedText, Card, Button, Input } from '@/core/components';
+import { ThemedText, Card, Input } from '@/core/components';
 import { Ionicons } from '@expo/vector-icons';
-import { spacing, radius, shadows, border } from '@/constants/tokens';
+import { spacing, radius, shadows } from '@/constants/tokens';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
 import { useStatusBar } from '@/core/hooks/useStatusBar';
 import {
   useStatesQuery,
   useLgasQuery,
   usePollingUnitsQuery,
-  useWardsQuery,
   useLocationSearchQuery,
 } from '@/features/elections/hooks';
 import Colors from '@/constants/colors';
@@ -21,7 +20,6 @@ export default function LocationsScreen() {
   const { data: states = [] } = useStatesQuery();
   const { data: lgas = [] } = useLgasQuery();
   const { data: pollingUnits = [] } = usePollingUnitsQuery();
-  const { data: wards = [] } = useWardsQuery();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStateId, setSelectedStateId] = useState<string | null>('s25'); // default Lagos
