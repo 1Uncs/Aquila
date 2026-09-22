@@ -44,11 +44,19 @@ export function ScreenView({
   let resolvedTopPadding = 0;
   if (!skipTopSafeArea) {
     if (hasNoNativeHeader) {
-      resolvedTopPadding = insets.top;
-    } else if (Platform.OS === 'ios' && !scrollable) {
-      resolvedTopPadding = insets.top + 44;
-    } else if (Platform.OS === 'android' && !skipAndroidTopPadding && hasNoNativeHeader) {
-      resolvedTopPadding = insets.top;
+      // Screens with headerShown: false (auth, tabs) apply insets on Android only so iOS status bar is not covered
+      if (Platform.OS === 'android' && !skipAndroidTopPadding) {
+        resolvedTopPadding = insets.top;
+      }
+    } else {
+      // Push screens on iOS with headerTransparent: true
+      if (Platform.OS === 'ios') {
+        if (!scrollable) {
+          // Non-scrollable push screens need padding so content starts below transparent header
+          resolvedTopPadding = insets.top + 44;
+        }
+        // Scrollable push screens use contentInsetAdjustmentBehavior="automatic" so content scrolls natively under header!
+      }
     }
   }
 
@@ -67,7 +75,7 @@ export function ScreenView({
         ? {}
         : {
             paddingHorizontal: spacing.screen.paddingHorizontal,
-            paddingTop: isTab ? spacing.xs : spacing.screen.padding,
+            paddingTop: isTab ? (Platform.OS === 'ios' ? insets.top + spacing.xs : spacing.xs) : spacing.screen.padding,
           },
       isTab ? { paddingBottom: Math.max(spacing.screen.padding, insets.bottom + 84) } : {},
       contentContainerStyle,
@@ -75,7 +83,7 @@ export function ScreenView({
 
     const scrollViewProps: ScrollViewProps = {
       contentContainerStyle: scrollContentStyle,
-      contentInsetAdjustmentBehavior: hasNoNativeHeader ? 'never' : 'automatic',
+      contentInsetAdjustmentBehavior: Platform.OS === 'ios' && !hasNoNativeHeader ? 'automatic' : 'never',
       keyboardShouldPersistTaps: keyboardShouldPersistTaps,
       bounces: true,
       overScrollMode: 'always',

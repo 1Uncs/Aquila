@@ -2,6 +2,7 @@ import { Stack } from 'expo-router';
 import { Platform } from 'react-native';
 
 import { useColorScheme } from '@/core/hooks/useColorScheme';
+
 import Colors from '@/constants/colors';
 
 function pushOptions(title: string, scheme: 'light' | 'dark') {
@@ -32,7 +33,6 @@ function pushOptions(title: string, scheme: 'light' | 'dark') {
 
 export default function AppLayout() {
   const scheme = useColorScheme() ?? 'light';
-  const colors = Colors[scheme];
   const rootBg = scheme === 'dark' ? '#070C09' : '#F8FAF9';
 
   return (
@@ -44,17 +44,17 @@ export default function AppLayout() {
       }}
     >
       <Stack.Screen name="(tabs)" options={{ headerShown: false, gestureEnabled: false }} />
-      <Stack.Screen name="election-detail" options={pushOptions('Election Details', scheme ?? 'light')} />
-      <Stack.Screen name="result-submit" options={pushOptions('Submit Result', scheme ?? 'light')} />
-      <Stack.Screen name="result-detail" options={pushOptions('Result Details', scheme ?? 'light')} />
-      <Stack.Screen name="result-collation" options={pushOptions('Result Collation', scheme ?? 'light')} />
-      <Stack.Screen name="result-search" options={pushOptions('Search Results', scheme ?? 'light')} />
-      <Stack.Screen name="incident-report" options={pushOptions('Report Incident', scheme ?? 'light')} />
-      <Stack.Screen name="incident-search" options={pushOptions('Search Incidents', scheme ?? 'light')} />
-      <Stack.Screen name="result-drafts" options={pushOptions('Drafts Queue', scheme ?? 'light')} />
-      <Stack.Screen name="pu-picker" options={pushOptions('Select Polling Unit', scheme ?? 'light')} />
-      <Stack.Screen name="locations" options={pushOptions('Locations', scheme ?? 'light')} />
-      <Stack.Screen name="parties" options={pushOptions('Political Parties', scheme ?? 'light')} />
+      <Stack.Screen name="election-detail" options={pushOptions('Election Details', scheme)} />
+      <Stack.Screen name="result-submit" options={pushOptions('Submit Result', scheme)} />
+      <Stack.Screen name="result-detail" options={pushOptions('Result Details', scheme)} />
+      <Stack.Screen name="result-collation" options={pushOptions('Result Collation', scheme)} />
+      <Stack.Screen name="result-search" options={pushOptions('Search Results', scheme)} />
+      <Stack.Screen name="incident-report" options={pushOptions('Report Incident', scheme)} />
+      <Stack.Screen name="incident-search" options={pushOptions('Search Incidents', scheme)} />
+      <Stack.Screen name="result-drafts" options={pushOptions('Drafts Queue', scheme)} />
+      <Stack.Screen name="pu-picker" options={pushOptions('Select Polling Unit', scheme)} />
+      <Stack.Screen name="locations" options={pushOptions('Locations', scheme)} />
+      <Stack.Screen name="parties" options={pushOptions('Political Parties', scheme)} />
     </Stack>
   );
 }

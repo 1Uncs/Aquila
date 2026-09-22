@@ -331,8 +331,13 @@ export default function ReportIncidentScreen() {
           keyboardDismissMode="on-drag"
           contentInsetAdjustmentBehavior="automatic"
           automaticallyAdjustKeyboardInsets={true}
-          contentContainerStyle={{ paddingBottom: spacing.xxl, paddingTop: spacing.xs }}
+          contentContainerStyle={{ paddingBottom: spacing.xxl }}
         >
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.lg }}>
+            <View style={[styles.titleIndicator, { backgroundColor: colors.critical }]} />
+            <ThemedText variant="h2" style={{ flex: 1 }}>Report Incident</ThemedText>
+          </View>
+
           {/* Location Scope: Specific Polling Unit vs Area-Wide Incident */}
           <ThemedText variant="label" style={{ marginBottom: spacing.xs }}>
             Incident Location Scope

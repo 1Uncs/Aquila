@@ -19,7 +19,6 @@ import { useColorScheme } from '@/core/hooks/useColorScheme';
 
 SplashScreen.preventAutoHideAsync();
 enableScreens();
-SystemUI.setBackgroundColorAsync('#070C09');
 
 export const unstable_settings = {
   initialRouteName: '(auth)',
