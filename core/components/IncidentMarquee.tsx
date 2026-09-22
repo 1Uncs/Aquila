@@ -51,22 +51,22 @@ export function IncidentMarquee({ incidents, style }: Props) {
     <View
       style={[styles.container, { backgroundColor: colors.critical + '14', borderColor: colors.critical + '30' }, style]}
       onLayout={(e) => {
-        const w = e.nativeEvent.layout.width;
-        if (w > 0 && w !== containerWidth) setContainerWidth(w);
+        const w = Math.round(e.nativeEvent.layout.width);
+        if (w > 0 && Math.abs(w - containerWidth) > 2) setContainerWidth(w);
       }}
       accessibilityRole="text"
     >
       <View style={[styles.label, { backgroundColor: colors.critical }]}>
-        <ThemedText variant="caption" style={{ color: '#fff', fontWeight: '700' }}>
+        <ThemedText variant="caption" numberOfLines={1} style={{ color: '#fff', fontWeight: '700' }}>
           LIVE
         </ThemedText>
       </View>
       <View style={styles.track}>
         <Animated.View
-          style={[{ flexDirection: 'row', alignItems: 'center' }, { transform: [{ translateX }] }]}
+          style={[styles.tickerRow, { transform: [{ translateX }] }]}
           onLayout={(e) => {
-            const w = e.nativeEvent.layout.width;
-            if (w > 0 && w !== contentWidth) setContentWidth(w);
+            const w = Math.round(e.nativeEvent.layout.width);
+            if (w > 0 && Math.abs(w - contentWidth) > 2) setContentWidth(w);
           }}
         >
           {activeIncidents.map((i) => (
@@ -78,14 +78,16 @@ export function IncidentMarquee({ incidents, style }: Props) {
               }}
               style={styles.incidentPill}
             >
-              <ThemedText variant="caption" style={{ color: colors.critical, fontWeight: '700' }}>
-                {i.category.replace(/_/g, ' ')}
+              <ThemedText variant="caption" numberOfLines={1}>
+                <ThemedText variant="caption" numberOfLines={1} style={{ color: colors.critical, fontWeight: '700' }}>
+                  {i.category.replace(/_/g, ' ')}
+                </ThemedText>
+                <ThemedText variant="caption" numberOfLines={1} color="textSecondary">
+                  {' '}@{i.electoralArea}: {i.description.slice(0, 48)}{' '}
+                </ThemedText>
               </ThemedText>
-              <ThemedText variant="caption" color="textSecondary" style={{ marginLeft: 4 }}>
-                @{i.electoralArea}: {i.description.slice(0, 42)}
-              </ThemedText>
-              <Ionicons name="chevron-forward" size={12} color={colors.critical} style={{ marginLeft: 2 }} />
-              <ThemedText variant="caption" color="textMuted" style={{ marginHorizontal: spacing.sm }}>
+              <Ionicons name="chevron-forward" size={11} color={colors.critical} style={{ opacity: 0.8 }} />
+              <ThemedText variant="caption" numberOfLines={1} color="textMuted" style={{ marginHorizontal: spacing.sm }}>
                 •
               </ThemedText>
             </Pressable>
@@ -126,9 +128,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: radius.full,
     overflow: 'hidden',
-    paddingVertical: spacing.xs,
+    paddingVertical: 4,
     paddingHorizontal: spacing.xs,
     gap: spacing.sm,
+    height: 32,
   },
   label: {
     paddingHorizontal: spacing.sm,
@@ -138,9 +141,18 @@ const styles = StyleSheet.create({
   track: {
     flex: 1,
     overflow: 'hidden',
+    justifyContent: 'center',
+  },
+  tickerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    flexWrap: 'nowrap',
   },
   incidentPill: {
     flexDirection: 'row',
     alignItems: 'center',
+    flexShrink: 0,
+    flexWrap: 'nowrap',
   },
 });
