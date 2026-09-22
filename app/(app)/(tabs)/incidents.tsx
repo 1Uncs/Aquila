@@ -79,7 +79,14 @@ export default function IncidentsScreen() {
     const sevColor = sevColors[item.severity] ?? colors.warning;
 
     return (
-      <Card style={styles.incidentCard}>
+      <Card
+        pressable
+        style={styles.incidentCard}
+        onPress={() => {
+          impact(Haptics.ImpactFeedbackStyle.Light);
+          router.push({ pathname: ROUTES.INCIDENT_DETAIL, params: { id: item.id } });
+        }}
+      >
         {/* Severity & Status Header */}
         <View style={styles.cardHeader}>
           <View style={[styles.sevBadge, { backgroundColor: sevColor + '18', borderColor: sevColor }]}>

@@ -51,6 +51,7 @@ export default function AppLayout() {
       <Stack.Screen name="result-search" options={pushOptions('Search Results', scheme)} />
       <Stack.Screen name="incident-report" options={pushOptions('Report Incident', scheme)} />
       <Stack.Screen name="incident-search" options={pushOptions('Search Incidents', scheme)} />
+      <Stack.Screen name="incident-detail" options={pushOptions('Incident Details', scheme)} />
       <Stack.Screen name="result-drafts" options={pushOptions('Drafts Queue', scheme)} />
       <Stack.Screen name="pu-picker" options={pushOptions('Select Polling Unit', scheme)} />
       <Stack.Screen name="locations" options={pushOptions('Locations', scheme)} />

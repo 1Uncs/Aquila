@@ -62,6 +62,18 @@ export function useIncidentsQuery(opts?: { pollIntervalMs?: number }) {
   });
 }
 
+export function useIncidentDetailQuery(incidentId?: string) {
+  return useQuery({
+    queryKey: ['incidents', 'detail', incidentId],
+    queryFn: async () => {
+      if (!incidentId) return null;
+      const all = await mockApi.getIncidents();
+      return all.find((i) => i.id === incidentId) ?? null;
+    },
+    enabled: !!incidentId,
+  });
+}
+
 export function useStatesQuery() {
   return useQuery({
     queryKey: ['locations', 'states'],

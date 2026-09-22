@@ -14,6 +14,7 @@ export const ROUTES = {
   INCIDENTS_TAB: '/(app)/(tabs)/incidents',
   INCIDENT_REPORT: '/(app)/incident-report',
   INCIDENT_SEARCH: '/(app)/incident-search',
+  INCIDENT_DETAIL: '/(app)/incident-detail',
   PROFILE: '/(app)/(tabs)/profile',
   LOCATIONS: '/(app)/locations',
   PARTIES: '/(app)/parties',

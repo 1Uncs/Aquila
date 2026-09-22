@@ -1,7 +1,9 @@
 import React, { useState, useMemo } from 'react';
 import { StyleSheet, View, FlatList } from 'react-native';
+import { router } from 'expo-router';
 import { ScreenView } from '@/core/components/ScreenView';
 import { ThemedText, Card, EmptyState, Input } from '@/core/components';
+import { ROUTES } from '@/constants/routes';
 import { useIncidentsStore } from '@/features/auth/store';
 import { spacing, radius, shadows, border } from '@/constants/tokens';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
@@ -79,7 +81,11 @@ export default function IncidentSearchScreen() {
             const sevCol = sevColors[item.severity] ?? colors.warning;
 
             return (
-              <Card style={styles.itemCard}>
+              <Card
+                pressable
+                style={styles.itemCard}
+                onPress={() => router.push({ pathname: ROUTES.INCIDENT_DETAIL, params: { id: item.id } })}
+              >
                 <View style={styles.cardHeader}>
                   <View style={[styles.sevTag, { backgroundColor: sevCol + '16', borderColor: sevCol }]}>
                     <Ionicons name="warning" size={12} color={sevCol} />
