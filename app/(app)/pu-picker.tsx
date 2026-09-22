@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { View, StyleSheet, FlatList } from 'react-native';
 import { ScreenView } from '@/core/components/ScreenView';
-import { ThemedText, Card, EmptyState, Input } from '@/core/components';
+import { ThemedText, Card, EmptyState, Input, SkeletonCard } from '@/core/components';
 import { router, useLocalSearchParams } from 'expo-router';
 import { spacing, radius, shadows } from '@/constants/tokens';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
@@ -121,11 +121,20 @@ export default function PUPickerScreen() {
           contentContainerStyle={styles.listContent}
           ItemSeparatorComponent={() => <View style={{ height: spacing.xs }} />}
           ListEmptyComponent={
-            <EmptyState
-              icon="search-outline"
-              title="No Polling Units Found"
-              subtitle={`No stations matched "${search}". Try searching by LGA or station code.`}
-            />
+            loading ? (
+              <View style={{ gap: spacing.xs }}>
+                <SkeletonCard lines={2} />
+                <SkeletonCard lines={2} />
+                <SkeletonCard lines={2} />
+                <SkeletonCard lines={2} />
+              </View>
+            ) : (
+              <EmptyState
+                icon="search-outline"
+                title="No Polling Units Found"
+                subtitle={`No stations matched "${search}". Try searching by LGA or station code.`}
+              />
+            )
           }
         />
       </View>

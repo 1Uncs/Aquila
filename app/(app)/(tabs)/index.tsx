@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { View, StyleSheet, Pressable, Animated, TextInput } from 'react-native';
 import { ScreenView } from '@/core/components/ScreenView';
-import { ThemedText, Card, IncidentMarquee } from '@/core/components';
+import { ThemedText, Card, IncidentMarquee, Shimmer } from '@/core/components';
 import { EntranceView } from '@/core/components/EntranceView';
 import { useAuthStore, useResultsStore } from '@/features/auth/store';
 import { ROUTES } from '@/constants/routes';
@@ -604,10 +604,9 @@ export default function DashboardScreen() {
             {showLocationDropdown && (
               <View style={[styles.locDropdown, { backgroundColor: colors.surface, borderColor: colors.primary }]}>
                 {searchingLocations ? (
-                  <View style={{ padding: spacing.sm, alignItems: 'center' }}>
-                    <ThemedText variant="caption" color="textSecondary">
-                      Searching matching locations...
-                    </ThemedText>
+                  <View style={{ padding: spacing.sm, gap: spacing.xs }}>
+                    <Shimmer width="70%" height={12} borderRadius={radius.sm} />
+                    <Shimmer width="45%" height={10} borderRadius={radius.sm} />
                   </View>
                 ) : searchResults.length === 0 ? (
                   <View style={{ padding: spacing.sm, alignItems: 'center' }}>

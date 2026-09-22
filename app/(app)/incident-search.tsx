@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { StyleSheet, View, FlatList } from 'react-native';
 import { router } from 'expo-router';
 import { ScreenView } from '@/core/components/ScreenView';
-import { ThemedText, Card, EmptyState, Input } from '@/core/components';
+import { ThemedText, Card, EmptyState, Input, SkeletonCard } from '@/core/components';
 import { ROUTES } from '@/constants/routes';
 import { useIncidentsStore } from '@/features/auth/store';
 import { spacing, radius, shadows } from '@/constants/tokens';
@@ -113,11 +113,19 @@ export default function IncidentSearchScreen() {
             );
           }}
           ListEmptyComponent={
-            <EmptyState
-              icon="search-outline"
-              title="No Incidents Found"
-              subtitle={`No logged incidents matched "${search}".`}
-            />
+            loading ? (
+              <View style={{ gap: spacing.sm }}>
+                <SkeletonCard lines={2} />
+                <SkeletonCard lines={2} />
+                <SkeletonCard lines={2} />
+              </View>
+            ) : (
+              <EmptyState
+                icon="search-outline"
+                title="No Incidents Found"
+                subtitle={`No logged incidents matched "${search}".`}
+              />
+            )
           }
         />
       </View>

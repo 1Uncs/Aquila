@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, Pressable, ScrollView, FlatList } from 'react-native';
 import { ScreenView } from '@/core/components/ScreenView';
-import { ThemedText, Card } from '@/core/components';
+import { ThemedText, Card, EmptyState, SkeletonCard } from '@/core/components';
 import { Ionicons } from '@expo/vector-icons';
 import { usePartiesQuery, useCandidatesQuery } from '@/features/elections/hooks';
 import { spacing, radius, shadows } from '@/constants/tokens';
@@ -13,7 +13,7 @@ import * as Haptics from 'expo-haptics';
 
 export default function PartiesScreen() {
   const { data: parties = [], isLoading: partiesLoading, refetch } = usePartiesQuery();
-  const { data: candidates = [] } = useCandidatesQuery('e1');
+  const { data: candidates = [], isLoading: candidatesLoading } = useCandidatesQuery('e1');
   const [activeTab, setActiveTab] = useState<'parties' | 'candidates'>('candidates');
 
   const scheme = useColorScheme() ?? 'light';
@@ -86,8 +86,15 @@ export default function PartiesScreen() {
         </View>
 
         {activeTab === 'candidates' ? (
-          <ScrollView contentContainerStyle={styles.scrollList}>
-            {candidates.map((cand) => {
+          candidatesLoading && candidates.length === 0 ? (
+            <View style={styles.scrollList}>
+              <SkeletonCard lines={3} />
+              <SkeletonCard lines={3} />
+              <SkeletonCard lines={3} />
+            </View>
+          ) : (
+            <ScrollView contentContainerStyle={styles.scrollList}>
+              {candidates.map((cand) => {
               const pColor = partyColors[cand.partyAcronym] ?? colors.primary;
 
               return (
@@ -137,7 +144,8 @@ export default function PartiesScreen() {
                 </Card>
               );
             })}
-          </ScrollView>
+            </ScrollView>
+          )
         ) : (
           <FlatList
             data={parties}
@@ -173,6 +181,21 @@ export default function PartiesScreen() {
                 </Card>
               );
             }}
+            ListEmptyComponent={
+              partiesLoading ? (
+                <View style={{ gap: spacing.xs }}>
+                  <SkeletonCard lines={2} />
+                  <SkeletonCard lines={2} />
+                  <SkeletonCard lines={2} />
+                </View>
+              ) : (
+                <EmptyState
+                  icon="shield-outline"
+                  title="No Registered Parties"
+                  subtitle="No active political parties found in the national registry."
+                />
+              )
+            }
           />
         )}
       </View>

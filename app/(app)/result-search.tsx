@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { StyleSheet, View, FlatList } from 'react-native';
 import { router } from 'expo-router';
 import { ScreenView } from '@/core/components/ScreenView';
-import { ThemedText, EmptyState, Card, Input } from '@/core/components';
+import { ThemedText, EmptyState, Card, Input, SkeletonCard } from '@/core/components';
 import { useResultsQuery } from '@/features/elections/hooks';
 import { ROUTES } from '@/constants/routes';
 import { spacing, radius, shadows } from '@/constants/tokens';
@@ -91,11 +91,19 @@ export default function ResultSearchScreen() {
             </Card>
           )}
           ListEmptyComponent={
-            <EmptyState
-              icon="search-outline"
-              title="No Results Found"
-              subtitle={`No ballot returns matched "${query}".`}
-            />
+            loading ? (
+              <View style={{ gap: spacing.sm }}>
+                <SkeletonCard lines={2} />
+                <SkeletonCard lines={2} />
+                <SkeletonCard lines={2} />
+              </View>
+            ) : (
+              <EmptyState
+                icon="search-outline"
+                title="No Results Found"
+                subtitle={`No ballot returns matched "${query}".`}
+              />
+            )
           }
         />
       </View>

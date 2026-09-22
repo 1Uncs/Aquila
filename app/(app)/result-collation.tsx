@@ -3,7 +3,7 @@ import { StyleSheet, View, Pressable } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router, useLocalSearchParams } from 'expo-router';
 import { ScreenView } from '@/core/components/ScreenView';
-import { ThemedText, Card } from '@/core/components';
+import { ThemedText, Card, Shimmer, SkeletonCard } from '@/core/components';
 import { useResultsQuery, useCandidatesQuery } from '@/features/elections/hooks';
 import { spacing, radius, shadows } from '@/constants/tokens';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
@@ -63,7 +63,30 @@ export default function ResultCollationScreen() {
   const totalVotesCast = candidateScores.reduce((sum, c) => sum + c.votes, 0);
   const leadingCand = candidateScores[0];
 
+  if (loading && allCollated.length === 0) {
+    return (
+      <ScreenView scrollable={false} contentContainerStyle={styles.scrollContent}>
+        {/* Collation Hero Skeleton */}
+        <View style={[styles.heroCard, { backgroundColor: colors.surface, padding: spacing.md, gap: spacing.sm, borderWidth: 1, borderColor: colors.border }]}>
+          <Shimmer width={180} height={12} borderRadius={radius.sm} />
+          <Shimmer width="70%" height={24} borderRadius={radius.sm} style={{ marginTop: 4 }} />
+          <Shimmer width="45%" height={14} borderRadius={radius.sm} />
+          <View style={{ flexDirection: 'row', gap: spacing.md, marginTop: spacing.md }}>
+            <Shimmer width="30%" height={36} borderRadius={radius.sm} />
+            <Shimmer width="30%" height={36} borderRadius={radius.sm} />
+            <Shimmer width="30%" height={36} borderRadius={radius.sm} />
+          </View>
+        </View>
 
+        {/* Candidate Standings Skeleton Cards */}
+        <View style={{ gap: spacing.sm, marginTop: spacing.md }}>
+          <SkeletonCard lines={2} />
+          <SkeletonCard lines={2} />
+          <SkeletonCard lines={2} />
+        </View>
+      </ScreenView>
+    );
+  }
 
   return (
     <ScreenView

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { StyleSheet, View, Pressable, ScrollView } from 'react-native';
 import { ScreenView } from '@/core/components/ScreenView';
-import { ThemedText, Card, Input } from '@/core/components';
+import { ThemedText, Card, Input, Shimmer } from '@/core/components';
 import { Ionicons } from '@expo/vector-icons';
 import { spacing, radius, shadows } from '@/constants/tokens';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
@@ -89,9 +89,16 @@ export default function LocationsScreen() {
         />
 
         {searchLoading && (
-          <ThemedText variant="caption" color="textMuted" style={{ marginTop: spacing.xs }}>
-            Searching national electoral registry...
-          </ThemedText>
+          <View style={{ gap: spacing.xs, marginTop: spacing.sm }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.xs, paddingVertical: spacing.xs }}>
+              <Shimmer width={18} height={18} borderRadius={radius.full} />
+              <Shimmer width="65%" height={14} borderRadius={radius.sm} />
+            </View>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.xs, paddingVertical: spacing.xs }}>
+              <Shimmer width={18} height={18} borderRadius={radius.full} />
+              <Shimmer width="50%" height={14} borderRadius={radius.sm} />
+            </View>
+          </View>
         )}
 
         {/* Autocomplete Search Results */}
