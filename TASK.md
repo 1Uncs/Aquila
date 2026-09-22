@@ -34,8 +34,9 @@
 - Double padding/margin: Eliminated across all `Card` instances, `ScreenView` padding, and outer container styling.
 - Virtualized list nesting: Eliminated across all `FlashList` instances by converting parents to `ScreenView scrollable={false} noScrollPadding`.
 - Audio specification alignment: Fully integrated across parts 1–9.
-- Feedback Corrections (Safe Area, Roles, Gestures, Flash):
+- Feedback Corrections (Safe Area, Roles, Gestures, Flash, Audio Crash):
   * Dynamic Island & Tab Bar Safe Area: Fixed in `ScreenView.tsx` to apply `insets.top` on tabs/auth screens and `insets.top + 44` on non-scrollable push screens on iOS, preventing UI from sliding under the Dynamic Island. Added `paddingBottom: 110` to FlashLists and scrollable tab views to prevent items clipping behind the bottom tab bar.
   * Agent Titles & Roles: Strictly aligned with `Aquila PRD.pdf` (Page 12-14) — `Field Agent`, `Polling Unit Agent`, and `Election Officer`. Differentiated dashboard and submission behavior per role (PU Agent restricted to sole PU; Election Officer given supervisory view-only overview).
   * Slide-back Prevention: Set `gestureEnabled: false` on root Stack, `(auth)`, `(app)`, and `(tabs)`.
-  * White Flash Elimination: Initialized native OS root window via `SystemUI.setBackgroundColorAsync('#070C09')`, unified Stack backgrounds to `#070C09`, and added iOS background color to `app.json`.
+  * Theme Synchronization: Initialized native OS root window via `SystemUI.setBackgroundColorAsync` responding dynamically to color scheme (`#070C09` dark / `#F8FAF9` light) across root and stack layouts.
+  * Incident Report Audio Crash: Fixed `ExpoModulesCore` Swift `NotFoundException` in `incident-report.tsx` by replacing direct `recorderRef.current.isRecording` getter calls with `isRecordingRef` JavaScript boolean synchronization.
