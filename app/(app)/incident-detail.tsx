@@ -61,7 +61,6 @@ export default function IncidentDetailScreen() {
   const isResolved = incident?.status === 'RESOLVED';
   const isUnderReview = incident?.status === 'UNDER_REVIEW';
 
-  const sevColor = incident ? (SEVERITY_COLORS[incident.severity] ?? colors.warning) : colors.warning;
   const categoryIcon = incident ? (CATEGORY_ICONS[incident.category] ?? 'alert-circle-outline') : 'alert-circle-outline';
 
   const handleUpdateStatus = (newStatus: IncidentStatus) => {

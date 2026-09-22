@@ -22,6 +22,8 @@ export default [
         React: 'readonly',
         setTimeout: 'readonly',
         clearTimeout: 'readonly',
+        setInterval: 'readonly',
+        clearInterval: 'readonly',
         require: 'readonly',
         module: 'readonly',
         __dirname: 'readonly',

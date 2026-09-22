@@ -1,9 +1,9 @@
 import React, { useState, useMemo, useCallback } from 'react';
-import { View, StyleSheet, Pressable, FlatList } from 'react-native';
+import { View, StyleSheet, FlatList } from 'react-native';
 import { ScreenView } from '@/core/components/ScreenView';
 import { ThemedText, Card, EmptyState, Input } from '@/core/components';
 import { router, useLocalSearchParams } from 'expo-router';
-import { spacing, radius, shadows, border } from '@/constants/tokens';
+import { spacing, radius, shadows } from '@/constants/tokens';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
 import { useStatusBar } from '@/core/hooks/useStatusBar';
 import { usePollingUnitsQuery, useLgasQuery, useStatesQuery } from '@/features/elections/hooks';
@@ -44,7 +44,7 @@ export default function PUPickerScreen() {
     });
   }, [pollingUnits, search]);
 
-  const handleSelect = (pu: PollingUnit) => {
+  const handleSelect = useCallback((pu: PollingUnit) => {
     impact(Haptics.ImpactFeedbackStyle.Medium);
     useAuthStore.getState().setSelectedPollingUnit(pu.id, pu.name);
     if (router.canGoBack()) {
@@ -60,7 +60,7 @@ export default function PUPickerScreen() {
         },
       });
     }
-  };
+  }, [impact, mode, params.electionId]);
 
   const renderPUItem = useCallback(({ item }: { item: PollingUnit }) => {
     const lga = lgaMap.get(item.lgaId);
@@ -91,7 +91,7 @@ export default function PUPickerScreen() {
         </View>
       </Card>
     );
-  }, [colors, lgaMap, stateMap]);
+  }, [colors, handleSelect, lgaMap, stateMap]);
 
   return (
     <ScreenView scrollable={false} noScrollPadding>

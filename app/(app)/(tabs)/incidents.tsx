@@ -1,11 +1,11 @@
 import React, { useState, useMemo, useCallback } from 'react';
-import { StyleSheet, View, ScrollView, Pressable, Alert, FlatList } from 'react-native';
+import { StyleSheet, View, ScrollView, Pressable, FlatList } from 'react-native';
 import { router } from 'expo-router';
 import { ScreenView } from '@/core/components/ScreenView';
 import { ThemedText, EmptyState, Button, Card } from '@/core/components';
 import { useIncidentsStore, useAuthStore, IncidentReport } from '@/features/auth/store';
 import { ROUTES } from '@/constants/routes';
-import { spacing, radius, shadows, border } from '@/constants/tokens';
+import { spacing, radius, shadows } from '@/constants/tokens';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
 import { useStatusBar } from '@/core/hooks/useStatusBar';
 import { useIncidentsQuery } from '@/features/elections/hooks';
@@ -59,10 +59,10 @@ export default function IncidentsScreen() {
     });
   }, [allIncidents, selectedCategory, statusFilter]);
 
-  const handleUpdateStatus = (id: string, newStatus: 'UNDER_REVIEW' | 'RESOLVED') => {
+  const handleUpdateStatus = useCallback((id: string, newStatus: 'UNDER_REVIEW' | 'RESOLVED') => {
     impact(Haptics.ImpactFeedbackStyle.Medium);
     updateIncident(id, { status: newStatus as any });
-  };
+  }, [impact, updateIncident]);
 
   const renderIncidentCard = useCallback(({ item }: { item: IncidentReport }) => {
     const isCritical = item.severity === 'CRITICAL';
@@ -185,7 +185,7 @@ export default function IncidentsScreen() {
         </View>
       </Card>
     );
-  }, [colors, impact, isElectionOfficer]);
+  }, [colors, handleUpdateStatus, impact, isElectionOfficer]);
 
   return (
     <ScreenView scrollable={false} noScrollPadding>

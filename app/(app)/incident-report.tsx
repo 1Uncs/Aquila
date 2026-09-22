@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { ScrollView, View, Platform, KeyboardAvoidingView, Alert, StyleSheet, Pressable } from 'react-native';
+import { ScrollView, View, Platform, KeyboardAvoidingView, Alert, Pressable } from 'react-native';
 import { useAudioRecorder, useAudioRecorderState, AudioModule, RecordingPresets, setAudioModeAsync } from 'expo-audio';
 import * as ImagePicker from 'expo-image-picker';
 import { ScreenView } from '@/core/components/ScreenView';
@@ -15,7 +15,6 @@ import { useDeviceLocation } from '@/core/hooks/useDeviceLocation';
 import { ROUTES } from '@/constants/routes';
 import Colors from '@/constants/colors';
 import { FEATURES } from '@/constants/features';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 
 const CATEGORIES = [
@@ -66,12 +65,15 @@ export default function ReportIncidentScreen() {
   isRecordingRef.current = isRecording;
 
   useEffect(() => {
+    if (preselectedPuId) setSelectedPuId(preselectedPuId);
+    if (preselectedPuName) setSelectedPuName(preselectedPuName);
+  }, [preselectedPuId, preselectedPuName]);
+
+  useEffect(() => {
     return () => {
       if (isRecordingRef.current) {
         isRecordingRef.current = false;
-        try {
-          audioRecorder.stop().catch(() => {});
-        } catch {}
+        audioRecorder.stop().catch(() => {});
         setAudioModeAsync({ allowsRecording: false, allowsBackgroundRecording: false }).catch(() => {});
       }
     };
@@ -120,7 +122,7 @@ export default function ReportIncidentScreen() {
         console.error('Chunk finalization failed', e);
       }
     })();
-  }, [recordingDuration, isRecording, audioRecorder]);
+  }, [recordingDuration, isRecording, audioRecorder, addMediaUris, deviceCoords?.latitude, deviceCoords?.longitude]);
 
   const requestPermission = async (type: 'camera' | 'mediaLibrary') => {
     try {
@@ -540,6 +542,3 @@ export default function ReportIncidentScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  titleIndicator: { width: 4, height: 20, borderRadius: radius.full },
-});

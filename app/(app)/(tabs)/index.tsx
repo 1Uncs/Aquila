@@ -1,12 +1,11 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
-import { View, StyleSheet, LayoutAnimation, Image, Pressable, Animated } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import { View, StyleSheet, Pressable, Animated } from 'react-native';
 import { ScreenView } from '@/core/components/ScreenView';
-import { ThemedText, Card, EmptyState, Button, IncidentMarquee, SectionHeader } from '@/core/components';
+import { ThemedText, Card, IncidentMarquee } from '@/core/components';
 import { EntranceView } from '@/core/components/EntranceView';
-import { useAuthStore, useResultsStore, Candidate, ResultSubmission } from '@/features/auth/store';
+import { useAuthStore, useResultsStore } from '@/features/auth/store';
 import { ROUTES } from '@/constants/routes';
-import { spacing, radius, shadows, border } from '@/constants/tokens';
+import { spacing, radius, shadows } from '@/constants/tokens';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
 import { useStatusBar } from '@/core/hooks/useStatusBar';
 import { useElectionsQuery, useIncidentsQuery, useCandidatesQuery, useResultsQuery, useAIProjectionQuery } from '@/features/elections/hooks';
@@ -17,14 +16,23 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 
 // 3 Assigned Polling Units for Field Agent Demo (Audio Part 3)
-const ASSIGNED_DEMO_PUS = [
+const ASSIGNED_DEMO_PUS: Array<{
+  id: string;
+  code: string;
+  name: string;
+  lga: string;
+  state: string;
+  status: 'PUBLISHED' | 'DRAFT' | 'PENDING';
+  votes: number;
+  accredited: number;
+}> = [
   {
     id: 'pu-s25-lga-1-1',
     code: 'PU 24/08/01/001',
     name: 'PU 001 · Alausa Secretariat',
     lga: 'Ikeja',
     state: 'Lagos',
-    status: 'PUBLISHED' as const,
+    status: 'PUBLISHED',
     votes: 578,
     accredited: 600,
   },
@@ -34,9 +42,9 @@ const ASSIGNED_DEMO_PUS = [
     name: 'PU 002 · Ojodu Primary School',
     lga: 'Ikeja',
     state: 'Lagos',
-    status: 'DRAFT' as const,
-    votes: 275,
-    accredited: 300,
+    status: 'DRAFT',
+    votes: 412,
+    accredited: 450,
   },
   {
     id: 'pu-s25-lga-1-3',
@@ -44,17 +52,18 @@ const ASSIGNED_DEMO_PUS = [
     name: 'PU 003 · Oregun High School',
     lga: 'Ikeja',
     state: 'Lagos',
-    status: 'PENDING' as const,
+    status: 'PENDING',
     votes: 0,
-    accredited: 450,
+    accredited: 420,
   },
 ];
 
 const PARTY_COLORS: Record<string, string> = {
-  APC: '#0D6338',
+  APC: '#059669',
   PDP: '#DC2626',
-  LP: '#16A34A',
+  LP: '#D97706',
   NNPP: '#2563EB',
+  APGA: '#7C3AED',
 };
 
 export default function DashboardScreen() {
@@ -62,7 +71,7 @@ export default function DashboardScreen() {
   const colors = Colors[scheme];
   useStatusBar({ barStyle: scheme === 'dark' ? 'light' : 'dark' });
 
-  const { data: elections = [], isLoading: electionsLoading, refetch: refetchElections } = useElectionsQuery();
+  const { isLoading: electionsLoading, refetch: refetchElections } = useElectionsQuery();
   const { data: incidents = [], isLoading: incidentsLoading, refetch: refetchIncidents } = useIncidentsQuery();
   const { data: candidates = [] } = useCandidatesQuery('e1');
   const { data: allResults = [], refetch: refetchResults } = useResultsQuery();
@@ -78,7 +87,7 @@ export default function DashboardScreen() {
   // AI Projection parameters (Audio Parts 6, 7, 8, 9)
   const [selectedCandidateId, setSelectedCandidateId] = useState('cand1');
   const [pastDataEnum, setPastDataEnum] = useState<0 | 1 | 2>(0);
-  const [currentDataSwitch, setCurrentDataSwitch] = useState(true);
+  const currentDataSwitch = true;
 
   const { data: projection } = useAIProjectionQuery({
     candidateId: selectedCandidateId,
@@ -94,12 +103,10 @@ export default function DashboardScreen() {
     cand4: 0, // NNPP
   });
   const [livePulsePUs, setLivePulsePUs] = useState(725);
-  const [pulseActive, setPulseActive] = useState(false);
   const pulseAnim = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setPulseActive(true);
       Animated.sequence([
         Animated.timing(pulseAnim, { toValue: 1.35, duration: 280, useNativeDriver: true }),
         Animated.timing(pulseAnim, { toValue: 1, duration: 350, useNativeDriver: true }),
@@ -122,7 +129,6 @@ export default function DashboardScreen() {
       }));
 
       setLivePulsePUs((prev) => prev + incPUs);
-      setTimeout(() => setPulseActive(false), 1200);
     }, 12000);
     return () => clearInterval(timer);
   }, [pulseAnim]);
@@ -133,7 +139,6 @@ export default function DashboardScreen() {
   );
   useForegroundRefresh([['elections', 'list'], ['incidents', 'list'], ['results', 'list']], 5 * 60 * 1000);
 
-  const isFieldAgent = user?.role === 'FIELD_AGENT' || !user?.role;
   const isElectionOfficer = user?.role === 'ELECTION_OFFICER';
 
   // Candidate scores aggregation for snapshot performance (Audio Part 2 & 6: linked to live pulse)
