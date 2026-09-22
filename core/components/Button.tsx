@@ -1,7 +1,7 @@
 import React from 'react';
 import {
-  PressableStateCallbackType,
   StyleSheet,
+  View,
   ViewStyle,
   PressableProps,
   Platform,
@@ -83,52 +83,48 @@ export function Button({
     return <Ionicons name={iconName} size={20} color={iconColor} style={styles.icon} />;
   };
 
-  const pressableStyle = ({ pressed }: PressableStateCallbackType) => [
-    styles.button,
-    { borderRadius: radius.full },
-    sizeStyles[size],
-    variantStyles[variant],
-    fullWidth && { alignSelf: 'stretch' as FlexAlignType },
-    pressed && { opacity: opacities.press },
-    disabled && { opacity: opacities.disabled },
-    Platform.OS === 'android' && styles.androidRippleContainer,
-    style,
-  ];
-
   return (
     <DebouncedPressable
       onPress={onPress}
       onPressIn={onScaleIn}
       onPressOut={onScaleOut}
       disabled={disabled || loading}
-      style={pressableStyle}
+      style={fullWidth ? { alignSelf: 'stretch' as FlexAlignType } : undefined}
       testID={testID}
       accessible
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel || label}
-      android_ripple={{
-        color: variant === 'primary' || variant === 'secondary' ? 'rgba(255,255,255,0.25)' : colors.press,
-        borderless: false,
-        radius: radius.full,
-      }}
       {...rest}
     >
-      <Animated.View style={[styles.row, { transform: [{ scale }] }]}>
-        {renderIcon(leftIcon, textColor)}
-        <ThemedText
-          variant="label"
-          style={[
-            styles.label,
-            {
-              color: textColor,
-              fontSize: size === 'sm' ? 12.5 : size === 'lg' ? 15 : 13.5,
-              lineHeight: size === 'sm' ? 16 : size === 'lg' ? 20 : 18,
-            },
-          ]}
-        >
-          {loading ? 'Loading...' : label}
-        </ThemedText>
-        {renderIcon(rightIcon, textColor)}
+      <Animated.View
+        style={[
+          styles.button,
+          { borderRadius: radius.full },
+          sizeStyles[size],
+          variantStyles[variant],
+          fullWidth && { alignSelf: 'stretch' as FlexAlignType },
+          disabled && { opacity: opacities.disabled },
+          style,
+          { transform: [{ scale }] },
+        ]}
+      >
+        <View style={styles.row}>
+          {renderIcon(leftIcon, textColor)}
+          <ThemedText
+            variant="label"
+            style={[
+              styles.label,
+              {
+                color: textColor,
+                fontSize: size === 'sm' ? 12.5 : size === 'lg' ? 15 : 13.5,
+                lineHeight: size === 'sm' ? 16 : size === 'lg' ? 20 : 18,
+              },
+            ]}
+          >
+            {loading ? 'Loading...' : label}
+          </ThemedText>
+          {renderIcon(rightIcon, textColor)}
+        </View>
       </Animated.View>
     </DebouncedPressable>
   );
@@ -148,8 +144,4 @@ const styles = StyleSheet.create({
   },
   label: { fontWeight: '600', letterSpacing: 0.3 },
   icon: { lineHeight: 20 },
-  androidRippleContainer: {
-    borderRadius: radius.full,
-    overflow: 'hidden',
-  },
 });

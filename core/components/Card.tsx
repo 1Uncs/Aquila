@@ -1,10 +1,10 @@
 import React from 'react';
-import { StyleSheet, ViewStyle, View, PressableStateCallbackType, Platform, Animated } from 'react-native';
+import { StyleSheet, ViewStyle, View, Animated } from 'react-native';
 import { DebouncedPressable } from './DebouncedPressable';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
 import { usePressScale } from '@/core/hooks/usePressScale';
 import Colors from '@/constants/colors';
-import { radius, shadows, opacities, border, spacing } from '@/constants/tokens';
+import { radius, shadows, border, spacing } from '@/constants/tokens';
 
 type CardVariant = 'default' | 'highlighted' | 'elevated' | 'flat' | 'glass';
 
@@ -92,9 +92,7 @@ function AnimatedCard({
   testID?: string;
   children: React.ReactNode;
 }) {
-  const scheme = useColorScheme() ?? 'light';
-  const colors = Colors[scheme];
-  const { scale, onPressIn, onPressOut } = usePressScale();
+  const { scale, onPressIn, onPressOut } = usePressScale({ toValue: 0.97 });
 
   return (
     <DebouncedPressable
@@ -102,12 +100,7 @@ function AnimatedCard({
       onPressIn={onPressIn}
       onPressOut={onPressOut}
       testID={testID}
-      style={({ pressed }: PressableStateCallbackType) => [
-        { borderRadius: radius.md },
-        pressed && { opacity: opacities.press },
-        Platform.OS === 'android' && styles.androidRippleContainer,
-      ]}
-      android_ripple={{ color: colors.press, borderless: false, radius: radius.md }}
+      style={{ borderRadius: radius.md }}
       accessible
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
@@ -123,9 +116,5 @@ const styles = StyleSheet.create({
   card: {
     borderRadius: radius.md,
     padding: spacing.screen.cardPadding,
-  },
-  androidRippleContainer: {
-    borderRadius: radius.md,
-    overflow: 'hidden',
   },
 });
