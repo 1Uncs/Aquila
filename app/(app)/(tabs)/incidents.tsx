@@ -324,7 +324,7 @@ const styles = StyleSheet.create({
   listContent: {
     paddingHorizontal: spacing.md,
     paddingTop: spacing.xs,
-    paddingBottom: spacing.xxl,
+    paddingBottom: 110,
   },
   incidentCard: {
     padding: spacing.md,

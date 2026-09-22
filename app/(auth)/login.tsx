@@ -266,7 +266,7 @@ export default function LoginScreen() {
                     size="sm"
                   />
                   <Button
-                    label="PU Observer"
+                    label="PU Agent"
                     variant="outline"
                     onPress={() => launchDemo('polling')}
                     loading={loginMutation.isPending}
@@ -274,11 +274,11 @@ export default function LoginScreen() {
                     size="sm"
                   />
                   <Button
-                    label="Collation Dir"
+                    label="Election Officer"
                     variant="outline"
                     onPress={() => launchDemo('officer')}
                     loading={loginMutation.isPending}
-                    style={{ flex: 1 }}
+                    style={{ flex: 1.3 }}
                     size="sm"
                   />
                 </View>

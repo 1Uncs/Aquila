@@ -455,16 +455,24 @@ export default function DashboardScreen() {
         </Card>
       </EntranceView>
 
-      {/* 5. Assigned Polling Units (Audio Part 3: Demo Agent 3 assigned PUs) */}
+      {/* 5. Assigned Polling Units (PRD: PU Agent = 1 PU, Field Agent = 3 PUs, Officer = Supervisory) */}
       <EntranceView delay={250}>
         <Card style={styles.sectionCard}>
           <View style={styles.sectionHeaderRow}>
             <View>
               <ThemedText variant="title" color="text" fontFamily="bold">
-                My Assigned Polling Units
+                {user?.role === 'POLLING_AGENT'
+                  ? 'My Assigned Polling Unit'
+                  : isElectionOfficer
+                    ? 'Jurisdictional Polling Units'
+                    : 'My Assigned Polling Units'}
               </ThemedText>
               <ThemedText variant="caption" color="textSecondary">
-                Field agent jurisdiction · 3 Polling Units
+                {user?.role === 'POLLING_AGENT'
+                  ? 'Polling Unit Agent assignment · 1 Polling Unit'
+                  : isElectionOfficer
+                    ? 'Election Officer supervisory overview · 3 Reporting Units'
+                    : 'Field Agent jurisdiction · 3 Polling Units'}
               </ThemedText>
             </View>
             <Pressable
@@ -480,7 +488,7 @@ export default function DashboardScreen() {
           </View>
 
           <View style={{ gap: spacing.sm, marginTop: spacing.sm }}>
-            {ASSIGNED_DEMO_PUS.map((pu) => {
+            {(user?.role === 'POLLING_AGENT' ? ASSIGNED_DEMO_PUS.slice(0, 1) : ASSIGNED_DEMO_PUS).map((pu) => {
               const isPub = pu.status === 'PUBLISHED';
               const isDraft = pu.status === 'DRAFT';
 
@@ -528,13 +536,20 @@ export default function DashboardScreen() {
 
                   <View style={styles.puBottomRow}>
                     <ThemedText variant="caption" color="textSecondary">
-                      {isPub ? `${pu.votes} Votes tallied (${pu.accredited} accredited)` : isDraft ? 'Draft saved in local store' : 'Awaiting accredited ballot entry'}
+                      {isPub
+                        ? `${pu.votes} Votes tallied (${pu.accredited} accredited)`
+                        : isDraft
+                          ? 'Draft saved in local store'
+                          : 'Awaiting accredited ballot entry'}
                     </ThemedText>
 
                     <Pressable
                       onPress={() => {
                         impact(Haptics.ImpactFeedbackStyle.Medium);
-                        if (isPub) {
+                        if (isElectionOfficer) {
+                          // Election officers can view results, not submit
+                          router.push({ pathname: ROUTES.RESULT_DETAIL, params: { id: 'r1' } });
+                        } else if (isPub) {
                           router.push({ pathname: ROUTES.RESULT_DETAIL, params: { id: 'r1' } });
                         } else if (isDraft) {
                           router.push(ROUTES.RESULT_DRAFTS);
@@ -544,20 +559,20 @@ export default function DashboardScreen() {
                       }}
                       style={[
                         styles.puActionBtn,
-                        { backgroundColor: isPub ? colors.borderSubtle : colors.primary },
+                        { backgroundColor: isPub || isElectionOfficer ? colors.borderSubtle : colors.primary },
                       ]}
                     >
                       <ThemedText
                         variant="caption"
-                        color={isPub ? 'text' : '#FFFFFF'}
+                        color={isPub || isElectionOfficer ? 'text' : '#FFFFFF'}
                         fontFamily="bold"
                       >
-                        {isPub ? 'View' : isDraft ? 'Resume' : 'Submit'}
+                        {isElectionOfficer ? 'View' : isPub ? 'View' : isDraft ? 'Resume' : 'Submit'}
                       </ThemedText>
                       <Ionicons
                         name="chevron-forward"
                         size={12}
-                        color={isPub ? colors.text : '#FFFFFF'}
+                        color={isPub || isElectionOfficer ? colors.text : '#FFFFFF'}
                       />
                     </Pressable>
                   </View>
@@ -571,23 +586,43 @@ export default function DashboardScreen() {
       {/* 6. Quick Actions Grid */}
       <EntranceView delay={300}>
         <View style={styles.quickGrid}>
-          <Pressable
-            onPress={() => {
-              impact(Haptics.ImpactFeedbackStyle.Medium);
-              router.push(ROUTES.RESULT_SUBMIT);
-            }}
-            style={[styles.quickCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
-          >
-            <View style={[styles.quickIconWrap, { backgroundColor: colors.primary + '18' }]}>
-              <Ionicons name="add-circle" size={22} color={colors.primary} />
-            </View>
-            <ThemedText variant="body" color="text" fontFamily="bold" style={{ marginTop: spacing.xs }}>
-              Enter Results
-            </ThemedText>
-            <ThemedText variant="caption" color="textSecondary">
-              PU ballot return
-            </ThemedText>
-          </Pressable>
+          {isElectionOfficer ? (
+            <Pressable
+              onPress={() => {
+                impact(Haptics.ImpactFeedbackStyle.Medium);
+                router.push(ROUTES.RESULT_SEARCH);
+              }}
+              style={[styles.quickCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
+            >
+              <View style={[styles.quickIconWrap, { backgroundColor: colors.primary + '18' }]}>
+                <Ionicons name="search" size={22} color={colors.primary} />
+              </View>
+              <ThemedText variant="body" color="text" fontFamily="bold" style={{ marginTop: spacing.xs }}>
+                Search Results
+              </ThemedText>
+              <ThemedText variant="caption" color="textSecondary">
+                Audit returns
+              </ThemedText>
+            </Pressable>
+          ) : (
+            <Pressable
+              onPress={() => {
+                impact(Haptics.ImpactFeedbackStyle.Medium);
+                router.push(ROUTES.RESULT_SUBMIT);
+              }}
+              style={[styles.quickCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
+            >
+              <View style={[styles.quickIconWrap, { backgroundColor: colors.primary + '18' }]}>
+                <Ionicons name="add-circle" size={22} color={colors.primary} />
+              </View>
+              <ThemedText variant="body" color="text" fontFamily="bold" style={{ marginTop: spacing.xs }}>
+                Enter Results
+              </ThemedText>
+              <ThemedText variant="caption" color="textSecondary">
+                PU ballot return
+              </ThemedText>
+            </Pressable>
+          )}
 
           <Pressable
             onPress={() => {
@@ -682,7 +717,8 @@ export default function DashboardScreen() {
 const styles = StyleSheet.create({
   scrollContent: {
     paddingHorizontal: spacing.md,
-    paddingBottom: spacing.xxl,
+    paddingTop: spacing.xs,
+    paddingBottom: 110,
     gap: spacing.md,
   },
   consoleHeader: {

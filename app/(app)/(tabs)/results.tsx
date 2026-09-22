@@ -11,11 +11,12 @@ import { useStatusBar } from '@/core/hooks/useStatusBar';
 import { useResultsQuery, useCandidatesQuery } from '@/features/elections/hooks';
 import { useRefreshControl, useForegroundRefresh, useHaptics } from '@/core/hooks';
 import Colors from '@/constants/colors';
-import { useResultsStore, ResultSubmission } from '@/features/auth/store';
+import { useResultsStore, useAuthStore, ResultSubmission } from '@/features/auth/store';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 
 export default function ResultsScreen() {
+  const { user } = useAuthStore();
   const { data: apiResults = [], isLoading: loading, refetch: refetchResults } = useResultsQuery();
   const { submissions } = useResultsStore();
   const { data: candidates = [] } = useCandidatesQuery('e1');
@@ -168,15 +169,28 @@ export default function ResultsScreen() {
             </ThemedText>
           </View>
 
-          <Button
-            label="+ Record Result"
-            variant="primary"
-            size="sm"
-            onPress={() => {
-              impact(Haptics.ImpactFeedbackStyle.Medium);
-              router.push(ROUTES.RESULT_SUBMIT);
-            }}
-          />
+          {user?.role === 'ELECTION_OFFICER' ? (
+            <Button
+              label="Collation"
+              variant="outline"
+              size="sm"
+              leftIcon="bar-chart-outline"
+              onPress={() => {
+                impact(Haptics.ImpactFeedbackStyle.Medium);
+                router.push(ROUTES.RESULT_COLLATION);
+              }}
+            />
+          ) : (
+            <Button
+              label="+ Record Result"
+              variant="primary"
+              size="sm"
+              onPress={() => {
+                impact(Haptics.ImpactFeedbackStyle.Medium);
+                router.push(ROUTES.RESULT_SUBMIT);
+              }}
+            />
+          )}
         </View>
 
         {/* Tab Switcher: Published Results vs Drafts (Audio Part 3) */}
@@ -294,7 +308,7 @@ const styles = StyleSheet.create({
   listContent: {
     paddingHorizontal: spacing.md,
     paddingTop: spacing.xs,
-    paddingBottom: spacing.xxl,
+    paddingBottom: 110,
   },
   itemCard: {
     padding: spacing.md,

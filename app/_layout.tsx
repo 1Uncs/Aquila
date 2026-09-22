@@ -14,9 +14,11 @@ import { RootErrorBoundary } from '@/core/components/ErrorBoundary';
 import { mockApi } from '@/features/elections/service';
 import { ResultSubmission } from '@/features/auth/store';
 import { fontMap } from '@/constants/fonts';
+import * as SystemUI from 'expo-system-ui';
 
 SplashScreen.preventAutoHideAsync();
 enableScreens();
+SystemUI.setBackgroundColorAsync('#070C09');
 
 export const unstable_settings = {
   initialRouteName: '(auth)',
@@ -312,12 +314,13 @@ function RootLayoutNav() {
     <Stack
       screenOptions={{
         headerShown: false,
-        contentStyle: { backgroundColor: '#0B1220' },
+        contentStyle: { backgroundColor: '#070C09' },
         animation: 'fade',
+        gestureEnabled: false,
       }}
     >
-      <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-      <Stack.Screen name="(app)" options={{ headerShown: false }} />
+      <Stack.Screen name="(auth)" options={{ headerShown: false, gestureEnabled: false }} />
+      <Stack.Screen name="(app)" options={{ headerShown: false, gestureEnabled: false }} />
     </Stack>
   );
 }

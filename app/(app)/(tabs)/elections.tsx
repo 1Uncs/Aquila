@@ -56,7 +56,12 @@ export default function ElectionsScreen() {
   LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
 
   return (
-    <ScreenView scrollable keyboardShouldPersistTaps="handled" refreshControl={refreshControl}>
+    <ScreenView
+      scrollable
+      keyboardShouldPersistTaps="handled"
+      refreshControl={refreshControl}
+      contentContainerStyle={{ paddingBottom: 110 }}
+    >
       <View>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.sm }}>
           <View style={[styles.titleIndicator, { backgroundColor: colors.primary }]} />

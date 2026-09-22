@@ -28,9 +28,9 @@ export default function ProfileTabScreen() {
   useStatusBar({ barStyle: 'light' });
 
   const roleLabels: Record<UserRole, string> = {
-    ELECTION_OFFICER: 'Situation Room Director',
-    POLLING_AGENT: 'Polling Unit Observer',
-    FIELD_AGENT: 'Field Collation Agent',
+    ELECTION_OFFICER: 'Election Officer',
+    POLLING_AGENT: 'Polling Unit Agent',
+    FIELD_AGENT: 'Field Agent',
   };
 
   const handleRoleSwitch = (newRole: UserRole, email: string) => {
@@ -205,7 +205,7 @@ export default function ProfileTabScreen() {
           Demo Role Simulator
         </ThemedText>
         <ThemedText variant="caption" color="textSecondary" style={{ marginBottom: spacing.sm }}>
-          Switch perspective to test Field Agent, Polling Observer, or Collation Director flows
+          Switch perspective to test Field Agent, Polling Unit Agent, or Election Officer flows
         </ThemedText>
 
         <View style={{ flexDirection: 'row', gap: spacing.xs }}>
@@ -217,18 +217,18 @@ export default function ProfileTabScreen() {
             style={{ flex: 1 }}
           />
           <Button
-            label="PU Observer"
+            label="PU Agent"
             variant={user?.role === 'POLLING_AGENT' ? 'primary' : 'outline'}
             size="sm"
             onPress={() => handleRoleSwitch('POLLING_AGENT', 'polling@aquila.ng')}
             style={{ flex: 1 }}
           />
           <Button
-            label="Director"
+            label="Election Officer"
             variant={user?.role === 'ELECTION_OFFICER' ? 'primary' : 'outline'}
             size="sm"
             onPress={() => handleRoleSwitch('ELECTION_OFFICER', 'officer@aquila.ng')}
-            style={{ flex: 1 }}
+            style={{ flex: 1.2 }}
           />
         </View>
       </Card>
@@ -250,7 +250,8 @@ export default function ProfileTabScreen() {
 const styles = StyleSheet.create({
   scrollContent: {
     paddingHorizontal: spacing.md,
-    paddingBottom: spacing.xxl,
+    paddingTop: spacing.xs,
+    paddingBottom: 110,
     gap: spacing.md,
   },
   profileHero: {

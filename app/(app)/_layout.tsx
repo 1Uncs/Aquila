@@ -25,7 +25,7 @@ export default function AppLayout() {
         animationDuration: 250,
       }}
     >
-      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      <Stack.Screen name="(tabs)" options={{ headerShown: false, gestureEnabled: false }} />
       <Stack.Screen name="election-detail" options={pushOptions('Election Details')} />
       <Stack.Screen name="result-submit" options={pushOptions('Submit Result')} />
       <Stack.Screen name="result-detail" options={pushOptions('Result Details')} />

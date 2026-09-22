@@ -13,7 +13,8 @@
     ],
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.alabiansolutions.aquila"
+      "bundleIdentifier": "com.alabiansolutions.aquila",
+      "backgroundColor": "#070C09"
     },
     "android": {
       "adaptiveIcon": {

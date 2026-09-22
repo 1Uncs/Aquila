@@ -220,10 +220,10 @@ export default function SubmitResultScreen() {
               <Ionicons name="shield-outline" size={32} color={colors.primary} />
             </View>
             <ThemedText variant="h3" color="primary" fontFamily="bold" style={{ textAlign: 'center', marginTop: spacing.sm }}>
-              Situation Room Supervisory Mandate
+              Election Officer Supervisory Mandate
             </ThemedText>
             <ThemedText variant="body" color="textSecondary" style={{ textAlign: 'center', marginVertical: spacing.sm }}>
-              As Collation Director, your console is dedicated to monitoring, verification, and audit. Field ballot entry is reserved for Polling Unit and Field Agents.
+              As an Election Officer, your console is dedicated to monitoring, verification, and collation audit. Field ballot return entry is strictly reserved for Polling Unit Agents and Field Agents.
             </ThemedText>
             <Button
               label="Go to Collation Room"
@@ -249,15 +249,17 @@ export default function SubmitResultScreen() {
               {resolvedPuName}
             </ThemedText>
             <ThemedText variant="caption" color="textSecondary">
-              PU Code: {selectedPuId || 'PU/24/08/01/001'}
+              PU Code: {selectedPuId || 'PU/24/08/01/001'} {user?.role === 'POLLING_AGENT' ? '· Sole Assigned Station' : ''}
             </ThemedText>
           </View>
-          <Button
-            label="Change"
-            variant="outline"
-            size="sm"
-            onPress={() => router.push({ pathname: ROUTES.PU_PICKER, params: { mode: 'result' } })}
-          />
+          {user?.role !== 'POLLING_AGENT' && (
+            <Button
+              label="Change"
+              variant="outline"
+              size="sm"
+              onPress={() => router.push({ pathname: ROUTES.PU_PICKER, params: { mode: 'result' } })}
+            />
+          )}
         </View>
       </Card>
 
