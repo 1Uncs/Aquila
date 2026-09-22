@@ -13,6 +13,7 @@ import { ToastProvider } from '@/core/components/ToastProvider';
 import { RootErrorBoundary } from '@/core/components/ErrorBoundary';
 import { mockApi } from '@/features/elections/service';
 import { ResultSubmission } from '@/features/auth/store';
+import { Asset } from 'expo-asset';
 import { fontMap } from '@/constants/fonts';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
 
@@ -25,15 +26,29 @@ export const unstable_settings = {
 
 export default function RootLayout() {
   const [fontsLoaded, fontError] = useFonts(fontMap);
+  const [assetsLoaded, setAssetsLoaded] = useState(false);
   const scheme = useColorScheme() ?? 'light';
   const rootBg = scheme === 'dark' ? '#070C09' : '#F8FAF9';
 
+  useEffect(() => {
+    async function preloadAssets() {
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        await Asset.loadAsync([require('@/assets/eagle-head.png')]);
+      } catch {
+        // Non-blocking fallback
+      } finally {
+        setAssetsLoaded(true);
+      }
+    }
+    preloadAssets();
+  }, []);
 
   useEffect(() => {
-    if (fontsLoaded || fontError) {
+    if ((fontsLoaded || fontError) && assetsLoaded) {
       SplashScreen.hideAsync();
     }
-  }, [fontsLoaded, fontError]);
+  }, [fontsLoaded, fontError, assetsLoaded]);
 
   if (!fontsLoaded && !fontError) {
     return null;

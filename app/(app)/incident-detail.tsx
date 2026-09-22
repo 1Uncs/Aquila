@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { StyleSheet, View, Pressable, Alert, TextInput, Image, Modal, Linking } from 'react-native';
+import * as WebBrowser from 'expo-web-browser';
 import { useAudioPlayer, useAudioPlayerStatus } from 'expo-audio';
 import { useVideoPlayer, VideoView } from 'expo-video';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -90,12 +91,21 @@ export default function IncidentDetailScreen() {
     );
   };
 
-  const openMap = () => {
+  const openMap = async () => {
     if (!incident?.latitude || !incident?.longitude) return;
+    impact(Haptics.ImpactFeedbackStyle.Light);
     const url = `https://www.google.com/maps/search/?api=1&query=${incident.latitude},${incident.longitude}`;
-    Linking.openURL(url).catch(() => {
-      Alert.alert('Unable to open map', 'No map application available.');
-    });
+    try {
+      await WebBrowser.openBrowserAsync(url, {
+        presentationStyle: WebBrowser.WebBrowserPresentationStyle.PAGE_SHEET,
+        controlsColor: colors.primary,
+        toolbarColor: colors.surface,
+      });
+    } catch {
+      Linking.openURL(url).catch(() => {
+        Alert.alert('Unable to open map', 'No map application available.');
+      });
+    }
   };
 
   if (isLoading && !incident) {
@@ -248,14 +258,50 @@ export default function IncidentDetailScreen() {
         </View>
 
         {incident.latitude && incident.longitude ? (
-          <Button
-            label="Open Satellite GPS Coordinates"
-            variant="outline"
-            size="sm"
-            leftIcon="navigate-outline"
+          <Pressable
             onPress={openMap}
-            style={{ marginTop: spacing.md }}
-          />
+            style={[styles.tacticalMapContainer, { borderColor: colors.border, backgroundColor: colors.surfaceElevated }]}
+          >
+            {/* Visual Radar Grid */}
+            <View style={styles.tacticalGridBackground}>
+              <View style={[styles.radarCircleOuter, { borderColor: colors.primary + '30' }]}>
+                <View style={[styles.radarCircleInner, { borderColor: colors.primary + '50' }]}>
+                  <View style={[styles.radarCenterPulse, { backgroundColor: colors.primary }]} />
+                </View>
+              </View>
+              <View style={[styles.crosshairH, { backgroundColor: colors.border }]} />
+              <View style={[styles.crosshairV, { backgroundColor: colors.border }]} />
+            </View>
+
+            {/* Tactical Overlay Info */}
+            <View style={styles.tacticalMapOverlay}>
+              <View style={styles.tacticalBadge}>
+                <Ionicons name="radio" size={12} color="#10B981" />
+                <ThemedText variant="caption" style={{ color: '#10B981', fontWeight: '800', fontSize: 10, letterSpacing: 0.5, marginLeft: 4 }}>
+                  IN-APP SECTOR SATELLITE
+                </ThemedText>
+              </View>
+
+              <View style={{ marginVertical: spacing.sm, alignItems: 'center' }}>
+                <ThemedText variant="label" color="text" fontFamily="bold" style={{ fontSize: 14 }}>
+                  {incident.latitude.toFixed(5)}°N, {incident.longitude.toFixed(5)}°E
+                </ThemedText>
+                <ThemedText variant="caption" color="textSecondary" style={{ marginTop: 2, fontSize: 11 }}>
+                  {incident.electoralArea} · {puInfo?.name ?? 'Assigned Precinct Grid'}
+                </ThemedText>
+              </View>
+
+              <View style={[styles.tacticalBottomBar, { borderTopColor: colors.border + '50' }]}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                  <Ionicons name="map-outline" size={14} color={colors.primary} />
+                  <ThemedText variant="caption" color="primary" fontFamily="bold">
+                    Inspect Interactive Map (In-App)
+                  </ThemedText>
+                </View>
+                <Ionicons name="chevron-forward" size={14} color={colors.primary} />
+              </View>
+            </View>
+          </Pressable>
         ) : null}
       </Card>
 
@@ -906,5 +952,76 @@ const styles = StyleSheet.create({
   videoView: {
     width: '100%',
     height: '100%',
+  },
+  tacticalMapContainer: {
+    marginTop: spacing.md,
+    borderRadius: radius.md,
+    borderWidth: border.thin,
+    overflow: 'hidden',
+    position: 'relative',
+    minHeight: 140,
+    justifyContent: 'center',
+  },
+  tacticalGridBackground: {
+    ...StyleSheet.absoluteFill,
+    alignItems: 'center',
+    justifyContent: 'center',
+    opacity: 0.35,
+  },
+  radarCircleOuter: {
+    width: 130,
+    height: 130,
+    borderRadius: 65,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  radarCircleInner: {
+    width: 65,
+    height: 65,
+    borderRadius: 32.5,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  radarCenterPulse: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+  },
+  crosshairH: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    height: 1,
+  },
+  crosshairV: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    width: 1,
+  },
+  tacticalMapOverlay: {
+    padding: spacing.sm,
+    justifyContent: 'space-between',
+    zIndex: 1,
+  },
+  tacticalBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    backgroundColor: '#10B98118',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: radius.full,
+    borderWidth: 1,
+    borderColor: '#10B98140',
+  },
+  tacticalBottomBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingTop: spacing.xs,
+    borderTopWidth: 1,
   },
 });

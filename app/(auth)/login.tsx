@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Platform, KeyboardAvoidingView, ScrollView, View, StyleSheet, Image, Pressable } from 'react-native';
+import { Platform, KeyboardAvoidingView, ScrollView, View, StyleSheet, Pressable } from 'react-native';
+import { Image } from 'expo-image';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ThemedText, Input, Button, Card } from '@/core/components';
@@ -115,7 +116,9 @@ export default function LoginScreen() {
                   // eslint-disable-next-line @typescript-eslint/no-require-imports
                   source={require('@/assets/eagle-head.png')}
                   style={styles.logoImage}
-                  resizeMode="contain"
+                  contentFit="contain"
+                  priority="high"
+                  cachePolicy="memory-disk"
                 />
               </View>
               <ThemedText variant="display" color="#FFFFFF" fontFamily="bold" style={styles.brandTitle}>
