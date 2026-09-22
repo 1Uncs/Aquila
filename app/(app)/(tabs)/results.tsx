@@ -2,7 +2,7 @@ import React, { useState, useMemo, useCallback } from 'react';
 import { StyleSheet, View, Pressable, FlatList } from 'react-native';
 import { router } from 'expo-router';
 import { ScreenView } from '@/core/components/ScreenView';
-import { ThemedText, Card, EmptyState, Button } from '@/core/components';
+import { ThemedText, Card, EmptyState, Button, SkeletonCard } from '@/core/components';
 import { ROUTES } from '@/constants/routes';
 import { spacing, radius, shadows } from '@/constants/tokens';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
@@ -548,17 +548,25 @@ export default function ResultsScreen() {
               contentContainerStyle={styles.listContent}
               ItemSeparatorComponent={() => <View style={{ height: spacing.sm }} />}
               ListEmptyComponent={
-                <EmptyState
-                  icon={activeTab === 'published' ? 'document-text-outline' : 'save-outline'}
-                  title={activeTab === 'published' ? 'No Results Published Yet' : 'No Drafts Saved'}
-                  subtitle={
-                    activeTab === 'published'
-                      ? 'Polling unit ballot returns will appear here once submitted and verified.'
-                      : 'You have no incomplete drafts. Tap "+ Record Result" to begin a new submission.'
-                  }
-                  actionLabel="+ Record Result"
-                  onAction={() => router.push(ROUTES.RESULT_SUBMIT)}
-                />
+                loading ? (
+                  <View style={{ gap: spacing.sm }}>
+                    <SkeletonCard />
+                    <SkeletonCard />
+                    <SkeletonCard />
+                  </View>
+                ) : (
+                  <EmptyState
+                    icon={activeTab === 'published' ? 'document-text-outline' : 'save-outline'}
+                    title={activeTab === 'published' ? 'No Results Published Yet' : 'No Drafts Saved'}
+                    subtitle={
+                      activeTab === 'published'
+                        ? 'Polling unit ballot returns will appear here once submitted and verified.'
+                        : 'You have no incomplete drafts. Tap "+ Record Result" to begin a new submission.'
+                    }
+                    actionLabel="+ Record Result"
+                    onAction={() => router.push(ROUTES.RESULT_SUBMIT)}
+                  />
+                )
               }
             />
           </>

@@ -1,9 +1,9 @@
 import React, { useMemo } from 'react';
-import { StyleSheet, View, Alert, Pressable } from 'react-native';
+import { StyleSheet, View, Pressable } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router, useLocalSearchParams } from 'expo-router';
 import { ScreenView } from '@/core/components/ScreenView';
-import { ThemedText, Button, Card } from '@/core/components';
+import { ThemedText, Card } from '@/core/components';
 import { useResultsQuery, useCandidatesQuery } from '@/features/elections/hooks';
 import { spacing, radius, shadows } from '@/constants/tokens';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
@@ -63,14 +63,7 @@ export default function ResultCollationScreen() {
   const totalVotesCast = candidateScores.reduce((sum, c) => sum + c.votes, 0);
   const leadingCand = candidateScores[0];
 
-  const handleExportSummary = () => {
-    impact(Haptics.ImpactFeedbackStyle.Medium);
-    Alert.alert(
-      'Export Certified Collation Return',
-      'EC8D Collation Summary prepared for independent observer audit. File certified with SHA-256 hash.',
-      [{ text: 'Dismiss', style: 'cancel' }]
-    );
-  };
+
 
   return (
     <ScreenView
@@ -253,22 +246,6 @@ export default function ResultCollationScreen() {
           ))}
         </View>
       </Card>
-
-      {/* 4. Action Buttons */}
-      <View style={{ gap: spacing.sm, marginTop: spacing.xs }}>
-        <Button
-          label="Export Certified EC8D Collation Return"
-          variant="primary"
-          leftIcon="download-outline"
-          onPress={handleExportSummary}
-        />
-        <Button
-          label="View Real-Time Polling Units Map"
-          variant="outline"
-          leftIcon="map-outline"
-          onPress={() => router.push(ROUTES.LOCATIONS)}
-        />
-      </View>
     </ScreenView>
   );
 }

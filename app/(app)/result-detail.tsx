@@ -3,7 +3,7 @@ import { StyleSheet, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useLocalSearchParams, router } from 'expo-router';
 import { ScreenView } from '@/core/components/ScreenView';
-import { ThemedText, Card, EmptyState, Button } from '@/core/components';
+import { ThemedText, Card, EmptyState, Button, Shimmer, SkeletonCard } from '@/core/components';
 import { useResultsQuery, useCandidatesQuery, usePollingUnitsQuery } from '@/features/elections/hooks';
 import { spacing, radius, shadows } from '@/constants/tokens';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
@@ -65,11 +65,22 @@ export default function ResultDetailScreen() {
 
   if (loading && !result) {
     return (
-      <ScreenView scrollable={false}>
-        <View style={styles.centerContainer}>
-          <ThemedText variant="body" color="textSecondary">
-            Loading polling unit return...
-          </ThemedText>
+      <ScreenView scrollable={false} contentContainerStyle={styles.scrollContent}>
+        {/* Header Hero Card Skeleton */}
+        <View style={[styles.heroCard, { backgroundColor: colors.surface, padding: spacing.md, gap: spacing.sm, borderWidth: 1, borderColor: colors.border }]}>
+          <Shimmer width={150} height={12} borderRadius={radius.sm} />
+          <Shimmer width="80%" height={24} borderRadius={radius.sm} style={{ marginTop: 4 }} />
+          <Shimmer width="50%" height={14} borderRadius={radius.sm} />
+          <View style={{ flexDirection: 'row', gap: spacing.md, marginTop: spacing.sm }}>
+            <Shimmer width="45%" height={32} borderRadius={radius.sm} />
+            <Shimmer width="45%" height={32} borderRadius={radius.sm} />
+          </View>
+        </View>
+
+        {/* Candidate Vote Returns Skeleton Cards */}
+        <View style={{ gap: spacing.sm, marginTop: spacing.md }}>
+          <SkeletonCard lines={2} />
+          <SkeletonCard lines={2} />
         </View>
       </ScreenView>
     );
@@ -300,12 +311,6 @@ export default function ResultDetailScreen() {
 
       {/* 4. Action Buttons */}
       <View style={{ gap: spacing.sm, marginTop: spacing.xs }}>
-        <Button
-          label="View Collation Summary"
-          variant="primary"
-          leftIcon="bar-chart-outline"
-          onPress={() => router.push(ROUTES.RESULT_COLLATION)}
-        />
         <Button
           label="File Incident at this PU"
           variant="outline"

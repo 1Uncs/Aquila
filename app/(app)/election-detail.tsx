@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router, useLocalSearchParams } from 'expo-router';
 import { ScreenView } from '@/core/components/ScreenView';
-import { ThemedText, Card, EmptyState, Button } from '@/core/components';
+import { ThemedText, Card, EmptyState, Button, Shimmer, SkeletonCard } from '@/core/components';
 import { ROUTES } from '@/constants/routes';
 import { spacing, shadows, radius } from '@/constants/tokens';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
@@ -24,23 +24,35 @@ export default function ElectionDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { data: election, isLoading: electionLoading } = useElectionDetailQuery(id);
   const { data: candidates = [], isLoading: candidatesLoading } = useCandidatesQuery(id);
-  const [loading, setLoading] = useState(true);
+  const loading = electionLoading || candidatesLoading;
   const scheme = useColorScheme() ?? 'light';
   const colors = Colors[scheme];
   useStatusBar({ barStyle: scheme === 'dark' ? 'light' : 'dark' });
   useForegroundRefresh([['elections', 'detail', id], ['elections', 'candidates', id]], 5 * 60 * 1000);
 
-  useEffect(() => {
-    if (!electionLoading && !candidatesLoading) {
-      setLoading(false);
-    }
-  }, [electionLoading, candidatesLoading]);
-
   if (loading && !election) {
     return (
-      <ScreenView scrollable={false}>
-        <View style={styles.centerContainer}>
-          <ThemedText variant="body" color="textSecondary">Loading contest details...</ThemedText>
+      <ScreenView scrollable={false} contentContainerStyle={styles.listContent}>
+        {/* Electoral Contest Hero Skeleton */}
+        <View style={[styles.headerCard, { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border }]}>
+          <Shimmer width={120} height={12} borderRadius={radius.sm} />
+          <Shimmer width="75%" height={24} borderRadius={radius.sm} style={{ marginTop: 6 }} />
+          <Shimmer width="45%" height={14} borderRadius={radius.sm} style={{ marginTop: 6 }} />
+          <View style={[styles.dateTag, { borderColor: colors.border, marginTop: spacing.md }]}>
+            <Shimmer width="60%" height={12} borderRadius={radius.sm} />
+          </View>
+        </View>
+
+        {/* Contesting Candidates Header Skeleton */}
+        <View style={[styles.candidatesHeaderRow, { marginTop: spacing.md }]}>
+          <Shimmer width={160} height={18} borderRadius={radius.sm} />
+        </View>
+
+        {/* Contesting Candidate Cards Skeleton */}
+        <View style={{ gap: spacing.xs, marginTop: spacing.xs }}>
+          <SkeletonCard />
+          <SkeletonCard />
+          <SkeletonCard />
         </View>
       </ScreenView>
     );

@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
-import { View, StyleSheet, Pressable, Animated } from 'react-native';
+import { View, StyleSheet, Pressable, Animated, TextInput } from 'react-native';
 import { ScreenView } from '@/core/components/ScreenView';
 import { ThemedText, Card, IncidentMarquee } from '@/core/components';
 import { EntranceView } from '@/core/components/EntranceView';
@@ -8,7 +8,7 @@ import { ROUTES } from '@/constants/routes';
 import { spacing, radius, shadows } from '@/constants/tokens';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
 import { useStatusBar } from '@/core/hooks/useStatusBar';
-import { useElectionsQuery, useIncidentsQuery, useCandidatesQuery, useResultsQuery, useAIProjectionQuery } from '@/features/elections/hooks';
+import { useElectionsQuery, useIncidentsQuery, useCandidatesQuery, useResultsQuery, useAIProjectionQuery, useLocationSearchQuery } from '@/features/elections/hooks';
 import { useRefreshControl, useHaptics, useForegroundRefresh } from '@/core/hooks';
 import Colors from '@/constants/colors';
 import { router } from 'expo-router';
@@ -87,12 +87,19 @@ export default function DashboardScreen() {
   // AI Projection parameters (Audio Parts 6, 7, 8, 9)
   const [selectedCandidateId, setSelectedCandidateId] = useState('cand1');
   const [pastDataEnum, setPastDataEnum] = useState<0 | 1 | 2>(0);
+  const [locationSearchQuery, setLocationSearchQuery] = useState('');
+  const [selectedLocation, setSelectedLocation] = useState<{ id: string; name: string; qualification: string } | null>(null);
+  const [showLocationDropdown, setShowLocationDropdown] = useState(false);
   const currentDataSwitch = true;
+
+  const { data: searchResults = [], isLoading: searchingLocations } = useLocationSearchQuery(locationSearchQuery);
 
   const { data: projection } = useAIProjectionQuery({
     candidateId: selectedCandidateId,
     currentData: currentDataSwitch,
     pastData: pastDataEnum,
+    locationId: selectedLocation?.id,
+    locationText: selectedLocation ? `${selectedLocation.name}, ${selectedLocation.qualification}` : undefined,
   });
 
   // Simulated Live Pulse (Audio Part 6: simulated live incoming data pulsing every 12s across all values)
@@ -141,10 +148,18 @@ export default function DashboardScreen() {
 
   const isElectionOfficer = user?.role === 'ELECTION_OFFICER';
 
+  // Combine remote published results with persistent local submissions (live link)
+  const liveResults = useMemo(() => {
+    const localPublished = submissions.filter((s) => s.status === 'PUBLISHED');
+    const ids = new Set(localPublished.map((s) => s.id));
+    const remoteUnique = allResults.filter((r) => !ids.has(r.id));
+    return [...localPublished, ...remoteUnique];
+  }, [submissions, allResults]);
+
   // Candidate scores aggregation for snapshot performance (Audio Part 2 & 6: linked to live pulse)
   const candidateScores = useMemo(() => {
     const totals: Record<string, number> = {};
-    allResults.forEach((r) => {
+    liveResults.forEach((r) => {
       Object.entries(r.candidateVotes).forEach(([candId, v]) => {
         const val = typeof v === 'number' ? v : 0;
         totals[candId] = (totals[candId] ?? 0) + val;
@@ -173,7 +188,7 @@ export default function DashboardScreen() {
         pct: grandTotal > 0 ? (c.votes / grandTotal) * 100 : 25,
       }))
       .sort((a, b) => b.votes - a.votes);
-  }, [candidates, allResults, pulseBonusVotes]);
+  }, [candidates, liveResults, pulseBonusVotes]);
 
   const grandTotalVotes = useMemo(() => {
     return candidateScores.reduce((acc, c) => acc + c.votes, 0);
@@ -523,9 +538,126 @@ export default function DashboardScreen() {
             })}
           </View>
 
+          {/* Location Scope Search & Dropdown Autocomplete (Audio Part 8) */}
+          <View style={{ marginTop: spacing.sm, zIndex: 10 }}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+              <ThemedText variant="label" color="textSecondary" fontFamily="bold">
+                GEOGRAPHIC PROJECTION SCOPE
+              </ThemedText>
+              {selectedLocation && (
+                <Pressable
+                  onPress={() => {
+                    impact(Haptics.ImpactFeedbackStyle.Light);
+                    setSelectedLocation(null);
+                    setLocationSearchQuery('');
+                    setShowLocationDropdown(false);
+                  }}
+                >
+                  <ThemedText variant="label" color="primary" fontFamily="bold">
+                    Reset to National
+                  </ThemedText>
+                </Pressable>
+              )}
+            </View>
+
+            {/* Search Input Box */}
+            <View
+              style={[
+                styles.locSearchInputBox,
+                {
+                  backgroundColor: colors.surfaceElevated,
+                  borderColor: showLocationDropdown ? colors.primary : colors.border,
+                },
+              ]}
+            >
+              <Ionicons name="search-outline" size={16} color={colors.textSecondary} />
+              <TextInput
+                value={selectedLocation ? `${selectedLocation.name} (${selectedLocation.qualification})` : locationSearchQuery}
+                onChangeText={(text) => {
+                  setSelectedLocation(null);
+                  setLocationSearchQuery(text);
+                  setShowLocationDropdown(text.trim().length >= 2);
+                }}
+                onFocus={() => {
+                  if (locationSearchQuery.trim().length >= 2) setShowLocationDropdown(true);
+                }}
+                placeholder="Search State, LGA, Ward, or PU to simulate..."
+                placeholderTextColor={colors.textMuted}
+                style={[styles.locTextInput, { color: colors.text }]}
+              />
+              {(locationSearchQuery || selectedLocation) && (
+                <Pressable
+                  onPress={() => {
+                    impact(Haptics.ImpactFeedbackStyle.Light);
+                    setSelectedLocation(null);
+                    setLocationSearchQuery('');
+                    setShowLocationDropdown(false);
+                  }}
+                  hitSlop={8}
+                >
+                  <Ionicons name="close-circle" size={16} color={colors.textMuted} />
+                </Pressable>
+              )}
+            </View>
+
+            {/* Dropdown Results Box */}
+            {showLocationDropdown && (
+              <View style={[styles.locDropdown, { backgroundColor: colors.surface, borderColor: colors.primary }]}>
+                {searchingLocations ? (
+                  <View style={{ padding: spacing.sm, alignItems: 'center' }}>
+                    <ThemedText variant="caption" color="textSecondary">
+                      Searching matching locations...
+                    </ThemedText>
+                  </View>
+                ) : searchResults.length === 0 ? (
+                  <View style={{ padding: spacing.sm, alignItems: 'center' }}>
+                    <ThemedText variant="caption" color="textSecondary">
+                      No matching locations found.
+                    </ThemedText>
+                  </View>
+                ) : (
+                  searchResults.slice(0, 5).map((item) => (
+                    <Pressable
+                      key={item.id}
+                      onPress={() => {
+                        impact(Haptics.ImpactFeedbackStyle.Medium);
+                        setSelectedLocation({ id: item.id, name: item.name, qualification: item.qualification });
+                        setShowLocationDropdown(false);
+                      }}
+                      style={[styles.locDropdownItem, { borderBottomColor: colors.borderSubtle }]}
+                    >
+                      <View style={[styles.locTypeBadge, { backgroundColor: colors.primaryLight + '22' }]}>
+                        <ThemedText variant="label" color="primary" fontFamily="bold">
+                          {item.type}
+                        </ThemedText>
+                      </View>
+                      <View style={{ flex: 1, marginLeft: spacing.xs }}>
+                        <ThemedText variant="body" color="text" fontFamily="bold" numberOfLines={1}>
+                          {item.name}
+                        </ThemedText>
+                        <ThemedText variant="caption" color="textSecondary" numberOfLines={1}>
+                          {item.qualification}
+                        </ThemedText>
+                      </View>
+                      <Ionicons name="chevron-forward" size={14} color={colors.textMuted} />
+                    </Pressable>
+                  ))
+                )}
+              </View>
+            )}
+          </View>
+
           {/* AI Projection Output Metrics */}
           {projection && (
             <View style={[styles.aiMetricsBox, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }]}>
+              {/* Location Scope Banner */}
+              <View style={[styles.scopeBanner, { backgroundColor: colors.surface, borderColor: colors.borderSubtle }]}>
+                <Ionicons name="location" size={14} color={colors.primary} />
+                <ThemedText variant="caption" color="textSecondary" numberOfLines={1} style={{ flex: 1, marginLeft: 4 }}>
+                  Scope: <ThemedText variant="caption" color="text" fontFamily="bold">{projection.locationScope}</ThemedText>
+                </ThemedText>
+              </View>
+
               <View style={styles.aiMetricRow}>
                 <View style={{ flex: 1 }}>
                   <ThemedText variant="caption" color="textSecondary">PROJECTED SHARE</ThemedText>
@@ -1140,6 +1272,48 @@ const styles = StyleSheet.create({
     borderRadius: radius.md,
     alignItems: 'center',
     justifyContent: 'center',
+    marginBottom: spacing.xs,
+  },
+  locSearchInputBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 8,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    gap: spacing.xs,
+  },
+  locTextInput: {
+    flex: 1,
+    fontSize: 13,
+    padding: 0,
+  },
+  locDropdown: {
+    marginTop: 4,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    overflow: 'hidden',
+    ...shadows.md,
+  },
+  locDropdownItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs + 2,
+    borderBottomWidth: 1,
+  },
+  locTypeBadge: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: radius.xs,
+  },
+  scopeBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 6,
+    borderRadius: radius.sm,
+    borderWidth: 1,
     marginBottom: spacing.xs,
   },
 });

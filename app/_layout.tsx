@@ -14,6 +14,7 @@ import { RootErrorBoundary } from '@/core/components/ErrorBoundary';
 import { mockApi } from '@/features/elections/service';
 import { ResultSubmission } from '@/features/auth/store';
 import { Asset } from 'expo-asset';
+import * as ScreenCapture from 'expo-screen-capture';
 import { fontMap } from '@/constants/fonts';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
 
@@ -33,6 +34,8 @@ export default function RootLayout() {
   useEffect(() => {
     async function preloadAssets() {
       try {
+        // Screenshots allowed by default; user can toggle blocking in Settings
+        ScreenCapture.allowScreenCaptureAsync().catch(() => {});
         // eslint-disable-next-line @typescript-eslint/no-require-imports
         await Asset.loadAsync([require('@/assets/eagle-head.png')]);
       } catch {

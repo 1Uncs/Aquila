@@ -6,7 +6,7 @@ import { useVideoPlayer, VideoView } from 'expo-video';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useLocalSearchParams, router } from 'expo-router';
 import { ScreenView } from '@/core/components/ScreenView';
-import { ThemedText, Card, EmptyState, Button } from '@/core/components';
+import { ThemedText, Card, EmptyState, Button, Shimmer, SkeletonCard } from '@/core/components';
 import { useIncidentsQuery, usePollingUnitsQuery } from '@/features/elections/hooks';
 import { spacing, radius, shadows, border } from '@/constants/tokens';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
@@ -110,11 +110,22 @@ export default function IncidentDetailScreen() {
 
   if (isLoading && !incident) {
     return (
-      <ScreenView scrollable={false}>
-        <View style={styles.centerContainer}>
-          <ThemedText variant="body" color="textSecondary">
-            Loading incident intelligence...
-          </ThemedText>
+      <ScreenView scrollable={false} contentContainerStyle={styles.scrollContent}>
+        {/* Hero Status Card Skeleton */}
+        <View style={[styles.heroCard, { backgroundColor: colors.surface, padding: spacing.md, gap: spacing.sm, borderWidth: 1, borderColor: colors.border }]}>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Shimmer width={120} height={22} borderRadius={radius.full} />
+            <Shimmer width={80} height={22} borderRadius={radius.full} />
+          </View>
+          <Shimmer width="85%" height={24} borderRadius={radius.sm} style={{ marginTop: 6 }} />
+          <Shimmer width="60%" height={14} borderRadius={radius.sm} />
+          <Shimmer width="40%" height={12} borderRadius={radius.sm} />
+        </View>
+
+        {/* Intelligence Details Skeleton Cards */}
+        <View style={{ gap: spacing.md, marginTop: spacing.md }}>
+          <SkeletonCard lines={2} />
+          <SkeletonCard lines={3} />
         </View>
       </ScreenView>
     );

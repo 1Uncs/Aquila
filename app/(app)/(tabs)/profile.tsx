@@ -1,7 +1,8 @@
-import React from 'react';
-import { StyleSheet, View, Alert, Image } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, View, Alert, Image, Switch } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
+import * as ScreenCapture from 'expo-screen-capture';
 import { ScreenView } from '@/core/components/ScreenView';
 import { ThemedText, Card, Button } from '@/core/components';
 import { useAuthStore } from '@/features/auth/store';
@@ -27,6 +28,26 @@ export default function ProfileTabScreen() {
     ELECTION_OFFICER: 'Election Officer',
     POLLING_AGENT: 'Polling Unit Agent',
     FIELD_AGENT: 'Field Agent',
+  };
+
+  const [screenCaptureBlocked, setScreenCaptureBlocked] = useState(false);
+
+  useEffect(() => {
+    ScreenCapture.allowScreenCaptureAsync().catch(() => {});
+  }, []);
+
+  const handleToggleScreenCapture = async (value: boolean) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setScreenCaptureBlocked(value);
+    try {
+      if (value) {
+        await ScreenCapture.preventScreenCaptureAsync();
+      } else {
+        await ScreenCapture.allowScreenCaptureAsync();
+      }
+    } catch (e) {
+      console.warn('[profile] toggleScreenCapture failed', e);
+    }
   };
 
   const handleRoleSwitch = (newRole: UserRole, email: string) => {
@@ -158,6 +179,25 @@ export default function ProfileTabScreen() {
               </ThemedText>
             </View>
             <Ionicons name="checkmark-circle" size={20} color={colors.success} />
+          </View>
+
+          {/* Interactive Screen Capture Prevention Toggle (Audio Part 5) */}
+          <View style={styles.prefRow}>
+            <Ionicons name="shield-checkmark-outline" size={18} color={colors.primary} />
+            <View style={{ flex: 1, marginLeft: spacing.xs, marginRight: spacing.xs }}>
+              <ThemedText variant="body" color="text" fontFamily="bold">
+                Block App Screenshots & Recording
+              </ThemedText>
+              <ThemedText variant="caption" color="textSecondary">
+                Prevents OS screenshots and screen recording of confidential polling data (Off by default)
+              </ThemedText>
+            </View>
+            <Switch
+              value={screenCaptureBlocked}
+              onValueChange={handleToggleScreenCapture}
+              trackColor={{ false: colors.borderSubtle, true: colors.primary }}
+              thumbColor={screenCaptureBlocked ? '#FFFFFF' : '#F4F3F4'}
+            />
           </View>
         </View>
       </Card>

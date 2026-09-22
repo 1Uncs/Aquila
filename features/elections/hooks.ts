@@ -131,7 +131,7 @@ export function useAIProjectionQuery(params?: {
   locationText?: string;
 }) {
   return useQuery({
-    queryKey: ['elections', 'aiProjection', params?.candidateId, params?.pastData, params?.currentData, params?.locationId],
+    queryKey: ['elections', 'aiProjection', params?.candidateId, params?.pastData, params?.currentData, params?.locationId, params?.locationText],
     queryFn: () => mockApi.getAIProjection(params),
     staleTime: 60 * 1000,
   });

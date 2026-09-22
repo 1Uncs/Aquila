@@ -2,7 +2,7 @@ import React, { useState, useMemo, useCallback } from 'react';
 import { StyleSheet, View, ScrollView, Pressable, FlatList } from 'react-native';
 import { router } from 'expo-router';
 import { ScreenView } from '@/core/components/ScreenView';
-import { ThemedText, EmptyState, Button, Card } from '@/core/components';
+import { ThemedText, EmptyState, Button, Card, SkeletonCard } from '@/core/components';
 import { useIncidentsStore, useAuthStore, IncidentReport } from '@/features/auth/store';
 import { ROUTES } from '@/constants/routes';
 import { spacing, radius, shadows } from '@/constants/tokens';
@@ -283,13 +283,21 @@ export default function IncidentsScreen() {
           contentContainerStyle={styles.listContent}
           ItemSeparatorComponent={() => <View style={{ height: spacing.sm }} />}
           ListEmptyComponent={
-            <EmptyState
-              icon="shield-checkmark-outline"
-              title="No Incidents Reported"
-              subtitle="All polling units in this category are operating normally without security disruption."
-              actionLabel="+ Report Incident"
-              onAction={() => router.push(ROUTES.INCIDENT_REPORT)}
-            />
+            loading ? (
+              <View style={{ gap: spacing.sm }}>
+                <SkeletonCard />
+                <SkeletonCard />
+                <SkeletonCard />
+              </View>
+            ) : (
+              <EmptyState
+                icon="shield-checkmark-outline"
+                title="No Incidents Reported"
+                subtitle="All polling units in this category are operating normally without security disruption."
+                actionLabel="+ Report Incident"
+                onAction={() => router.push(ROUTES.INCIDENT_REPORT)}
+              />
+            )
           }
         />
       </View>

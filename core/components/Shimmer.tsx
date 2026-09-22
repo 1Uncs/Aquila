@@ -45,8 +45,9 @@ export function Shimmer({
     outputRange: [-numericWidth, numericWidth],
   });
 
-  const baseColor = colors.border;
-  const highlightColor = colors.surfaceElevated;
+  const isDark = scheme === 'dark';
+  const baseColor = isDark ? '#0D1A12' : '#EBF7F0';
+  const highlightColor = isDark ? colors.primaryLight + '38' : colors.primaryLight + '55';
 
   return (
     <View style={[{ width, height, borderRadius, backgroundColor: baseColor, overflow: 'hidden' }, style]}>
