@@ -395,7 +395,7 @@ export default function ElectionsScreen() {
                     </View>
                   ))}
                   <ThemedText variant="caption" color="textSecondary" style={{ marginLeft: 4, fontSize: 11 }}>
-                    {election.candidateCount} Candidates
+                    {election.candidateCount} {election.candidateCount === 1 ? 'Candidate' : 'Candidates'}
                   </ThemedText>
                 </View>
 

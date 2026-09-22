@@ -12,6 +12,14 @@ import { useElectionDetailQuery, useCandidatesQuery } from '@/features/elections
 import Colors from '@/constants/colors';
 import { useForegroundRefresh } from '@/core/hooks';
 
+const PARTY_COLORS: Record<string, { bg: string; text: string }> = {
+  APC: { bg: '#0D9488', text: '#FFFFFF' },
+  PDP: { bg: '#DC2626', text: '#FFFFFF' },
+  LP: { bg: '#16A34A', text: '#FFFFFF' },
+  NNPP: { bg: '#2563EB', text: '#FFFFFF' },
+  APGA: { bg: '#D97706', text: '#FFFFFF' },
+};
+
 export default function ElectionDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { data: election, isLoading: electionLoading } = useElectionDetailQuery(id);
@@ -86,30 +94,45 @@ export default function ElectionDetailScreen() {
 
       {/* 3. Candidates List */}
       <View style={{ gap: spacing.xs }}>
-        {candidates.map((c, index) => (
-          <Card key={c.id} style={styles.candCard}>
-            <View style={styles.candRow}>
-              <View style={[styles.avatarBox, { backgroundColor: colors.primary + '18' }]}>
-                <ThemedText variant="title" color="primary" fontFamily="bold">
-                  #{index + 1}
-                </ThemedText>
+        {candidates.map((c, index) => {
+          const partyColor = PARTY_COLORS[c.partyAcronym]?.bg ?? colors.primary;
+          return (
+            <Card key={c.id} style={styles.candCard}>
+              <View style={styles.candRow}>
+                <View style={[styles.avatarBox, { backgroundColor: partyColor + '18' }]}>
+                  <ThemedText variant="title" style={{ color: partyColor, fontWeight: '800' }}>
+                    #{c.candidateNumber ?? index + 1}
+                  </ThemedText>
+                </View>
+                <View style={{ flex: 1, marginLeft: spacing.sm }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                    <ThemedText variant="body" color="text" fontFamily="bold">
+                      {c.fullName}
+                    </ThemedText>
+                    <View style={[styles.partyPill, { backgroundColor: partyColor + '20', borderColor: partyColor }]}>
+                      <ThemedText variant="caption" style={{ color: partyColor, fontWeight: '700', fontSize: 10 }}>
+                        {c.partyAcronym}
+                      </ThemedText>
+                    </View>
+                  </View>
+                  <ThemedText variant="caption" color="textSecondary" style={{ marginTop: 2 }}>
+                    {c.partyName}
+                  </ThemedText>
+                  {c.runningMate ? (
+                    <ThemedText variant="caption" color="textMuted" style={{ marginTop: 2, fontSize: 11 }}>
+                      Running Mate: <ThemedText variant="caption" color="text" fontFamily="medium" style={{ fontSize: 11 }}>{c.runningMate}</ThemedText>
+                    </ThemedText>
+                  ) : null}
+                </View>
+                <View style={[styles.statusBadge, { backgroundColor: colors.successSubtle }]}>
+                  <ThemedText variant="label" color="success" fontFamily="bold">
+                    {c.status}
+                  </ThemedText>
+                </View>
               </View>
-              <View style={{ flex: 1, marginLeft: spacing.sm }}>
-                <ThemedText variant="body" color="text" fontFamily="bold">
-                  {c.fullName}
-                </ThemedText>
-                <ThemedText variant="caption" color="textSecondary">
-                  {c.partyName} ({c.partyAcronym})
-                </ThemedText>
-              </View>
-              <View style={[styles.statusBadge, { backgroundColor: colors.successSubtle }]}>
-                <ThemedText variant="label" color="success" fontFamily="bold">
-                  {c.status}
-                </ThemedText>
-              </View>
-            </View>
-          </Card>
-        ))}
+            </Card>
+          );
+        })}
       </View>
 
       {/* 4. Footer CTA Actions */}
@@ -179,6 +202,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: radius.full,
+  },
+  partyPill: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: radius.xs,
+    borderWidth: 1,
   },
   footerActions: {
     gap: spacing.sm,
