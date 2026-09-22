@@ -1,12 +1,19 @@
+import React, { createContext, useContext } from 'react';
 import { View, ViewStyle, Platform, ScrollView, ScrollViewProps, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useSegments } from 'expo-router';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
 import Colors from '@/constants/colors';
 import { spacing } from '@/constants/tokens';
 
+export const ScreenViewContext = createContext<{
+  isTab?: boolean;
+  isAuth?: boolean;
+}>({});
+
 type ScreenViewProps = {
   children: React.ReactNode;
+  isTab?: boolean;
+  isAuth?: boolean;
   style?: ViewStyle;
   contentContainerStyle?: ViewStyle;
   scrollable?: boolean;
@@ -21,6 +28,8 @@ type ScreenViewProps = {
 
 export function ScreenView({
   children,
+  isTab: isTabProp,
+  isAuth: isAuthProp,
   style,
   contentContainerStyle,
   scrollable = false,
@@ -35,10 +44,10 @@ export function ScreenView({
   const insets = useSafeAreaInsets();
   const scheme = useColorScheme() ?? 'light';
   const colors = Colors[scheme];
-  const segments = useSegments();
+  const context = useContext(ScreenViewContext);
 
-  const isTab = segments.some((s) => s === '(tabs)');
-  const isAuth = segments.some((s) => s === '(auth)');
+  const isTab = isTabProp ?? context.isTab ?? false;
+  const isAuth = isAuthProp ?? context.isAuth ?? false;
   const hasNoNativeHeader = isTab || isAuth;
 
   let resolvedTopPadding = 0;

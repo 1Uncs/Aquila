@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, FlatList } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -55,84 +55,78 @@ export default function ElectionDetailScreen() {
   }
 
   return (
-    <ScreenView scrollable={false} noScrollPadding>
-      <View style={styles.container}>
-        <FlatList
-          data={candidates}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.listContent}
-          ItemSeparatorComponent={() => <View style={{ height: spacing.xs }} />}
-          ListHeaderComponent={
-            <View style={{ marginBottom: spacing.sm }}>
-              <LinearGradient
-                colors={['#0D6338', '#0A4A2A']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={[styles.headerCard, shadows.md]}
-              >
-                <ThemedText variant="label" color="#A3E6C2" fontFamily="bold">
-                  ELECTORAL CONTEST
-                </ThemedText>
-                <ThemedText variant="h2" color="#FFFFFF" fontFamily="bold" style={{ marginTop: 2 }}>
-                  {election.position}
-                </ThemedText>
-                <ThemedText variant="caption" color="#D1FAE5" style={{ marginTop: 2 }}>
-                  {election.electoralArea} · {election.electoralAreaType}
-                </ThemedText>
-                <View style={styles.dateTag}>
-                  <ThemedText variant="label" color="#FFFFFF" fontFamily="bold">
-                    Election Date: {election.electionDate} · Status: {election.status}
-                  </ThemedText>
-                </View>
-              </LinearGradient>
+    <ScreenView scrollable contentContainerStyle={styles.listContent}>
+      {/* 1. Electoral Contest Hero */}
+      <LinearGradient
+        colors={['#0D6338', '#0A4A2A']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={[styles.headerCard, shadows.md]}
+      >
+        <ThemedText variant="label" color="#A3E6C2" fontFamily="bold">
+          ELECTORAL CONTEST
+        </ThemedText>
+        <ThemedText variant="h2" color="#FFFFFF" fontFamily="bold" style={{ marginTop: 2 }}>
+          {election.position}
+        </ThemedText>
+        <ThemedText variant="caption" color="#D1FAE5" style={{ marginTop: 2 }}>
+          {election.electoralArea} · {election.electoralAreaType}
+        </ThemedText>
+        <View style={styles.dateTag}>
+          <ThemedText variant="label" color="#FFFFFF" fontFamily="bold">
+            Election Date: {election.electionDate} · Status: {election.status}
+          </ThemedText>
+        </View>
+      </LinearGradient>
 
-              <View style={styles.candidatesHeaderRow}>
-                <ThemedText variant="title" color="text" fontFamily="bold">
-                  Contesting Candidates ({candidates.length})
+      {/* 2. Contesting Candidates Header */}
+      <View style={styles.candidatesHeaderRow}>
+        <ThemedText variant="title" color="text" fontFamily="bold">
+          Contesting Candidates ({candidates.length})
+        </ThemedText>
+      </View>
+
+      {/* 3. Candidates List */}
+      <View style={{ gap: spacing.xs }}>
+        {candidates.map((c, index) => (
+          <Card key={c.id} style={styles.candCard}>
+            <View style={styles.candRow}>
+              <View style={[styles.avatarBox, { backgroundColor: colors.primary + '18' }]}>
+                <ThemedText variant="title" color="primary" fontFamily="bold">
+                  #{index + 1}
+                </ThemedText>
+              </View>
+              <View style={{ flex: 1, marginLeft: spacing.sm }}>
+                <ThemedText variant="body" color="text" fontFamily="bold">
+                  {c.fullName}
+                </ThemedText>
+                <ThemedText variant="caption" color="textSecondary">
+                  {c.partyName} ({c.partyAcronym})
+                </ThemedText>
+              </View>
+              <View style={[styles.statusBadge, { backgroundColor: colors.successSubtle }]}>
+                <ThemedText variant="label" color="success" fontFamily="bold">
+                  {c.status}
                 </ThemedText>
               </View>
             </View>
-          }
-          renderItem={({ item: c, index }) => (
-            <Card style={styles.candCard}>
-              <View style={styles.candRow}>
-                <View style={[styles.avatarBox, { backgroundColor: colors.primary + '18' }]}>
-                  <ThemedText variant="title" color="primary" fontFamily="bold">
-                    #{index + 1}
-                  </ThemedText>
-                </View>
-                <View style={{ flex: 1, marginLeft: spacing.sm }}>
-                  <ThemedText variant="body" color="text" fontFamily="bold">
-                    {c.fullName}
-                  </ThemedText>
-                  <ThemedText variant="caption" color="textSecondary">
-                    {c.partyName} ({c.partyAcronym})
-                  </ThemedText>
-                </View>
-                <View style={[styles.statusBadge, { backgroundColor: colors.successSubtle }]}>
-                  <ThemedText variant="label" color="success" fontFamily="bold">
-                    {c.status}
-                  </ThemedText>
-                </View>
-              </View>
-            </Card>
-          )}
-          ListFooterComponent={
-            <View style={styles.footerActions}>
-              <Button
-                label="Submit Result for Contest"
-                variant="primary"
-                leftIcon="add-circle-outline"
-                onPress={() => router.push({ pathname: ROUTES.RESULT_SUBMIT, params: { electionId: id } })}
-              />
-              <Button
-                label="Report Incident in Jurisdiction"
-                variant="outline"
-                leftIcon="warning-outline"
-                onPress={() => router.push({ pathname: ROUTES.INCIDENT_REPORT, params: { electionId: id } })}
-              />
-            </View>
-          }
+          </Card>
+        ))}
+      </View>
+
+      {/* 4. Footer CTA Actions */}
+      <View style={styles.footerActions}>
+        <Button
+          label="Submit Result for Contest"
+          variant="primary"
+          leftIcon="add-circle-outline"
+          onPress={() => router.push({ pathname: ROUTES.RESULT_SUBMIT, params: { electionId: id } })}
+        />
+        <Button
+          label="Report Incident in Jurisdiction"
+          variant="outline"
+          leftIcon="warning-outline"
+          onPress={() => router.push({ pathname: ROUTES.INCIDENT_REPORT, params: { electionId: id } })}
         />
       </View>
     </ScreenView>

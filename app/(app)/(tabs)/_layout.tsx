@@ -1,13 +1,15 @@
 import { NativeTabs } from 'expo-router/unstable-native-tabs';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
 import Colors from '@/constants/colors';
+import { ScreenViewContext } from '@/core/components/ScreenView';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
 
   return (
-    <NativeTabs
+    <ScreenViewContext.Provider value={{ isTab: true }}>
+      <NativeTabs
       iconColor={{ default: colors.textMuted, selected: colors.primary }}
       labelStyle={{ fontSize: 10 }}
       backgroundColor={colors.surface}
@@ -37,6 +39,7 @@ export default function TabLayout() {
         <NativeTabs.Trigger.Icon sf={{ default: 'person', selected: 'person.fill' }} md="person" />
         <NativeTabs.Trigger.Label>Profile</NativeTabs.Trigger.Label>
       </NativeTabs.Trigger>
-    </NativeTabs>
+      </NativeTabs>
+    </ScreenViewContext.Provider>
   );
 }
