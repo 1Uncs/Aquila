@@ -60,30 +60,29 @@ export default function ElectionsScreen() {
       scrollable
       keyboardShouldPersistTaps="handled"
       refreshControl={refreshControl}
-      contentContainerStyle={styles.scrollContent}
+      contentContainerStyle={{ paddingBottom: 110 }}
     >
-      <View style={{ marginBottom: spacing.md }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: 2 }}>
+      <View>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.sm }}>
           <View style={[styles.titleIndicator, { backgroundColor: colors.primary }]} />
-          <ThemedText variant="title" color="text" fontFamily="bold">Elections</ThemedText>
+          <ThemedText variant="xl" style={{ flex: 1 }} minFontSize={20} maxFontSize={26}>Elections</ThemedText>
         </View>
-        <ThemedText variant="caption" color="textSecondary">
+        <ThemedText variant="body" color="textSecondary" style={{ marginBottom: spacing.lg }}>
           Browse election cycles and active contests
         </ThemedText>
-      </View>
 
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipRow} keyboardShouldPersistTaps="handled">
-        {cycles.map((cycle) => (
-          <Button
-            key={cycle.id}
-            label={cycle.name}
-            size="sm"
-            variant={selectedCycle === cycle.id ? 'primary' : 'outline'}
-            onPress={() => setSelectedCycle(cycle.id === selectedCycle ? null : cycle.id)}
-            style={styles.chip}
-          />
-        ))}
-      </ScrollView>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipRow} keyboardShouldPersistTaps="handled">
+          {cycles.map((cycle) => (
+            <Button
+              key={cycle.id}
+              label={cycle.name}
+              size="sm"
+              variant={selectedCycle === cycle.id ? 'primary' : 'outline'}
+              onPress={() => setSelectedCycle(cycle.id === selectedCycle ? null : cycle.id)}
+              style={styles.chip}
+            />
+          ))}
+        </ScrollView>
 
         {loading ? (
           <View style={{ gap: spacing.md, paddingBottom: spacing.md, marginTop: spacing.md }}>
@@ -133,17 +132,13 @@ export default function ElectionsScreen() {
             );
           })}
         </View>
+      </View>
     </ScreenView>
   );
 }
 
 const styles = StyleSheet.create({
-  scrollContent: {
-    paddingHorizontal: spacing.md,
-    paddingTop: spacing.xs,
-    paddingBottom: 110,
-  },
-  chipRow: { gap: spacing.sm, marginBottom: spacing.md, paddingRight: spacing.md },
+  chipRow: { gap: spacing.sm, marginBottom: spacing.lg, paddingRight: spacing.md },
   chip: { marginRight: spacing.sm },
   electionCard: { marginBottom: spacing.md, padding: spacing.md },
   titleIndicator: { width: 4, height: 16, borderRadius: radius.full },
