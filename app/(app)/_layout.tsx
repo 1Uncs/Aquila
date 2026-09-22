@@ -1,6 +1,8 @@
 import { Stack } from 'expo-router';
 import { Platform } from 'react-native';
 
+import { useColorScheme } from '@/core/hooks/useColorScheme';
+
 function pushOptions(title: string) {
   return {
     headerShown: true,
@@ -17,10 +19,13 @@ function pushOptions(title: string) {
 }
 
 export default function AppLayout() {
+  const scheme = useColorScheme() ?? 'light';
+  const rootBg = scheme === 'dark' ? '#070C09' : '#F8FAF9';
+
   return (
     <Stack
       screenOptions={{
-        contentStyle: { backgroundColor: '#070C09' },
+        contentStyle: { backgroundColor: rootBg },
         animation: 'slide_from_right',
         animationDuration: 250,
       }}

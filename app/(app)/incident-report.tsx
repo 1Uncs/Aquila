@@ -48,17 +48,20 @@ export default function ReportIncidentScreen() {
   const colors = Colors[scheme];
   useStatusBar({ barStyle: scheme === 'dark' ? 'light' : 'dark' });
 
-  const recorderRef = useRef(audioRecorder);
-  recorderRef.current = audioRecorder;
+  const isRecordingRef = useRef(false);
+  isRecordingRef.current = isRecording;
 
   useEffect(() => {
     return () => {
-      if (recorderRef.current.isRecording) {
-        recorderRef.current.stop().catch(() => {});
+      if (isRecordingRef.current) {
+        isRecordingRef.current = false;
+        try {
+          audioRecorder.stop().catch(() => {});
+        } catch {}
         setAudioModeAsync({ allowsRecording: false, allowsBackgroundRecording: false }).catch(() => {});
       }
     };
-  }, []);
+  }, [audioRecorder]);
 
   useEffect(() => {
     if (!FEATURES.ENABLE_STEALTH_RECORDING) return;
@@ -67,8 +70,8 @@ export default function ReportIncidentScreen() {
     if (chunkIndexRef.current >= MAX_CHUNKS) return;
     (async () => {
       try {
-        await recorderRef.current.stop();
-        const uri = recorderRef.current.uri;
+        await audioRecorder.stop();
+        const uri = audioRecorder.uri;
         await setAudioModeAsync({ allowsRecording: false, allowsBackgroundRecording: false }).catch(() => {});
         if (uri) {
           const chunk = {
@@ -84,14 +87,14 @@ export default function ReportIncidentScreen() {
         }
         if (chunkIndexRef.current < MAX_CHUNKS) {
           await setAudioModeAsync({ playsInSilentMode: true, allowsRecording: true, allowsBackgroundRecording: true });
-          await recorderRef.current.prepareToRecordAsync();
-          recorderRef.current.record();
+          await audioRecorder.prepareToRecordAsync();
+          audioRecorder.record();
         }
       } catch (e) {
         console.error('Chunk finalization failed', e);
       }
     })();
-  }, [recordingDuration, isRecording]);
+  }, [recordingDuration, isRecording, audioRecorder]);
 
   const requestPermission = async (type: 'camera' | 'mediaLibrary') => {
     try {
@@ -158,8 +161,10 @@ export default function ReportIncidentScreen() {
       setAudioChunks([]);
       await audioRecorder.prepareToRecordAsync();
       audioRecorder.record();
+      isRecordingRef.current = true;
       setRecordingUri(null);
     } catch (error) {
+      isRecordingRef.current = false;
       console.error('Failed to start recording:', error);
       Alert.alert('Error', 'Failed to start audio recording.');
       try {
@@ -172,6 +177,7 @@ export default function ReportIncidentScreen() {
 
   const stopRecording = async () => {
     try {
+      isRecordingRef.current = false;
       await audioRecorder.stop();
       const uri = audioRecorder.uri;
       await setAudioModeAsync({ allowsRecording: false, allowsBackgroundRecording: false });

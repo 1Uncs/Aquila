@@ -15,6 +15,7 @@ import { mockApi } from '@/features/elections/service';
 import { ResultSubmission } from '@/features/auth/store';
 import { fontMap } from '@/constants/fonts';
 import * as SystemUI from 'expo-system-ui';
+import { useColorScheme } from '@/core/hooks/useColorScheme';
 
 SplashScreen.preventAutoHideAsync();
 enableScreens();
@@ -26,6 +27,12 @@ export const unstable_settings = {
 
 export default function RootLayout() {
   const [fontsLoaded, fontError] = useFonts(fontMap);
+  const scheme = useColorScheme() ?? 'light';
+  const rootBg = scheme === 'dark' ? '#070C09' : '#F8FAF9';
+
+  useEffect(() => {
+    SystemUI.setBackgroundColorAsync(rootBg).catch(() => {});
+  }, [rootBg]);
 
   useEffect(() => {
     if (fontsLoaded || fontError) {
@@ -38,7 +45,7 @@ export default function RootLayout() {
   }
 
   return (
-    <GestureHandlerRootView style={[styles.root, { backgroundColor: '#070C09' }]}>
+    <GestureHandlerRootView style={[styles.root, { backgroundColor: rootBg }]}>
       <SafeAreaProvider>
         <QueryClientProvider client={queryClient}>
           <AuthProvider>
@@ -310,11 +317,14 @@ function RootLayoutNav() {
     }
   }, [isNavigationReady, isAuthenticated, segments, router]);
 
+  const scheme = useColorScheme() ?? 'light';
+  const rootBg = scheme === 'dark' ? '#070C09' : '#F8FAF9';
+
   return (
     <Stack
       screenOptions={{
         headerShown: false,
-        contentStyle: { backgroundColor: '#070C09' },
+        contentStyle: { backgroundColor: rootBg },
         animation: 'fade',
         gestureEnabled: false,
       }}
