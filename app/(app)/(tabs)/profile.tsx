@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Alert, Image, Switch } from 'react-native';
+import { StyleSheet, View, Alert, Switch } from 'react-native';
+import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import * as ScreenCapture from 'expo-screen-capture';
@@ -91,7 +92,7 @@ export default function ProfileTabScreen() {
               // eslint-disable-next-line @typescript-eslint/no-require-imports
               source={require('@/assets/eagle-head.png')}
               style={styles.avatarImg}
-              resizeMode="contain"
+              contentFit="contain"
             />
           </View>
 

@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
-import { StyleSheet, View, Pressable, Alert, TextInput, Image, Modal, Linking } from 'react-native';
+import { StyleSheet, View, Pressable, Alert, TextInput, Modal, Linking } from 'react-native';
+import { Image } from 'expo-image';
 import * as WebBrowser from 'expo-web-browser';
 import { useAudioPlayer, useAudioPlayerStatus } from 'expo-audio';
 import { useVideoPlayer, VideoView } from 'expo-video';
@@ -349,7 +350,8 @@ export default function IncidentDetailScreen() {
                       <Image
                         source={{ uri }}
                         style={styles.evidenceImageThumb}
-                        resizeMode="cover"
+                        contentFit="cover"
+                        transition={200}
                       />
                       <View style={styles.evidenceExpandOverlay}>
                         <Ionicons name="expand" size={14} color="#FFFFFF" />
@@ -620,7 +622,8 @@ export default function IncidentDetailScreen() {
               <Image
                 source={{ uri: previewImageUri }}
                 style={styles.lightboxImage}
-                resizeMode="contain"
+                contentFit="contain"
+                transition={200}
               />
             </View>
           ) : null}

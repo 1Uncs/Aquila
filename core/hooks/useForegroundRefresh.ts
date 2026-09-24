@@ -31,7 +31,9 @@ export function useForegroundRefresh(queryKeys: string[][], staleTimeMs: number 
 
         if (needsRefresh) {
           lastRefreshRef.current = now;
-          queryClient.refetchQueries({ queryKey: queryKeys, type: 'all' }).catch(() => {});
+          for (const key of queryKeys) {
+            queryClient.refetchQueries({ queryKey: key, type: 'all' }).catch(() => {});
+          }
         }
       }
       appStateRef.current = nextState;
