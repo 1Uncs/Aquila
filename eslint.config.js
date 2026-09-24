@@ -44,7 +44,7 @@ export default [
       'react-hooks/exhaustive-deps': 'error',
       '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
       '@typescript-eslint/no-explicit-any': 'off',
-      'react-compiler/react-compiler': 'off',
+      'react-compiler/react-compiler': 'warn',
       'react-compiler/no-disallowed-names': 'off',
       'react-compiler/no-unstable-invariant-access': 'off',
       'react-compiler/no-leaked-side-effects': 'off',

@@ -173,14 +173,14 @@ export default function DashboardScreen() {
       cand4: 1210, // NNPP
     };
 
-    let grandTotal = 0;
     const list = candidates.map((c) => {
       const dbVotes = totals[c.id];
       const base = dbVotes !== undefined ? dbVotes : (baseMap[c.id] ?? 500);
       const votes = base + (pulseBonusVotes[c.id] ?? 0);
-      grandTotal += votes;
       return { ...c, votes };
     });
+
+    const grandTotal = list.reduce((acc, c) => acc + c.votes, 0);
 
     return list
       .map((c) => ({
