@@ -164,6 +164,7 @@ export default function LoginScreen() {
                             borderColor: active ? colors.primary : colors.border,
                           },
                         ]}
+                        accessibilityLabel={org.name}
                       >
                         <ThemedText
                           variant="caption"
@@ -245,7 +246,7 @@ export default function LoginScreen() {
               ) : null}
 
               <Button
-                label="Connect & Access Console"
+                label="Access Console"
                 onPress={handleLogin}
                 loading={loginMutation.isPending}
                 fullWidth
@@ -259,13 +260,13 @@ export default function LoginScreen() {
                 <ThemedText variant="label" color="textMuted" style={{ textAlign: 'center', marginBottom: spacing.xs }}>
                   ONE-TAP DEMO ROLES
                 </ThemedText>
-                <View style={{ flexDirection: 'row', gap: spacing.xs }}>
+                <View style={{ gap: spacing.xs }}>
                   <Button
                     label="Field Agent"
                     variant="outline"
                     onPress={() => launchDemo('agent')}
                     loading={loginMutation.isPending}
-                    style={{ flex: 1 }}
+                    fullWidth
                     size="sm"
                   />
                   <Button
@@ -273,7 +274,7 @@ export default function LoginScreen() {
                     variant="outline"
                     onPress={() => launchDemo('polling')}
                     loading={loginMutation.isPending}
-                    style={{ flex: 1 }}
+                    fullWidth
                     size="sm"
                   />
                   <Button
@@ -281,7 +282,7 @@ export default function LoginScreen() {
                     variant="outline"
                     onPress={() => launchDemo('officer')}
                     loading={loginMutation.isPending}
-                    style={{ flex: 1.3 }}
+                    fullWidth
                     size="sm"
                   />
                 </View>

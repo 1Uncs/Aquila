@@ -1,16 +1,17 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, memo } from 'react';
 import { StyleSheet, View, Pressable, FlatList } from 'react-native';
 import { router } from 'expo-router';
 import { ScreenView } from '@/core/components/ScreenView';
 import { ThemedText, Card, EmptyState, Button, SkeletonCard } from '@/core/components';
 import { ROUTES } from '@/constants/routes';
 import { spacing, radius, shadows } from '@/constants/tokens';
+import { listPerf } from '@/constants/lists';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
 import { useStatusBar } from '@/core/hooks/useStatusBar';
 import { useResultsQuery, useCandidatesQuery } from '@/features/elections/hooks';
 import { useRefreshControl, useForegroundRefresh, useHaptics } from '@/core/hooks';
 import Colors from '@/constants/colors';
-import { useResultsStore, useAuthStore, ResultSubmission } from '@/features/auth/store';
+import { useResultsStore, useAuthStore, ResultSubmission, Candidate } from '@/features/auth/store';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import * as WebBrowser from 'expo-web-browser';
@@ -55,6 +56,245 @@ const LGA_MAP_POLYGONS: Record<string, { path: string; labelX: number; labelY: n
   },
 };
 
+export type LgaCollation = {
+  id: string;
+  name: string;
+  state: string;
+  totalPus: number;
+  baseCollated: number;
+  totalVotes: number;
+  reportingPct: number;
+  leadingParty: 'APC' | 'PDP' | 'LP' | 'NNPP';
+  leadingCandidate: string;
+  leadingPct: string;
+  margin: string;
+  shares: Array<{ party: 'APC' | 'PDP' | 'LP' | 'NNPP'; votes: number; pct: number }>;
+};
+
+type ReturnCardProps = {
+  item: ResultSubmission;
+  candMap: Map<string, Candidate>;
+  colors: (typeof Colors)['light'];
+  impact: ReturnType<typeof useHaptics>['impact'];
+};
+
+// Memoized row: FlatList re-renders every row on each parent render unless
+// rows are memo/Pure (VirtualizedList slow-update warning).
+const ReturnCard = memo(function ReturnCard({ item, candMap, colors, impact }: ReturnCardProps) {
+  const isPublished = item.status === 'PUBLISHED';
+  const totalCast = item.totalVotesCast || 1;
+
+  // Find leading candidate in this PU
+  let topCandId = '';
+  let topCandVotes = 0;
+  Object.entries(item.candidateVotes || {}).forEach(([cId, v]) => {
+    const val = typeof v === 'number' ? v : 0;
+    if (val > topCandVotes) {
+      topCandVotes = val;
+      topCandId = cId;
+    }
+  });
+
+  const leadCand = candMap.get(topCandId);
+  const leadPct = ((topCandVotes / totalCast) * 100).toFixed(1);
+
+  return (
+    <Card
+      pressable
+      style={styles.itemCard}
+      onPress={() => {
+        impact(Haptics.ImpactFeedbackStyle.Light);
+        if (isPublished) {
+          router.push({ pathname: ROUTES.RESULT_DETAIL, params: { id: item.id } });
+        } else {
+          router.push(ROUTES.RESULT_DRAFTS);
+        }
+      }}
+    >
+      <View style={styles.itemHeader}>
+        <View style={{ flex: 1, minWidth: 0, paddingRight: spacing.xs }}>
+          <ThemedText variant="body" color="text" fontFamily="bold" numberOfLines={2}>
+            {item.pollingUnitName}
+          </ThemedText>
+          <ThemedText variant="caption" color="textSecondary" numberOfLines={2}>
+            {isPublished ? 'Official Return' : 'Draft Return'} · {new Date(item.submittedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+          </ThemedText>
+        </View>
+
+        <View
+          style={[
+            styles.statusChip,
+            {
+              backgroundColor: isPublished ? colors.successSubtle : colors.warningSubtle,
+              borderColor: isPublished ? colors.success : colors.warning,
+              flexShrink: 0,
+            },
+          ]}
+        >
+          <Ionicons
+            name={isPublished ? 'checkmark-circle' : 'time-outline'}
+            size={12}
+            color={isPublished ? colors.success : colors.warning}
+          />
+          <ThemedText
+            variant="label"
+            fontFamily="bold"
+            numberOfLines={1}
+            style={{
+              marginLeft: 4,
+              color: isPublished ? colors.success : colors.warning,
+            }}
+          >
+            {item.status}
+          </ThemedText>
+        </View>
+      </View>
+
+      {/* Leading Candidate Strip */}
+      <View style={[styles.leadStrip, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }]}>
+        <View style={{ flex: 1, minWidth: 0, paddingRight: spacing.xs }}>
+          <ThemedText variant="label" color="textMuted">LEADING CANDIDATE</ThemedText>
+          <ThemedText variant="body" color="text" fontFamily="bold" numberOfLines={2}>
+            {leadCand?.fullName ?? (topCandId ? `Candidate ${topCandId}` : 'Awaiting breakdown')}
+          </ThemedText>
+        </View>
+        <View style={{ alignItems: 'flex-end', flexShrink: 0 }}>
+          <ThemedText variant="title" color="primary" fontFamily="bold" numberOfLines={1}>
+            {topCandVotes.toLocaleString()}
+          </ThemedText>
+          <ThemedText variant="label" color="textSecondary" numberOfLines={1}>
+            {leadPct}% of cast ballots
+          </ThemedText>
+        </View>
+      </View>
+
+      {/* Bottom Turnout bar */}
+      <View style={styles.itemFooter}>
+        <ThemedText variant="caption" color="textSecondary">
+          Accredited: {item.totalAccreditedVoters.toLocaleString()} · Ballots: {item.totalVotesCast.toLocaleString()}
+        </ThemedText>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <ThemedText variant="caption" color="primary" fontFamily="bold">
+            {isPublished ? 'View Details' : 'Continue Draft'}
+          </ThemedText>
+          <Ionicons name="chevron-forward" size={14} color={colors.primary} />
+        </View>
+      </View>
+    </Card>
+  );
+});
+
+type LgaCollationCardProps = {
+  item: LgaCollation;
+  colors: (typeof Colors)['light'];
+  onInspect: (lgaName: string) => void;
+};
+
+const LgaCollationCard = memo(function LgaCollationCard({ item, colors, onInspect }: LgaCollationCardProps) {
+  const partyColors: Record<string, string> = {
+    APC: '#0D6338',
+    PDP: '#DC2626',
+    LP: '#16A34A',
+    NNPP: '#2563EB',
+  };
+  const leadColor = partyColors[item.leadingParty] ?? colors.primary;
+
+  return (
+    <Card style={[styles.lgaCard, { borderColor: colors.border }]}>
+      {/* Top: LGA Name & Reporting Badge */}
+      <View style={styles.lgaHeader}>
+        <View style={{ flex: 1, minWidth: 0, paddingRight: spacing.xs }}>
+          <ThemedText variant="body" color="text" fontFamily="bold" numberOfLines={2}>
+            {item.name}
+          </ThemedText>
+          <ThemedText variant="caption" color="textSecondary" numberOfLines={2}>
+            {item.state} State · {item.baseCollated} of {item.totalPus} PUs collated
+          </ThemedText>
+        </View>
+
+        <View style={[styles.reportingBadge, { backgroundColor: colors.surfaceElevated, borderColor: colors.border, flexShrink: 0 }]}>
+          <Ionicons name="pie-chart-outline" size={12} color={colors.primary} />
+          <ThemedText variant="label" color="primary" fontFamily="bold" style={{ marginLeft: 4 }}>
+            {item.reportingPct}%
+          </ThemedText>
+        </View>
+      </View>
+
+      {/* Leading Party Banner Strip */}
+      <View
+        style={[
+          styles.leadBanner,
+          {
+            backgroundColor: leadColor + '14',
+            borderColor: leadColor + '44',
+          },
+        ]}
+      >
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flex: 1, minWidth: 0 }}>
+          <View style={[styles.partyPill, { backgroundColor: leadColor, flexShrink: 0 }]}>
+            <ThemedText variant="caption" color="#FFFFFF" fontFamily="bold">
+              {item.leadingParty}
+            </ThemedText>
+          </View>
+          <View style={{ flex: 1, minWidth: 0 }}>
+            <ThemedText variant="caption" color="text" fontFamily="bold" numberOfLines={2}>
+              {item.leadingCandidate}
+            </ThemedText>
+            <ThemedText variant="label" color="textSecondary" numberOfLines={1}>
+              Leading with {item.leadingPct}%
+            </ThemedText>
+          </View>
+        </View>
+
+        <View style={[styles.marginBadge, { backgroundColor: leadColor + '22', flexShrink: 0 }]}>
+          <ThemedText variant="caption" style={{ color: leadColor }} fontFamily="bold" numberOfLines={1}>
+            +{item.margin}% margin
+          </ThemedText>
+        </View>
+      </View>
+
+      {/* Stacked Collation Progress Bar */}
+      <View style={styles.stackedBarContainer}>
+        <View style={styles.stackedBar}>
+          {item.shares.map((share) => (
+            <View
+              key={share.party}
+              style={{
+                width: `${Math.min(100, Math.max(0, share.pct))}%` as `${number}%`,
+                height: '100%',
+                backgroundColor: partyColors[share.party] ?? colors.border,
+              }}
+            />
+          ))}
+        </View>
+      </View>
+
+      {/* Share breakdown legends */}
+      <View style={styles.shareLegendsRow}>
+        {item.shares.map((share) => (
+          <View key={share.party} style={styles.legendItem}>
+            <View style={[styles.legendDot, { backgroundColor: partyColors[share.party] }]} />
+            <ThemedText variant="label" color="textSecondary" fontFamily="bold">
+              {share.party}: {share.pct.toFixed(0)}%
+            </ThemedText>
+          </View>
+        ))}
+      </View>
+
+      {/* Inspect LGA PU returns button */}
+      <Pressable
+        onPress={() => onInspect(item.name)}
+        style={[styles.inspectButton, { borderColor: colors.borderSubtle }]}
+      >
+        <ThemedText variant="caption" color="primary" fontFamily="bold">
+          View PU Returns in {item.name}
+        </ThemedText>
+        <Ionicons name="arrow-forward" size={14} color={colors.primary} />
+      </Pressable>
+    </Card>
+  );
+});
+
 export default function ResultsScreen() {
   const { user } = useAuthStore();
   const { data: apiResults = [], isLoading: loading, refetch: refetchResults } = useResultsQuery();
@@ -94,109 +334,9 @@ export default function ResultsScreen() {
     return m;
   }, [candidates]);
 
-  const renderResultItem = useCallback(({ item }: { item: ResultSubmission }) => {
-    const isPublished = item.status === 'PUBLISHED';
-    const totalCast = item.totalVotesCast || 1;
-
-    // Find leading candidate in this PU
-    let topCandId = '';
-    let topCandVotes = 0;
-    Object.entries(item.candidateVotes || {}).forEach(([cId, v]) => {
-      const val = typeof v === 'number' ? v : 0;
-      if (val > topCandVotes) {
-        topCandVotes = val;
-        topCandId = cId;
-      }
-    });
-
-    const leadCand = candMap.get(topCandId);
-    const leadPct = ((topCandVotes / totalCast) * 100).toFixed(1);
-
-    return (
-      <Card
-        pressable
-        style={styles.itemCard}
-        onPress={() => {
-          impact(Haptics.ImpactFeedbackStyle.Light);
-          if (isPublished) {
-            router.push({ pathname: ROUTES.RESULT_DETAIL, params: { id: item.id } });
-          } else {
-            router.push(ROUTES.RESULT_DRAFTS);
-          }
-        }}
-      >
-        <View style={styles.itemHeader}>
-          <View style={{ flex: 1, minWidth: 0, paddingRight: spacing.xs }}>
-            <ThemedText variant="body" color="text" fontFamily="bold" numberOfLines={2}>
-              {item.pollingUnitName}
-            </ThemedText>
-            <ThemedText variant="caption" color="textSecondary" numberOfLines={2}>
-              {isPublished ? 'Official Return' : 'Draft Return'} · {new Date(item.submittedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-            </ThemedText>
-          </View>
-
-          <View
-            style={[
-              styles.statusChip,
-              {
-                backgroundColor: isPublished ? colors.successSubtle : colors.warningSubtle,
-                borderColor: isPublished ? colors.success : colors.warning,
-                flexShrink: 0,
-              },
-            ]}
-          >
-            <Ionicons
-              name={isPublished ? 'checkmark-circle' : 'time-outline'}
-              size={12}
-              color={isPublished ? colors.success : colors.warning}
-            />
-            <ThemedText
-              variant="label"
-              fontFamily="bold"
-              numberOfLines={1}
-              style={{
-                marginLeft: 4,
-                color: isPublished ? colors.success : colors.warning,
-              }}
-            >
-              {item.status}
-            </ThemedText>
-          </View>
-        </View>
-
-        {/* Leading Candidate Strip */}
-        <View style={[styles.leadStrip, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }]}>
-          <View style={{ flex: 1, minWidth: 0, paddingRight: spacing.xs }}>
-            <ThemedText variant="label" color="textMuted">LEADING CANDIDATE</ThemedText>
-            <ThemedText variant="body" color="text" fontFamily="bold" numberOfLines={2}>
-              {leadCand?.fullName ?? (topCandId ? `Candidate ${topCandId}` : 'Awaiting breakdown')}
-            </ThemedText>
-          </View>
-          <View style={{ alignItems: 'flex-end', flexShrink: 0 }}>
-            <ThemedText variant="title" color="primary" fontFamily="bold" numberOfLines={1}>
-              {topCandVotes.toLocaleString()}
-            </ThemedText>
-            <ThemedText variant="label" color="textSecondary" numberOfLines={1}>
-              {leadPct}% of cast ballots
-            </ThemedText>
-          </View>
-        </View>
-
-        {/* Bottom Turnout bar */}
-        <View style={styles.itemFooter}>
-          <ThemedText variant="caption" color="textSecondary">
-            Accredited: {item.totalAccreditedVoters.toLocaleString()} · Ballots: {item.totalVotesCast.toLocaleString()}
-          </ThemedText>
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <ThemedText variant="caption" color="primary" fontFamily="bold">
-              {isPublished ? 'View Details' : 'Continue Draft'}
-            </ThemedText>
-            <Ionicons name="chevron-forward" size={14} color={colors.primary} />
-          </View>
-        </View>
-      </Card>
-    );
-  }, [candMap, colors, impact]);
+  const renderResultItem = useCallback(({ item }: { item: ResultSubmission }) => (
+    <ReturnCard item={item} candMap={candMap} colors={colors} impact={impact} />
+  ), [candMap, colors, impact]);
 
   // View Mode: 'returns' vs 'heatmap'
   const [viewMode, setViewMode] = useState<'returns' | 'heatmap'>('returns');
@@ -372,6 +512,16 @@ export default function ResultsScreen() {
     };
     return partyColors[lga.leadingParty] ?? '#0D6338';
   }, [mapHeatMode]);
+
+  const handleInspectLga = useCallback((lgaName: string) => {
+    impact(Haptics.ImpactFeedbackStyle.Light);
+    setFilterLga(lgaName.replace(' LGA', ''));
+    setViewMode('returns');
+  }, [impact]);
+
+  const renderLgaItem = useCallback(({ item }: { item: LgaCollation }) => (
+    <LgaCollationCard item={item} colors={colors} onInspect={handleInspectLga} />
+  ), [colors, handleInspectLga]);
 
   return (
     <ScreenView scrollable={false} noScrollPadding>
@@ -549,6 +699,7 @@ export default function ResultsScreen() {
 
             {/* Native FlatList */}
             <FlatList
+              {...listPerf}
               data={displayedReturns}
               keyExtractor={(item) => item.id}
               renderItem={renderResultItem}
@@ -581,6 +732,7 @@ export default function ResultsScreen() {
         ) : (
           /* --- VIEW MODE 2: COLLATION HEAT MAP --- */
           <FlatList
+            {...listPerf}
             data={filteredLgas}
             keyExtractor={(item) => item.id}
             refreshControl={refreshControl}
@@ -919,114 +1071,7 @@ export default function ResultsScreen() {
                 </View>
               </View>
             }
-            renderItem={({ item }) => {
-              const partyColors: Record<string, string> = {
-                APC: '#0D6338',
-                PDP: '#DC2626',
-                LP: '#16A34A',
-                NNPP: '#2563EB',
-              };
-              const leadColor = partyColors[item.leadingParty] ?? colors.primary;
-
-              return (
-                <Card style={[styles.lgaCard, { borderColor: colors.border }]}>
-                  {/* Top: LGA Name & Reporting Badge */}
-                  <View style={styles.lgaHeader}>
-                    <View style={{ flex: 1, minWidth: 0, paddingRight: spacing.xs }}>
-                      <ThemedText variant="body" color="text" fontFamily="bold" numberOfLines={2}>
-                        {item.name}
-                      </ThemedText>
-                      <ThemedText variant="caption" color="textSecondary" numberOfLines={2}>
-                        {item.state} State · {item.baseCollated} of {item.totalPus} PUs collated
-                      </ThemedText>
-                    </View>
-
-                    <View style={[styles.reportingBadge, { backgroundColor: colors.surfaceElevated, borderColor: colors.border, flexShrink: 0 }]}>
-                      <Ionicons name="pie-chart-outline" size={12} color={colors.primary} />
-                      <ThemedText variant="label" color="primary" fontFamily="bold" style={{ marginLeft: 4 }}>
-                        {item.reportingPct}%
-                      </ThemedText>
-                    </View>
-                  </View>
-
-                  {/* Leading Party Banner Strip */}
-                  <View
-                    style={[
-                      styles.leadBanner,
-                      {
-                        backgroundColor: leadColor + '14',
-                        borderColor: leadColor + '44',
-                      },
-                    ]}
-                  >
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flex: 1, minWidth: 0 }}>
-                      <View style={[styles.partyPill, { backgroundColor: leadColor, flexShrink: 0 }]}>
-                        <ThemedText variant="caption" color="#FFFFFF" fontFamily="bold">
-                          {item.leadingParty}
-                        </ThemedText>
-                      </View>
-                      <View style={{ flex: 1, minWidth: 0 }}>
-                        <ThemedText variant="caption" color="text" fontFamily="bold" numberOfLines={2}>
-                          {item.leadingCandidate}
-                        </ThemedText>
-                        <ThemedText variant="label" color="textSecondary" numberOfLines={1}>
-                          Leading with {item.leadingPct}%
-                        </ThemedText>
-                      </View>
-                    </View>
-
-                    <View style={[styles.marginBadge, { backgroundColor: leadColor + '22', flexShrink: 0 }]}>
-                      <ThemedText variant="caption" style={{ color: leadColor }} fontFamily="bold" numberOfLines={1}>
-                        +{item.margin}% margin
-                      </ThemedText>
-                    </View>
-                  </View>
-
-                  {/* Stacked Collation Progress Bar */}
-                  <View style={styles.stackedBarContainer}>
-                    <View style={styles.stackedBar}>
-                      {item.shares.map((share) => (
-                        <View
-                          key={share.party}
-                          style={{
-                            width: `${Math.min(100, Math.max(0, share.pct))}%` as `${number}%`,
-                            height: '100%',
-                            backgroundColor: partyColors[share.party] ?? colors.border,
-                          }}
-                        />
-                      ))}
-                    </View>
-                  </View>
-
-                  {/* Share breakdown legends */}
-                  <View style={styles.shareLegendsRow}>
-                    {item.shares.map((share) => (
-                      <View key={share.party} style={styles.legendItem}>
-                        <View style={[styles.legendDot, { backgroundColor: partyColors[share.party] }]} />
-                        <ThemedText variant="label" color="textSecondary" fontFamily="bold">
-                          {share.party}: {share.pct.toFixed(0)}%
-                        </ThemedText>
-                      </View>
-                    ))}
-                  </View>
-
-                  {/* Inspect LGA PU returns button */}
-                  <Pressable
-                    onPress={() => {
-                      impact(Haptics.ImpactFeedbackStyle.Light);
-                      setFilterLga(item.name.replace(' LGA', ''));
-                      setViewMode('returns');
-                    }}
-                    style={[styles.inspectButton, { borderColor: colors.borderSubtle }]}
-                  >
-                    <ThemedText variant="caption" color="primary" fontFamily="bold">
-                      View PU Returns in {item.name}
-                    </ThemedText>
-                    <Ionicons name="arrow-forward" size={14} color={colors.primary} />
-                  </Pressable>
-                </Card>
-              );
-            }}
+            renderItem={renderLgaItem}
           />
         )}
       </View>

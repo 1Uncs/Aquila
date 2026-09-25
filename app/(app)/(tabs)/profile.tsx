@@ -249,34 +249,34 @@ export default function ProfileTabScreen() {
           Switch perspective to test Field Agent, Polling Unit Agent, or Election Officer flows
         </ThemedText>
 
-        <View style={{ flexDirection: 'row', gap: spacing.xs }}>
+        <View style={{ gap: spacing.xs }}>
           <Button
             label="Field Agent"
             variant={user?.role === 'FIELD_AGENT' ? 'primary' : 'outline'}
             size="sm"
             onPress={() => handleRoleSwitch('FIELD_AGENT', 'agent@aquila.ng')}
-            style={{ flex: 1 }}
+            fullWidth
           />
           <Button
             label="PU Agent"
             variant={user?.role === 'POLLING_AGENT' ? 'primary' : 'outline'}
             size="sm"
             onPress={() => handleRoleSwitch('POLLING_AGENT', 'polling@aquila.ng')}
-            style={{ flex: 1 }}
+            fullWidth
           />
           <Button
             label="Election Officer"
             variant={user?.role === 'ELECTION_OFFICER' ? 'primary' : 'outline'}
             size="sm"
             onPress={() => handleRoleSwitch('ELECTION_OFFICER', 'officer@aquila.ng')}
-            style={{ flex: 1.2 }}
+            fullWidth
           />
         </View>
       </Card>
 
       {/* 6. Sign Out Button */}
       <Button
-        label="Disconnect & Sign Out"
+        label="Sign Out"
         variant="outline"
         size="lg"
         leftIcon="log-out-outline"

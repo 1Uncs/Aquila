@@ -6,3 +6,4 @@ export * from './useForegroundRefresh';
 export * from './usePressScale';
 export * from './useStatusBar';
 export * from './useDeviceLocation';
+export * from './useBreakpoint';

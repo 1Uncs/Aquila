@@ -61,6 +61,14 @@ export const typography = {
   },
 };
 
+export const breakpoints = {
+  phone: 0,
+  tablet: 600,
+  large: 900,
+} as const;
+
+export const contentMaxWidth = 768;
+
 export const shadows = {
   sm: { shadowColor: '#000', shadowOpacity: 0.04, shadowRadius: 20, elevation: 2 } as const,
   md: { shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 28, elevation: 4 } as const,

@@ -366,7 +366,7 @@ export default function IncidentDetailScreen() {
                         <ThemedText variant="body" color="text" fontFamily="bold" numberOfLines={1}>
                           Geotagged Photo #{idx + 1}
                         </ThemedText>
-                        <ThemedText variant="caption" color="textSecondary" numberOfLines={1}>
+                        <ThemedText variant="caption" color="textSecondary" numberOfLines={1} accessibilityLabel={`${fileName}, field camera photo`}>
                           {fileName} · Field Camera
                         </ThemedText>
                       </View>
@@ -532,7 +532,7 @@ export default function IncidentDetailScreen() {
           <View style={{ flexDirection: 'row', gap: spacing.sm, flexWrap: 'wrap' }}>
             {!isResolved && (
               <Button
-                label={isUnderReview ? 'Under Investigation' : 'Mark Under Review'}
+                label={isUnderReview ? 'Reviewing' : 'Start Review'}
                 variant={isUnderReview ? 'primary' : 'outline'}
                 size="sm"
                 leftIcon="search-outline"
@@ -734,7 +734,7 @@ function VideoEvidencePlayer({ uri, index, fileName }: { uri: string; index: num
           <ThemedText variant="body" color="text" fontFamily="bold" numberOfLines={1}>
             Live Video Recording #{index + 1}
           </ThemedText>
-          <ThemedText variant="caption" color="textSecondary" numberOfLines={1}>
+          <ThemedText variant="caption" color="textSecondary" numberOfLines={1} accessibilityLabel={`${fileName || `video-${index + 1}`}, field recording video`}>
             {fileName || `video-${index + 1}`} · Field Recording
           </ThemedText>
         </View>

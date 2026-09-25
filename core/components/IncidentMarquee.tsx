@@ -112,7 +112,7 @@ export function IncidentMarqueeScrollable({ incidents, style }: Props) {
       </View>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.track} contentContainerStyle={{ gap: spacing.md }}>
         {incidents.slice(0, 8).map((i) => (
-          <ThemedText key={i.id} variant="caption" style={{ color: colors.textSecondary, fontWeight: '500' }} numberOfLines={1}>
+          <ThemedText key={i.id} variant="caption" style={{ color: colors.textSecondary, fontWeight: '500', flexShrink: 0 }}>
             {i.category.replace(/_/g, ' ')} @ {i.electoralArea} {'\u2022'}
           </ThemedText>
         ))}

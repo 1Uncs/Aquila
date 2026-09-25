@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, memo } from 'react';
 import { StyleSheet, View, ScrollView, Pressable, FlatList } from 'react-native';
 import { router } from 'expo-router';
 import { ScreenView } from '@/core/components/ScreenView';
@@ -6,6 +6,7 @@ import { ThemedText, EmptyState, Button, Card, SkeletonCard } from '@/core/compo
 import { useIncidentsStore, useAuthStore, IncidentReport } from '@/features/auth/store';
 import { ROUTES } from '@/constants/routes';
 import { spacing, radius, shadows } from '@/constants/tokens';
+import { listPerf } from '@/constants/lists';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
 import { useStatusBar } from '@/core/hooks/useStatusBar';
 import { useIncidentsQuery } from '@/features/elections/hooks';
@@ -22,6 +23,139 @@ const CATEGORY_FILTERS = [
   'BVAS_FAILURE',
   'SECURITY_INCIDENT',
 ] as const;
+
+type IncidentCardProps = {
+  item: IncidentReport;
+  colors: (typeof Colors)['light'];
+  isElectionOfficer: boolean;
+  impact: ReturnType<typeof useHaptics>['impact'];
+  onUpdateStatus: (id: string, status: 'UNDER_REVIEW' | 'RESOLVED') => void;
+};
+
+// Memoized row: FlatList re-renders every row on each parent render unless
+// rows are memo/Pure (VirtualizedList slow-update warning).
+const IncidentCard = memo(function IncidentCard({ item, colors, isElectionOfficer, impact, onUpdateStatus }: IncidentCardProps) {
+  const isCritical = item.severity === 'CRITICAL';
+  const isHigh = item.severity === 'HIGH';
+  const isResolved = item.status === 'RESOLVED';
+  const isReviewing = item.status === 'UNDER_REVIEW' || item.status === 'SUBMITTED';
+
+  const sevColors: Record<string, string> = {
+    CRITICAL: colors.critical,
+    HIGH: colors.error,
+    MEDIUM: colors.warning,
+    LOW: colors.success,
+  };
+  const sevColor = sevColors[item.severity] ?? colors.warning;
+
+  return (
+    <Card
+      pressable
+      style={styles.incidentCard}
+      onPress={() => {
+        impact(Haptics.ImpactFeedbackStyle.Light);
+        router.push({ pathname: ROUTES.INCIDENT_DETAIL, params: { id: item.id } });
+      }}
+    >
+      {/* Severity & Status Header */}
+      <View style={styles.cardHeader}>
+        <View style={[styles.sevBadge, { backgroundColor: sevColor + '18', borderColor: sevColor }]}>
+          <Ionicons
+            name={isCritical || isHigh ? 'warning' : 'alert-circle-outline'}
+            size={14}
+            color={sevColor}
+          />
+          <ThemedText variant="label" style={{ color: sevColor, marginLeft: 4 }} fontFamily="bold">
+            {item.severity} SEVERITY
+          </ThemedText>
+        </View>
+
+        <View style={[styles.statusBadge, { backgroundColor: isResolved ? colors.successSubtle : colors.warningSubtle }]}>
+          <ThemedText
+            variant="label"
+            color={isResolved ? 'success' : 'warning'}
+            fontFamily="bold"
+          >
+            {isResolved ? 'RESOLVED' : isReviewing ? 'REVIEWING' : item.status}
+          </ThemedText>
+        </View>
+      </View>
+
+      {/* Category & Description */}
+      <ThemedText variant="body" color="text" fontFamily="bold" style={{ marginTop: spacing.xs }}>
+        {item.category.replace(/_/g, ' ')}
+      </ThemedText>
+      <ThemedText variant="caption" color="textSecondary" style={{ marginTop: 2 }}>
+        {item.description}
+      </ThemedText>
+
+      {/* Location & Metadata Tag */}
+      <View style={styles.metaRow}>
+        <View style={styles.metaItem}>
+          <Ionicons name="location-outline" size={13} color={colors.primary} />
+          <ThemedText variant="label" color="primary" fontFamily="medium" style={{ marginLeft: 4 }}>
+            {item.electoralArea}
+          </ThemedText>
+        </View>
+
+        {item.latitude && item.longitude ? (
+          <View style={styles.metaItem}>
+            <Ionicons name="navigate-outline" size={12} color={colors.textMuted} />
+            <ThemedText variant="label" color="textMuted" style={{ marginLeft: 4 }}>
+              {item.latitude.toFixed(3)}, {item.longitude.toFixed(3)}
+            </ThemedText>
+          </View>
+        ) : null}
+
+        {item.mediaUrls?.length ? (
+          <View style={styles.metaItem}>
+            <Ionicons name="camera-outline" size={12} color={colors.accentDark} />
+            <ThemedText variant="label" color="accent" style={{ marginLeft: 4 }}>
+              {item.mediaUrls.length} live evidence
+            </ThemedText>
+          </View>
+        ) : null}
+      </View>
+
+      {/* Triage Actions: Officer Only (Audio Part 4 & 7) */}
+      <View style={styles.cardActionsRow}>
+        <ThemedText variant="label" color="textMuted">
+          {new Date(item.reportedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+        </ThemedText>
+
+        {isElectionOfficer ? (
+          <View style={{ flexDirection: 'row', gap: spacing.xs }}>
+            {!isResolved && (
+              <Button
+                label="Reviewing"
+                variant={isReviewing ? 'primary' : 'outline'}
+                size="sm"
+                onPress={() => onUpdateStatus(item.id, 'UNDER_REVIEW')}
+              />
+            )}
+            <Button
+              label={isResolved ? 'Mark Reopened' : 'Resolve'}
+              variant={isResolved ? 'outline' : 'primary'}
+              size="sm"
+              leftIcon={isResolved ? 'refresh-outline' : 'checkmark-circle-outline'}
+              onPress={() => onUpdateStatus(item.id, isResolved ? 'UNDER_REVIEW' : 'RESOLVED')}
+            />
+          </View>
+        ) : (
+          <View style={[styles.fieldAgentPill, { backgroundColor: isResolved ? colors.successSubtle : colors.warningSubtle }]}>
+            <ThemedText
+              variant="label"
+              color={isResolved ? 'success' : 'warning'}
+              fontFamily="bold"
+            >
+              {isResolved ? 'RESOLVED' : isReviewing ? 'UNDER REVIEW' : 'LOGGED'}
+            </ThemedText>
+          </View>
+        )}
+      </View>
+    </Card>
+  );
+});
 
 export default function IncidentsScreen() {
   const { data: apiIncidents = [], isLoading: loading, refetch: refetchIncidents } = useIncidentsQuery();
@@ -64,128 +198,15 @@ export default function IncidentsScreen() {
     updateIncident(id, { status: newStatus as any });
   }, [impact, updateIncident]);
 
-  const renderIncidentCard = useCallback(({ item }: { item: IncidentReport }) => {
-    const isCritical = item.severity === 'CRITICAL';
-    const isHigh = item.severity === 'HIGH';
-    const isResolved = item.status === 'RESOLVED';
-    const isReviewing = item.status === 'UNDER_REVIEW' || item.status === 'SUBMITTED';
-
-    const sevColors: Record<string, string> = {
-      CRITICAL: colors.critical,
-      HIGH: colors.error,
-      MEDIUM: colors.warning,
-      LOW: colors.success,
-    };
-    const sevColor = sevColors[item.severity] ?? colors.warning;
-
-    return (
-      <Card
-        pressable
-        style={styles.incidentCard}
-        onPress={() => {
-          impact(Haptics.ImpactFeedbackStyle.Light);
-          router.push({ pathname: ROUTES.INCIDENT_DETAIL, params: { id: item.id } });
-        }}
-      >
-        {/* Severity & Status Header */}
-        <View style={styles.cardHeader}>
-          <View style={[styles.sevBadge, { backgroundColor: sevColor + '18', borderColor: sevColor }]}>
-            <Ionicons
-              name={isCritical || isHigh ? 'warning' : 'alert-circle-outline'}
-              size={14}
-              color={sevColor}
-            />
-            <ThemedText variant="label" style={{ color: sevColor, marginLeft: 4 }} fontFamily="bold">
-              {item.severity} SEVERITY
-            </ThemedText>
-          </View>
-
-          <View style={[styles.statusBadge, { backgroundColor: isResolved ? colors.successSubtle : colors.warningSubtle }]}>
-            <ThemedText
-              variant="label"
-              color={isResolved ? 'success' : 'warning'}
-              fontFamily="bold"
-            >
-              {isResolved ? 'RESOLVED' : isReviewing ? 'REVIEWING' : item.status}
-            </ThemedText>
-          </View>
-        </View>
-
-        {/* Category & Description */}
-        <ThemedText variant="body" color="text" fontFamily="bold" style={{ marginTop: spacing.xs }}>
-          {item.category.replace(/_/g, ' ')}
-        </ThemedText>
-        <ThemedText variant="caption" color="textSecondary" style={{ marginTop: 2 }}>
-          {item.description}
-        </ThemedText>
-
-        {/* Location & Metadata Tag */}
-        <View style={styles.metaRow}>
-          <View style={styles.metaItem}>
-            <Ionicons name="location-outline" size={13} color={colors.primary} />
-            <ThemedText variant="label" color="primary" fontFamily="medium" style={{ marginLeft: 4 }}>
-              {item.electoralArea}
-            </ThemedText>
-          </View>
-
-          {item.latitude && item.longitude ? (
-            <View style={styles.metaItem}>
-              <Ionicons name="navigate-outline" size={12} color={colors.textMuted} />
-              <ThemedText variant="label" color="textMuted" style={{ marginLeft: 4 }}>
-                {item.latitude.toFixed(3)}, {item.longitude.toFixed(3)}
-              </ThemedText>
-            </View>
-          ) : null}
-
-          {item.mediaUrls?.length ? (
-            <View style={styles.metaItem}>
-              <Ionicons name="camera-outline" size={12} color={colors.accentDark} />
-              <ThemedText variant="label" color="accent" style={{ marginLeft: 4 }}>
-                {item.mediaUrls.length} live evidence
-              </ThemedText>
-            </View>
-          ) : null}
-        </View>
-
-        {/* Triage Actions: Officer Only (Audio Part 4 & 7) */}
-        <View style={styles.cardActionsRow}>
-          <ThemedText variant="label" color="textMuted">
-            {new Date(item.reportedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-          </ThemedText>
-
-          {isElectionOfficer ? (
-            <View style={{ flexDirection: 'row', gap: spacing.xs }}>
-              {!isResolved && (
-                <Button
-                  label="Reviewing"
-                  variant={isReviewing ? 'primary' : 'outline'}
-                  size="sm"
-                  onPress={() => handleUpdateStatus(item.id, 'UNDER_REVIEW')}
-                />
-              )}
-              <Button
-                label={isResolved ? 'Mark Reopened' : 'Resolve'}
-                variant={isResolved ? 'outline' : 'primary'}
-                size="sm"
-                leftIcon={isResolved ? 'refresh-outline' : 'checkmark-circle-outline'}
-                onPress={() => handleUpdateStatus(item.id, isResolved ? 'UNDER_REVIEW' : 'RESOLVED')}
-              />
-            </View>
-          ) : (
-            <View style={[styles.fieldAgentPill, { backgroundColor: isResolved ? colors.successSubtle : colors.warningSubtle }]}>
-              <ThemedText
-                variant="label"
-                color={isResolved ? 'success' : 'warning'}
-                fontFamily="bold"
-              >
-                {isResolved ? 'RESOLVED' : isReviewing ? 'UNDER REVIEW' : 'LOGGED'}
-              </ThemedText>
-            </View>
-          )}
-        </View>
-      </Card>
-    );
-  }, [colors, handleUpdateStatus, impact, isElectionOfficer]);
+  const renderIncidentCard = useCallback(({ item }: { item: IncidentReport }) => (
+    <IncidentCard
+      item={item}
+      colors={colors}
+      isElectionOfficer={isElectionOfficer}
+      impact={impact}
+      onUpdateStatus={handleUpdateStatus}
+    />
+  ), [colors, handleUpdateStatus, impact, isElectionOfficer]);
 
   return (
     <ScreenView scrollable={false} noScrollPadding>
@@ -276,6 +297,7 @@ export default function IncidentsScreen() {
 
         {/* Native FlatList */}
         <FlatList
+          {...listPerf}
           data={filtered}
           keyExtractor={(item) => item.id}
           renderItem={renderIncidentCard}

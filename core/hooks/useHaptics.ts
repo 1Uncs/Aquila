@@ -1,18 +1,22 @@
+import { useCallback } from 'react';
 import * as Haptics from 'expo-haptics';
 import { HAPTICS, HapticStyle } from '@/constants/haptics';
 
 export function useHaptics() {
-  const impact = (style: Haptics.ImpactFeedbackStyle = Haptics.ImpactFeedbackStyle.Medium) => {
+  // Stable references: screens close over these in useCallback renderItem
+  // fns. Fresh closures every render defeat memoization and re-render
+  // every FlatList row on each parent render (VirtualizedList warning).
+  const impact = useCallback((style: Haptics.ImpactFeedbackStyle = Haptics.ImpactFeedbackStyle.Medium) => {
     Haptics.impactAsync(style).catch(() => {});
-  };
+  }, []);
 
-  const notification = (type: Haptics.NotificationFeedbackType = Haptics.NotificationFeedbackType.Success) => {
+  const notification = useCallback((type: Haptics.NotificationFeedbackType = Haptics.NotificationFeedbackType.Success) => {
     Haptics.notificationAsync(type).catch(() => {});
-  };
+  }, []);
 
-  const selection = () => {
+  const selection = useCallback(() => {
     Haptics.selectionAsync().catch(() => {});
-  };
+  }, []);
 
   return { impact, notification, selection };
 }

@@ -6,6 +6,7 @@ import { ThemedText, EmptyState, Card, Input, SkeletonCard } from '@/core/compon
 import { useResultsQuery } from '@/features/elections/hooks';
 import { ROUTES } from '@/constants/routes';
 import { spacing, radius, shadows } from '@/constants/tokens';
+import { listPerf } from '@/constants/lists';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
 import { useStatusBar } from '@/core/hooks/useStatusBar';
 import { useRefreshControl, useForegroundRefresh, useHaptics } from '@/core/hooks';
@@ -56,6 +57,7 @@ export default function ResultSearchScreen() {
         </View>
 
         <FlatList
+          {...listPerf}
           data={filtered}
           keyExtractor={(item) => item.id}
           refreshControl={refreshControl}

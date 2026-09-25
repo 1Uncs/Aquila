@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { View, Platform, Alert, Pressable, StyleSheet } from 'react-native';
+import { View, Platform, Alert, Pressable, StyleSheet, KeyboardAvoidingView } from 'react-native';
 import { useAudioRecorder, useAudioRecorderState, AudioModule, RecordingPresets, setAudioModeAsync } from 'expo-audio';
 import * as ImagePicker from 'expo-image-picker';
 import { ScreenView } from '@/core/components/ScreenView';
@@ -333,7 +333,8 @@ export default function ReportIncidentScreen() {
   }
 
   return (
-    <ScreenView scrollable contentContainerStyle={styles.scrollContent}>
+    <KeyboardAvoidingView enabled={Platform.OS === 'ios'} behavior="padding" style={{ flex: 1 }}>
+      <ScreenView scrollable contentContainerStyle={styles.scrollContent}>
       {/* 1. Situation Room Command Header */}
       <Card style={[styles.heroCard, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }]}>
         <View style={styles.heroRow}>
@@ -520,7 +521,7 @@ export default function ReportIncidentScreen() {
                       }}
                     >
                       <Ionicons name="attach" size={14} color={colors.primary} />
-                      <ThemedText variant="caption" color="text" numberOfLines={1} style={{ maxWidth: 120 }}>
+                      <ThemedText variant="caption" color="text" numberOfLines={1} style={{ maxWidth: 120 }} accessibilityLabel={filename || `file-${idx + 1}`}>
                         {filename || `file-${idx + 1}`}
                       </ThemedText>
                       <Pressable
@@ -540,7 +541,8 @@ export default function ReportIncidentScreen() {
           <View style={{ marginTop: spacing.md }}>
             <Button label="Submit Incident Report" onPress={handleSubmit} loading={submitting} fullWidth />
           </View>
-    </ScreenView>
+      </ScreenView>
+    </KeyboardAvoidingView>
   );
 }
 

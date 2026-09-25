@@ -4,6 +4,7 @@ import { ScreenView } from '@/core/components/ScreenView';
 import { ThemedText, Card, EmptyState, Input, SkeletonCard } from '@/core/components';
 import { router, useLocalSearchParams } from 'expo-router';
 import { spacing, radius, shadows } from '@/constants/tokens';
+import { listPerf } from '@/constants/lists';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
 import { useStatusBar } from '@/core/hooks/useStatusBar';
 import { usePollingUnitsQuery, useLgasQuery, useStatesQuery } from '@/features/elections/hooks';
@@ -114,6 +115,7 @@ export default function PUPickerScreen() {
 
         {/* Unnested Native FlatList */}
         <FlatList
+          {...listPerf}
           data={filtered}
           keyExtractor={(item) => item.id}
           renderItem={renderPUItem}

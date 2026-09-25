@@ -2,7 +2,7 @@ import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { View, StyleSheet, Pressable, Animated, TextInput, Platform } from 'react-native';
 import { DebouncedPressable } from '@/core/components/DebouncedPressable';
 import { ScreenView } from '@/core/components/ScreenView';
-import { ThemedText, Card, IncidentMarquee, Shimmer, SkeletonCard } from '@/core/components';
+import { ThemedText, Card, IncidentMarquee, Shimmer, SkeletonCard, ExpandableText } from '@/core/components';
 import { EntranceView } from '@/core/components/EntranceView';
 import { useAuthStore, useResultsStore } from '@/features/auth/store';
 import { ROUTES } from '@/constants/routes';
@@ -234,33 +234,36 @@ export default function DashboardScreen() {
       {/* 1. Station Console Header */}
       <EntranceView delay={50}>
         <View style={[styles.consoleHeader, { borderColor: colors.border }]}>
-          <View style={styles.consoleTopRow}>
-            <View style={{ flex: 1, minWidth: 0, paddingRight: spacing.xs }}>
-              <View style={styles.orgTagRow}>
-                <View style={[styles.orgDot, { backgroundColor: colors.primary }]} />
-                <ThemedText variant="label" color="primary" fontFamily="bold" numberOfLines={1}>
-                  {user?.organizationName ?? 'AQUILA SITUATION ROOM'}
-                </ThemedText>
-              </View>
-              <ThemedText variant="title" color="text" fontFamily="bold" numberOfLines={1} style={{ marginTop: 2 }}>
-                Presidential Collation
+          <View>
+            <View style={[styles.orgTagRow, { flex: 1, minWidth: 0, marginBottom: 2, marginRight: 0 }]}>
+              <View style={[styles.orgDot, { backgroundColor: colors.primary, flexShrink: 0 }]} />
+              <ThemedText variant="label" color="primary" fontFamily="bold" numberOfLines={2} style={{ flexShrink: 1 }} accessibilityLabel={user?.organizationName ?? 'Aquila Situation Room'}>
+                {user?.organizationName ?? 'AQUILA SITUATION ROOM'}
               </ThemedText>
             </View>
 
-            {/* Live Pulse Indicator Badge */}
-            <View style={[styles.pulseBadge, { backgroundColor: colors.primarySubtle, borderColor: colors.primary + '33' }]}>
-              <Animated.View
-                style={[
-                  styles.pulseDot,
-                  {
-                    backgroundColor: colors.primary,
-                    transform: [{ scale: pulseAnim }],
-                  },
-                ]}
-              />
-              <ThemedText variant="label" color="primary" fontFamily="bold">
-                LIVE PULSE
-              </ThemedText>
+            <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+              <View style={{ flex: 1, minWidth: 0, paddingRight: spacing.xs }}>
+                <ThemedText variant="title" color="text" fontFamily="bold" style={{ marginTop: 2 }}>
+                  Presidential Collation
+                </ThemedText>
+              </View>
+
+              {/* Live Pulse Indicator Badge */}
+              <View style={[styles.pulseBadge, { backgroundColor: colors.primarySubtle, borderColor: colors.primary + '33' }]}>
+                <Animated.View
+                  style={[
+                    styles.pulseDot,
+                    {
+                      backgroundColor: colors.primary,
+                      transform: [{ scale: pulseAnim }],
+                    },
+                  ]}
+                />
+                <ThemedText variant="label" color="primary" fontFamily="bold">
+                  LIVE PULSE
+                </ThemedText>
+              </View>
             </View>
           </View>
 
@@ -676,7 +679,7 @@ export default function DashboardScreen() {
               {/* Location Scope Banner */}
               <View style={[styles.scopeBanner, { backgroundColor: colors.surface, borderColor: colors.borderSubtle }]}>
                 <Ionicons name="location" size={14} color={colors.primary} />
-                <ThemedText variant="caption" color="textSecondary" numberOfLines={1} style={{ flex: 1, marginLeft: 4 }}>
+                <ThemedText variant="caption" color="textSecondary" numberOfLines={2} style={{ flex: 1, marginLeft: 4 }}>
                   Scope: <ThemedText variant="caption" color="text" fontFamily="bold">{projection.locationScope}</ThemedText>
                 </ThemedText>
               </View>
@@ -698,9 +701,11 @@ export default function DashboardScreen() {
 
               <View style={[styles.insightBox, { backgroundColor: colors.primarySubtle + '40', borderColor: colors.primary + '25' }]}>
                 <Ionicons name="analytics-outline" size={16} color={colors.primary} />
-                <ThemedText variant="caption" color="text" style={{ flex: 1, marginLeft: 6 }}>
-                  {projection.keyInsights[0]}
-                </ThemedText>
+                <View style={{ flex: 1, marginLeft: 6 }}>
+                  <ExpandableText variant="caption" color="text" collapsedLines={3}>
+                    {projection.keyInsights[0] ?? ''}
+                  </ExpandableText>
+                </View>
               </View>
 
               {/* Mandatory AI Disclaimer (Audio Part 8) */}

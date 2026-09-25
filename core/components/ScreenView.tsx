@@ -3,7 +3,7 @@ import { View, ViewStyle, Platform, ScrollView, ScrollViewProps, StyleSheet } fr
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
 import Colors from '@/constants/colors';
-import { spacing } from '@/constants/tokens';
+import { spacing, contentMaxWidth } from '@/constants/tokens';
 
 export const ScreenViewContext = createContext<{
   isTab?: boolean;
@@ -95,7 +95,9 @@ export function ScreenView({
     const scrollViewProps: ScrollViewProps = {
       contentContainerStyle: scrollContentStyle,
       contentInsetAdjustmentBehavior: Platform.OS === 'ios' && !hasNoNativeHeader ? 'automatic' : 'never',
-      keyboardShouldPersistTaps: keyboardShouldPersistTaps,
+      // Default tap-through: search + form screens shouldn't need a double-tap
+      // to press list items while the keyboard is open.
+      keyboardShouldPersistTaps: keyboardShouldPersistTaps ?? 'handled',
       bounces: true,
       overScrollMode: 'always',
     };
@@ -142,8 +144,15 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     paddingBottom: spacing.screen.padding,
     gap: spacing.screen.sectionGap,
+    // Constrain line length on tablets / landscape / foldables.
+    width: '100%',
+    maxWidth: contentMaxWidth,
+    alignSelf: 'center',
   },
   nonScrollContainer: {
     flex: 1,
+    width: '100%',
+    maxWidth: contentMaxWidth,
+    alignSelf: 'center',
   },
 });

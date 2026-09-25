@@ -5,6 +5,7 @@ import { ThemedText, Card, EmptyState, SkeletonCard } from '@/core/components';
 import { Ionicons } from '@expo/vector-icons';
 import { usePartiesQuery, useCandidatesQuery } from '@/features/elections/hooks';
 import { spacing, radius, shadows } from '@/constants/tokens';
+import { listPerf } from '@/constants/lists';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
 import { useStatusBar } from '@/core/hooks/useStatusBar';
 import { useRefreshControl, useForegroundRefresh, useHaptics } from '@/core/hooks';
@@ -131,10 +132,10 @@ export default function PartiesScreen() {
                       {cand.partyHistory.map((h, i) => (
                         <View key={i} style={styles.historyRow}>
                           <Ionicons name="git-commit-outline" size={14} color={colors.primary} />
-                          <ThemedText variant="caption" color="text" fontFamily="medium" numberOfLines={1} style={{ marginLeft: 6, flex: 1, minWidth: 0, paddingRight: spacing.xs }}>
+                          <ThemedText variant="caption" color="text" fontFamily="medium" numberOfLines={2} style={{ marginLeft: 6, flex: 1, minWidth: 0, paddingRight: spacing.xs }} accessibilityLabel={`${h.electionYear} ${h.partyAcronym}: ${h.votes.toLocaleString()} votes ${h.percentage}%`}>
                             {h.electionYear} ({h.partyAcronym}): {h.votes.toLocaleString()} votes ({h.percentage}%)
                           </ThemedText>
-                          <ThemedText variant="label" color="textSecondary" numberOfLines={1} style={{ flexShrink: 0 }}>
+                          <ThemedText variant="label" color="textSecondary" numberOfLines={1} style={{ flexShrink: 1, textAlign: 'right' }} accessibilityLabel={h.electionName}>
                             {h.electionName}
                           </ThemedText>
                         </View>
@@ -148,6 +149,7 @@ export default function PartiesScreen() {
           )
         ) : (
           <FlatList
+            {...listPerf}
             data={parties}
             keyExtractor={(p) => p.id}
             refreshControl={refreshControl}

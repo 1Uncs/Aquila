@@ -160,7 +160,6 @@ export default function ResultDraftsScreen() {
                     label="Discard"
                     variant="outline"
                     size="sm"
-                    leftIcon="trash-outline"
                     onPress={() => handleDiscard(draft.id, draft.pollingUnitName)}
                     style={{ flex: 1 }}
                   />
@@ -168,7 +167,6 @@ export default function ResultDraftsScreen() {
                     label="Resume"
                     variant="outline"
                     size="sm"
-                    leftIcon="create-outline"
                     onPress={() => handleContinue(draft.id)}
                     style={{ flex: 1 }}
                   />
@@ -176,7 +174,6 @@ export default function ResultDraftsScreen() {
                     label="Publish"
                     variant="primary"
                     size="sm"
-                    leftIcon="cloud-upload-outline"
                     onPress={() => handlePublishNow(draft.id, draft.pollingUnitName)}
                     style={{ flex: 1.2 }}
                   />

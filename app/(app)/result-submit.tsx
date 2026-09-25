@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, Alert } from 'react-native';
+import { View, StyleSheet, Alert, KeyboardAvoidingView, Platform } from 'react-native';
 import { ScreenView } from '@/core/components/ScreenView';
 import { ThemedText, Button, Input, Card } from '@/core/components';
 import { useResultsStore, useAuthStore, ResultSubmission } from '@/features/auth/store';
@@ -258,7 +258,8 @@ export default function SubmitResultScreen() {
   }
 
   return (
-    <ScreenView scrollable contentContainerStyle={styles.scrollContent}>
+    <KeyboardAvoidingView enabled={Platform.OS === 'ios'} behavior="padding" style={{ flex: 1 }}>
+      <ScreenView scrollable contentContainerStyle={styles.scrollContent}>
       {/* Polling Unit Selector / Display */}
       <Card style={styles.sectionCard}>
         <ThemedText variant="label" color="textMuted" fontFamily="bold">
@@ -454,27 +455,28 @@ export default function SubmitResultScreen() {
       </Card>
 
       {/* Actions: Save Draft vs Publish */}
-      <View style={styles.bottomActions}>
+      <View style={[styles.bottomActions, { flexDirection: 'column' }]}>
         <Button
-          label="Save as Draft"
+          label="Save Draft"
           variant="outline"
           size="lg"
           leftIcon="save-outline"
           onPress={handleSaveDraft}
           loading={submitting}
-          style={{ flex: 1 }}
+          fullWidth
         />
         <Button
-          label="Publish Official Return"
+          label="Publish Return"
           variant="primary"
           size="lg"
           leftIcon="cloud-upload-outline"
           onPress={handlePublish}
           loading={submitting}
-          style={{ flex: 1.5 }}
+          fullWidth
         />
       </View>
-    </ScreenView>
+      </ScreenView>
+    </KeyboardAvoidingView>
   );
 }
 

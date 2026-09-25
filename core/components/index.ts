@@ -13,3 +13,4 @@ export { EntranceView } from './EntranceView';
 export { SectionHeader } from './SectionHeader';
 export { VoteShareBar } from './VoteShareBar';
 export { CoverageHero } from './CoverageHero';
+export { ExpandableText } from './ExpandableText';

@@ -17,6 +17,8 @@ type ThemedTextProps = {
   style?: object;
   allowFontScaling?: boolean;
   testID?: string;
+  accessibilityLabel?: string;
+  accessibilityRole?: React.ComponentProps<typeof RNText>['accessibilityRole'];
   numberOfLines?: number;
   ellipsizeMode?: 'tail' | 'head' | 'middle' | 'clip';
   onPress?: () => void;
@@ -63,6 +65,8 @@ export function ThemedText({
   style,
   allowFontScaling = true,
   testID,
+  accessibilityLabel,
+  accessibilityRole,
   numberOfLines,
   ellipsizeMode,
   onPress,
@@ -179,6 +183,8 @@ export function ThemedText({
       numberOfLines={numberOfLines}
       ellipsizeMode={ellipsizeMode}
       testID={testID}
+      accessibilityLabel={accessibilityLabel}
+      accessibilityRole={accessibilityRole}
       onPress={onPress}
     >
       {children}

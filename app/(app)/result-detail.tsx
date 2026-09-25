@@ -212,7 +212,7 @@ export default function ResultDetailScreen() {
                       </ThemedText>
                     </View>
                     <View style={{ marginLeft: spacing.xs, flex: 1, minWidth: 0, paddingRight: spacing.xs }}>
-                      <ThemedText variant="body" color="text" fontFamily="bold" numberOfLines={2}>
+                      <ThemedText variant="body" color="text" fontFamily="bold" numberOfLines={2} accessibilityLabel={c.name}>
                         {c.name}
                       </ThemedText>
                       <View style={styles.partyRow}>
