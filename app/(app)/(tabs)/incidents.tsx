@@ -370,11 +370,13 @@ const styles = StyleSheet.create({
     paddingVertical: 3,
     borderRadius: radius.full,
     borderWidth: 1,
+    flexShrink: 0,
   },
   statusBadge: {
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: radius.full,
+    flexShrink: 0,
   },
   metaRow: {
     flexDirection: 'row',

@@ -211,8 +211,8 @@ export default function ResultDetailScreen() {
                         #{idx + 1}
                       </ThemedText>
                     </View>
-                    <View style={{ marginLeft: spacing.xs, flex: 1 }}>
-                      <ThemedText variant="body" color="text" fontFamily="bold">
+                    <View style={{ marginLeft: spacing.xs, flex: 1, minWidth: 0, paddingRight: spacing.xs }}>
+                      <ThemedText variant="body" color="text" fontFamily="bold" numberOfLines={2}>
                         {c.name}
                       </ThemedText>
                       <View style={styles.partyRow}>
@@ -225,11 +225,11 @@ export default function ResultDetailScreen() {
                     </View>
                   </View>
 
-                  <View style={{ alignItems: 'flex-end' }}>
-                    <ThemedText variant="title" color="text" fontFamily="bold">
+                  <View style={{ alignItems: 'flex-end', flexShrink: 0 }}>
+                    <ThemedText variant="title" color="text" fontFamily="bold" numberOfLines={1}>
                       {c.votes.toLocaleString()}
                     </ThemedText>
-                    <ThemedText variant="caption" color="primary" fontFamily="bold">
+                    <ThemedText variant="caption" color="primary" fontFamily="bold" numberOfLines={1}>
                       {c.pct.toFixed(1)}% of total
                     </ThemedText>
                   </View>

@@ -355,19 +355,19 @@ export default function ElectionsScreen() {
                     {election.position.charAt(0)}
                   </ThemedText>
                 </View>
-                <View style={{ flex: 1 }}>
-                  <ThemedText variant="body" style={{ fontWeight: '700', fontSize: 15 }}>
+                <View style={{ flex: 1, minWidth: 0 }}>
+                  <ThemedText variant="body" style={{ fontWeight: '700', fontSize: 15 }} numberOfLines={2}>
                     {election.position}
                   </ThemedText>
-                  <ThemedText variant="caption" color="textSecondary" style={{ marginTop: spacing['2xs'] }}>
+                  <ThemedText variant="caption" color="textSecondary" style={{ marginTop: spacing['2xs'] }} numberOfLines={2}>
                     {election.electoralArea} · {election.electoralAreaType}
                   </ThemedText>
 
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginTop: spacing.xs }}>
-                    <ThemedText variant="caption" color="textMuted">
+                    <ThemedText variant="caption" color="textMuted" numberOfLines={1}>
                       {election.electionDate}
                     </ThemedText>
-                    <View style={[styles.statusBadge, { backgroundColor: statusColor + '18' }]}>
+                    <View style={[styles.statusBadge, { backgroundColor: statusColor + '18', flexShrink: 0 }]}>
                       <ThemedText
                         variant="caption"
                         style={{
@@ -386,7 +386,7 @@ export default function ElectionsScreen() {
 
               {/* Major Competing Parties Badges */}
               <View style={[styles.cardFooter, { borderTopColor: colors.border + '50' }]}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, flex: 1, minWidth: 0, overflow: 'hidden' }}>
                   {MAJOR_PARTIES.slice(0, election.candidateCount >= 4 ? 4 : 3).map((p) => (
                     <View key={p.acronym} style={[styles.partyPill, { backgroundColor: p.bg + '20', borderColor: p.bg }]}>
                       <ThemedText variant="caption" style={{ color: p.bg, fontWeight: '700', fontSize: 10 }}>
@@ -394,12 +394,12 @@ export default function ElectionsScreen() {
                       </ThemedText>
                     </View>
                   ))}
-                  <ThemedText variant="caption" color="textSecondary" style={{ marginLeft: 4, fontSize: 11 }}>
+                  <ThemedText variant="caption" color="textSecondary" numberOfLines={1} style={{ marginLeft: 4, fontSize: 11, flexShrink: 1 }}>
                     {election.candidateCount} {election.candidateCount === 1 ? 'Candidate' : 'Candidates'}
                   </ThemedText>
                 </View>
 
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2, flexShrink: 0 }}>
                   <ThemedText variant="caption" color="primary" fontFamily="bold">
                     View Slate
                   </ThemedText>

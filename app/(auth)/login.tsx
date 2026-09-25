@@ -316,7 +316,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: 'rgba(13, 99, 56, 0.35)',
     marginBottom: spacing.sm,
-    ...shadows.lg,
+    ...Platform.select<object>({
+      ios: shadows.lg,
+      android: { elevation: 0 },
+    }),
   },
   logoImage: {
     width: 58,

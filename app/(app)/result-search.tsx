@@ -74,15 +74,15 @@ export default function ResultSearchScreen() {
                 <View style={[styles.iconBadge, { backgroundColor: colors.primary + '16' }]}>
                   <Ionicons name="document-text" size={18} color={colors.primary} />
                 </View>
-                <View style={{ flex: 1, marginLeft: spacing.sm }}>
-                  <ThemedText variant="body" color="text" fontFamily="bold">
+                <View style={{ flex: 1, minWidth: 0, marginLeft: spacing.sm, paddingRight: spacing.xs }}>
+                  <ThemedText variant="body" color="text" fontFamily="bold" numberOfLines={2}>
                     {item.pollingUnitName}
                   </ThemedText>
-                  <ThemedText variant="caption" color="textSecondary">
+                  <ThemedText variant="caption" color="textSecondary" numberOfLines={2}>
                     {item.totalVotesCast.toLocaleString()} votes cast · Accredited: {item.totalAccreditedVoters}
                   </ThemedText>
                 </View>
-                <View style={[styles.statusChip, { backgroundColor: colors.successSubtle }]}>
+                <View style={[styles.statusChip, { backgroundColor: colors.successSubtle, flexShrink: 0 }]}>
                   <ThemedText variant="label" color="success" fontFamily="bold">
                     {item.status}
                   </ThemedText>

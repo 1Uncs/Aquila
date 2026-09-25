@@ -11,7 +11,7 @@ import { ROUTES } from '@/constants/routes';
 import * as Haptics from 'expo-haptics';
 import { useHaptics } from '@/core/hooks';
 import { Ionicons } from '@expo/vector-icons';
-import { Pressable } from 'react-native';
+import { DebouncedPressable } from '@/core/components/DebouncedPressable';
 
 type Props = {
   incidents: IncidentReport[];
@@ -70,7 +70,7 @@ export function IncidentMarquee({ incidents, style }: Props) {
           }}
         >
           {activeIncidents.map((i) => (
-            <Pressable
+            <DebouncedPressable
               key={i.id}
               onPress={() => {
                 impact(Haptics.ImpactFeedbackStyle.Light);
@@ -90,7 +90,7 @@ export function IncidentMarquee({ incidents, style }: Props) {
               <ThemedText variant="caption" numberOfLines={1} color="textMuted" style={{ marginHorizontal: spacing.sm }}>
                 •
               </ThemedText>
-            </Pressable>
+            </DebouncedPressable>
           ))}
         </Animated.View>
       </View>

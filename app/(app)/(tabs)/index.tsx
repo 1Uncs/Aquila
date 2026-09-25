@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
-import { View, StyleSheet, Pressable, Animated, TextInput } from 'react-native';
+import { View, StyleSheet, Pressable, Animated, TextInput, Platform } from 'react-native';
+import { DebouncedPressable } from '@/core/components/DebouncedPressable';
 import { ScreenView } from '@/core/components/ScreenView';
 import { ThemedText, Card, IncidentMarquee, Shimmer, SkeletonCard } from '@/core/components';
 import { EntranceView } from '@/core/components/EntranceView';
@@ -234,14 +235,14 @@ export default function DashboardScreen() {
       <EntranceView delay={50}>
         <View style={[styles.consoleHeader, { borderColor: colors.border }]}>
           <View style={styles.consoleTopRow}>
-            <View style={{ flex: 1 }}>
+            <View style={{ flex: 1, minWidth: 0, paddingRight: spacing.xs }}>
               <View style={styles.orgTagRow}>
                 <View style={[styles.orgDot, { backgroundColor: colors.primary }]} />
                 <ThemedText variant="label" color="primary" fontFamily="bold" numberOfLines={1}>
                   {user?.organizationName ?? 'AQUILA SITUATION ROOM'}
                 </ThemedText>
               </View>
-              <ThemedText variant="title" color="text" fontFamily="bold" style={{ marginTop: 2 }}>
+              <ThemedText variant="title" color="text" fontFamily="bold" numberOfLines={1} style={{ marginTop: 2 }}>
                 Presidential Collation
               </ThemedText>
             </View>
@@ -653,11 +654,11 @@ export default function DashboardScreen() {
                           {item.type}
                         </ThemedText>
                       </View>
-                      <View style={{ flex: 1, marginLeft: spacing.xs }}>
-                        <ThemedText variant="body" color="text" fontFamily="bold" numberOfLines={1}>
+                      <View style={{ flex: 1, minWidth: 0, marginLeft: spacing.xs }}>
+                        <ThemedText variant="body" color="text" fontFamily="bold" numberOfLines={2}>
                           {item.name}
                         </ThemedText>
-                        <ThemedText variant="caption" color="textSecondary" numberOfLines={1}>
+                        <ThemedText variant="caption" color="textSecondary" numberOfLines={2}>
                           {item.qualification}
                         </ThemedText>
                       </View>
@@ -734,7 +735,7 @@ export default function DashboardScreen() {
                     : 'Field Agent jurisdiction · 3 Polling Units'}
               </ThemedText>
             </View>
-            <Pressable
+            <DebouncedPressable
               onPress={() => {
                 impact(Haptics.ImpactFeedbackStyle.Light);
                 router.push(ROUTES.LOCATIONS);
@@ -744,7 +745,7 @@ export default function DashboardScreen() {
               <ThemedText variant="caption" color="primary" fontFamily="bold">
                 View All
               </ThemedText>
-            </Pressable>
+            </DebouncedPressable>
           </View>
 
           <View style={{ gap: spacing.sm, marginTop: spacing.sm }}>
@@ -772,11 +773,11 @@ export default function DashboardScreen() {
                   style={[styles.puCard, { borderColor: colors.border }]}
                 >
                   <View style={styles.puTopRow}>
-                    <View style={{ flex: 1 }}>
-                      <ThemedText variant="body" color="text" fontFamily="bold">
+                    <View style={{ flex: 1, minWidth: 0, paddingRight: spacing.xs }}>
+                      <ThemedText variant="body" color="text" fontFamily="bold" numberOfLines={2}>
                         {pu.name}
                       </ThemedText>
-                      <ThemedText variant="caption" color="textSecondary">
+                      <ThemedText variant="caption" color="textSecondary" numberOfLines={2}>
                         {pu.code} · {pu.lga}, {pu.state}
                       </ThemedText>
                     </View>
@@ -801,6 +802,7 @@ export default function DashboardScreen() {
                       <ThemedText
                         variant="label"
                         fontFamily="bold"
+                        numberOfLines={1}
                         style={{
                           marginLeft: 4,
                           color: isPub ? colors.success : isDraft ? colors.warning : colors.textMuted,
@@ -966,7 +968,7 @@ export default function DashboardScreen() {
                   {incidents.length} security & logistical issues logged
                 </ThemedText>
               </View>
-              <Pressable
+              <DebouncedPressable
                 onPress={() => {
                   impact(Haptics.ImpactFeedbackStyle.Light);
                   router.push(ROUTES.INCIDENTS_TAB);
@@ -976,7 +978,7 @@ export default function DashboardScreen() {
                 <ThemedText variant="caption" color="primary" fontFamily="bold">
                   View All
                 </ThemedText>
-              </Pressable>
+              </DebouncedPressable>
             </View>
             <View style={{ marginTop: spacing.xs }}>
               <IncidentMarquee incidents={incidents} />
@@ -1000,7 +1002,10 @@ const styles = StyleSheet.create({
     borderRadius: radius.lg,
     borderWidth: 1,
     backgroundColor: 'rgba(13, 99, 56, 0.04)',
-    ...shadows.sm,
+    ...Platform.select<object>({
+      ios: shadows.sm,
+      android: { elevation: 0 },
+    }),
   },
   consoleTopRow: {
     flexDirection: 'row',
@@ -1024,6 +1029,7 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
     borderRadius: radius.full,
     borderWidth: 1,
+    flexShrink: 0,
   },
   pulseDot: {
     width: 8,
@@ -1256,6 +1262,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: radius.full,
+    flexShrink: 0,
   },
   puBottomRow: {
     flexDirection: 'row',

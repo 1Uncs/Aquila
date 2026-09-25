@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
-import { StyleSheet, View, Pressable } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { DebouncedPressable } from '@/core/components/DebouncedPressable';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router, useLocalSearchParams } from 'expo-router';
 import { ScreenView } from '@/core/components/ScreenView';
@@ -186,8 +187,8 @@ export default function ResultCollationScreen() {
                         #{idx + 1}
                       </ThemedText>
                     </View>
-                    <View style={{ marginLeft: spacing.xs, flex: 1 }}>
-                      <ThemedText variant="body" color="text" fontFamily="bold">
+                    <View style={{ marginLeft: spacing.xs, flex: 1, minWidth: 0, paddingRight: spacing.xs }}>
+                      <ThemedText variant="body" color="text" fontFamily="bold" numberOfLines={2}>
                         {c.fullName}
                       </ThemedText>
                       <View style={styles.partyBadgeRow}>
@@ -200,11 +201,11 @@ export default function ResultCollationScreen() {
                     </View>
                   </View>
 
-                  <View style={{ alignItems: 'flex-end' }}>
-                    <ThemedText variant="title" color="text" fontFamily="bold">
+                  <View style={{ alignItems: 'flex-end', flexShrink: 0 }}>
+                    <ThemedText variant="title" color="text" fontFamily="bold" numberOfLines={1}>
                       {c.votes.toLocaleString()}
                     </ThemedText>
-                    <ThemedText variant="caption" color="primary" fontFamily="bold">
+                    <ThemedText variant="caption" color="primary" fontFamily="bold" numberOfLines={1}>
                       {c.pct.toFixed(1)}% of total
                     </ThemedText>
                   </View>
@@ -240,7 +241,7 @@ export default function ResultCollationScreen() {
 
         <View style={{ gap: spacing.xs, marginTop: spacing.sm }}>
           {allCollated.slice(0, 10).map((r) => (
-            <Pressable
+            <DebouncedPressable
               key={r.id}
               onPress={() => {
                 impact(Haptics.ImpactFeedbackStyle.Light);
@@ -248,15 +249,15 @@ export default function ResultCollationScreen() {
               }}
               style={[styles.puLogItem, { borderColor: colors.border }]}
             >
-              <View style={{ flex: 1 }}>
-                <ThemedText variant="body" color="text" fontFamily="bold" numberOfLines={1}>
+              <View style={{ flex: 1, minWidth: 0, paddingRight: spacing.xs }}>
+                <ThemedText variant="body" color="text" fontFamily="bold" numberOfLines={2}>
                   {r.pollingUnitName}
                 </ThemedText>
-                <ThemedText variant="caption" color="textSecondary">
+                <ThemedText variant="caption" color="textSecondary" numberOfLines={2}>
                   {r.totalVotesCast.toLocaleString()} votes cast · Accredited: {r.totalAccreditedVoters.toLocaleString()}
                 </ThemedText>
               </View>
-              <View style={styles.puRight}>
+              <View style={[styles.puRight, { flexShrink: 0 }]}>
                 <View style={[styles.verifiedPill, { backgroundColor: colors.successSubtle }]}>
                   <Ionicons name="checkmark-circle" size={12} color={colors.success} />
                   <ThemedText variant="label" color="success" fontFamily="bold" style={{ marginLeft: 4 }}>
@@ -265,7 +266,7 @@ export default function ResultCollationScreen() {
                 </View>
                 <Ionicons name="chevron-forward" size={16} color={colors.textMuted} />
               </View>
-            </Pressable>
+            </DebouncedPressable>
           ))}
         </View>
       </Card>
@@ -339,6 +340,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     flex: 1,
+    minWidth: 0,
     marginRight: spacing.sm,
   },
   rankBox: {

@@ -53,7 +53,7 @@ export function Button({
   const { scale, onPressIn: onScaleIn, onPressOut: onScaleOut } = usePressScale({ toValue: 0.97 });
 
   const sizeStyles = {
-    sm: { paddingVertical: 6, paddingHorizontal: 12, minHeight: 36 },
+    sm: { paddingVertical: 6, paddingHorizontal: 6, minHeight: 34 },
     md: { paddingVertical: 10, paddingHorizontal: 16, minHeight: 46 },
     lg: { paddingVertical: 13, paddingHorizontal: 20, minHeight: 52 },
   };
@@ -80,8 +80,22 @@ export function Button({
 
   const renderIcon = (iconName: keyof typeof Ionicons.glyphMap | undefined, iconColor: string) => {
     if (!iconName) return null;
-    return <Ionicons name={iconName} size={20} color={iconColor} style={styles.icon} />;
+    return <Ionicons name={iconName} size={size === 'sm' ? 16 : 20} color={iconColor} style={styles.icon} />;
   };
+
+  const flatStyle = StyleSheet.flatten(style);
+  const containerFlexStyle: ViewStyle = {};
+  if (flatStyle) {
+    if (flatStyle.flex !== undefined) {
+      containerFlexStyle.flex = flatStyle.flex;
+      containerFlexStyle.minWidth = 0;
+      containerFlexStyle.flexShrink = 1;
+    }
+    if (flatStyle.flexGrow !== undefined) containerFlexStyle.flexGrow = flatStyle.flexGrow;
+    if (flatStyle.flexShrink !== undefined) containerFlexStyle.flexShrink = flatStyle.flexShrink;
+    if (flatStyle.flexBasis !== undefined) containerFlexStyle.flexBasis = flatStyle.flexBasis;
+    if (flatStyle.alignSelf !== undefined) containerFlexStyle.alignSelf = flatStyle.alignSelf;
+  }
 
   return (
     <DebouncedPressable
@@ -89,7 +103,10 @@ export function Button({
       onPressIn={onScaleIn}
       onPressOut={onScaleOut}
       disabled={disabled || loading}
-      style={fullWidth ? { alignSelf: 'stretch' as FlexAlignType } : undefined}
+      style={[
+        fullWidth ? { alignSelf: 'stretch' as FlexAlignType } : undefined,
+        containerFlexStyle,
+      ]}
       testID={testID}
       accessible
       accessibilityRole="button"
@@ -99,10 +116,11 @@ export function Button({
       <Animated.View
         style={[
           styles.button,
-          { borderRadius: radius.full },
+          { borderRadius: radius.full, minWidth: 0 },
           sizeStyles[size],
           variantStyles[variant],
           fullWidth && { alignSelf: 'stretch' as FlexAlignType },
+          containerFlexStyle.flex !== undefined && { flex: 1, width: '100%', minWidth: 0 },
           disabled && { opacity: opacities.disabled },
           style,
           { transform: [{ scale }] },
@@ -112,12 +130,15 @@ export function Button({
           {renderIcon(leftIcon, textColor)}
           <ThemedText
             variant="label"
+            numberOfLines={1}
+            ellipsizeMode="tail"
             style={[
               styles.label,
               {
                 color: textColor,
-                fontSize: size === 'sm' ? 12.5 : size === 'lg' ? 15 : 13.5,
+                fontSize: size === 'sm' ? (label.length > 13 ? 11 : 12) : size === 'lg' ? 15 : 13.5,
                 lineHeight: size === 'sm' ? 16 : size === 'lg' ? 20 : 18,
+                letterSpacing: size === 'sm' && label.length > 13 ? 0 : 0.2,
               },
             ]}
           >
@@ -135,13 +156,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     flexDirection: 'row',
+    minWidth: 0,
   },
   row: {
     alignItems: 'center',
     justifyContent: 'center',
     flexDirection: 'row',
-    gap: 8,
+    gap: 6,
+    flexShrink: 1,
+    minWidth: 0,
   },
-  label: { fontWeight: '600', letterSpacing: 0.3 },
+  label: { fontWeight: '600', letterSpacing: 0.2, flexShrink: 1 },
   icon: { lineHeight: 20 },
 });

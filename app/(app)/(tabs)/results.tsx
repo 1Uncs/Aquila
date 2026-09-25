@@ -126,11 +126,11 @@ export default function ResultsScreen() {
         }}
       >
         <View style={styles.itemHeader}>
-          <View style={{ flex: 1 }}>
-            <ThemedText variant="body" color="text" fontFamily="bold">
+          <View style={{ flex: 1, minWidth: 0, paddingRight: spacing.xs }}>
+            <ThemedText variant="body" color="text" fontFamily="bold" numberOfLines={2}>
               {item.pollingUnitName}
             </ThemedText>
-            <ThemedText variant="caption" color="textSecondary">
+            <ThemedText variant="caption" color="textSecondary" numberOfLines={2}>
               {isPublished ? 'Official Return' : 'Draft Return'} · {new Date(item.submittedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
             </ThemedText>
           </View>
@@ -141,6 +141,7 @@ export default function ResultsScreen() {
               {
                 backgroundColor: isPublished ? colors.successSubtle : colors.warningSubtle,
                 borderColor: isPublished ? colors.success : colors.warning,
+                flexShrink: 0,
               },
             ]}
           >
@@ -152,6 +153,7 @@ export default function ResultsScreen() {
             <ThemedText
               variant="label"
               fontFamily="bold"
+              numberOfLines={1}
               style={{
                 marginLeft: 4,
                 color: isPublished ? colors.success : colors.warning,
@@ -164,17 +166,17 @@ export default function ResultsScreen() {
 
         {/* Leading Candidate Strip */}
         <View style={[styles.leadStrip, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }]}>
-          <View style={{ flex: 1 }}>
+          <View style={{ flex: 1, minWidth: 0, paddingRight: spacing.xs }}>
             <ThemedText variant="label" color="textMuted">LEADING CANDIDATE</ThemedText>
-            <ThemedText variant="body" color="text" fontFamily="bold">
+            <ThemedText variant="body" color="text" fontFamily="bold" numberOfLines={2}>
               {leadCand?.fullName ?? (topCandId ? `Candidate ${topCandId}` : 'Awaiting breakdown')}
             </ThemedText>
           </View>
-          <View style={{ alignItems: 'flex-end' }}>
-            <ThemedText variant="title" color="primary" fontFamily="bold">
+          <View style={{ alignItems: 'flex-end', flexShrink: 0 }}>
+            <ThemedText variant="title" color="primary" fontFamily="bold" numberOfLines={1}>
               {topCandVotes.toLocaleString()}
             </ThemedText>
-            <ThemedText variant="label" color="textSecondary">
+            <ThemedText variant="label" color="textSecondary" numberOfLines={1}>
               {leadPct}% of cast ballots
             </ThemedText>
           </View>
@@ -376,14 +378,14 @@ export default function ResultsScreen() {
       <View style={styles.container}>
         {/* Top Control Bar */}
         <View style={styles.topControlBar}>
-          <View style={{ flex: 1 }}>
-            <ThemedText variant="title" color="text" fontFamily="bold">
+          <View style={{ flex: 1, minWidth: 0, paddingRight: spacing.xs }}>
+            <ThemedText variant="title" color="text" fontFamily="bold" numberOfLines={1}>
               Election Results
             </ThemedText>
-            <ThemedText variant="caption" color="textSecondary">
+            <ThemedText variant="caption" color="textSecondary" numberOfLines={1}>
               {viewMode === 'returns'
                 ? `Total ${totalVotes.toLocaleString()} votes across ${publishedResults.length} PUs`
-                : `${overallReportingPct}% of collation centers reporting across Lagos State`}
+                : `${overallReportingPct}% of collation centers reporting`}
             </ThemedText>
           </View>
 
@@ -423,19 +425,22 @@ export default function ResultsScreen() {
               viewMode === 'returns' && [styles.activeTabBtn, { backgroundColor: colors.primary }],
             ]}
           >
-            <Ionicons
-              name="list-outline"
-              size={14}
-              color={viewMode === 'returns' ? '#FFFFFF' : colors.textSecondary}
-              style={{ marginRight: 6 }}
-            />
-            <ThemedText
-              variant="caption"
-              color={viewMode === 'returns' ? '#FFFFFF' : 'textSecondary'}
-              fontFamily={viewMode === 'returns' ? 'bold' : 'medium'}
-            >
-              PU Returns ({publishedResults.length})
-            </ThemedText>
+            <View style={styles.tabBtnContent}>
+              <Ionicons
+                name="list-outline"
+                size={14}
+                color={viewMode === 'returns' ? '#FFFFFF' : colors.textSecondary}
+              />
+              <ThemedText
+                variant="caption"
+                color={viewMode === 'returns' ? '#FFFFFF' : 'textSecondary'}
+                fontFamily={viewMode === 'returns' ? 'bold' : 'medium'}
+                numberOfLines={1}
+                ellipsizeMode="tail"
+              >
+                PU Returns ({publishedResults.length})
+              </ThemedText>
+            </View>
           </Pressable>
 
           <Pressable
@@ -448,19 +453,22 @@ export default function ResultsScreen() {
               viewMode === 'heatmap' && [styles.activeTabBtn, { backgroundColor: colors.primary }],
             ]}
           >
-            <Ionicons
-              name="map-outline"
-              size={14}
-              color={viewMode === 'heatmap' ? '#FFFFFF' : colors.textSecondary}
-              style={{ marginRight: 6 }}
-            />
-            <ThemedText
-              variant="caption"
-              color={viewMode === 'heatmap' ? '#FFFFFF' : 'textSecondary'}
-              fontFamily={viewMode === 'heatmap' ? 'bold' : 'medium'}
-            >
-              Collation Heat Map ({lgaHeatmapData.length} LGAs)
-            </ThemedText>
+            <View style={styles.tabBtnContent}>
+              <Ionicons
+                name="map-outline"
+                size={14}
+                color={viewMode === 'heatmap' ? '#FFFFFF' : colors.textSecondary}
+              />
+              <ThemedText
+                variant="caption"
+                color={viewMode === 'heatmap' ? '#FFFFFF' : 'textSecondary'}
+                fontFamily={viewMode === 'heatmap' ? 'bold' : 'medium'}
+                numberOfLines={1}
+                ellipsizeMode="tail"
+              >
+                Heat Map ({lgaHeatmapData.length} LGAs)
+              </ThemedText>
+            </View>
           </Pressable>
         </View>
 
@@ -837,11 +845,11 @@ export default function ResultsScreen() {
                     </View>
 
                     <View style={[styles.leadBanner, { backgroundColor: colors.surface, borderColor: colors.borderSubtle, marginTop: spacing.xs }]}>
-                      <View style={{ flex: 1 }}>
-                        <ThemedText variant="caption" color="text" fontFamily="bold">
+                      <View style={{ flex: 1, minWidth: 0, paddingRight: spacing.xs }}>
+                        <ThemedText variant="caption" color="text" fontFamily="bold" numberOfLines={1}>
                           {selectedMapLga.leadingCandidate}
                         </ThemedText>
-                        <ThemedText variant="label" color="textSecondary">
+                        <ThemedText variant="label" color="textSecondary" numberOfLines={1}>
                           {selectedMapLga.totalVotes.toLocaleString()} ballots cast · +{selectedMapLga.margin}% margin
                         </ThemedText>
                       </View>
@@ -924,16 +932,16 @@ export default function ResultsScreen() {
                 <Card style={[styles.lgaCard, { borderColor: colors.border }]}>
                   {/* Top: LGA Name & Reporting Badge */}
                   <View style={styles.lgaHeader}>
-                    <View style={{ flex: 1 }}>
-                      <ThemedText variant="body" color="text" fontFamily="bold">
+                    <View style={{ flex: 1, minWidth: 0, paddingRight: spacing.xs }}>
+                      <ThemedText variant="body" color="text" fontFamily="bold" numberOfLines={2}>
                         {item.name}
                       </ThemedText>
-                      <ThemedText variant="caption" color="textSecondary">
+                      <ThemedText variant="caption" color="textSecondary" numberOfLines={2}>
                         {item.state} State · {item.baseCollated} of {item.totalPus} PUs collated
                       </ThemedText>
                     </View>
 
-                    <View style={[styles.reportingBadge, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }]}>
+                    <View style={[styles.reportingBadge, { backgroundColor: colors.surfaceElevated, borderColor: colors.border, flexShrink: 0 }]}>
                       <Ionicons name="pie-chart-outline" size={12} color={colors.primary} />
                       <ThemedText variant="label" color="primary" fontFamily="bold" style={{ marginLeft: 4 }}>
                         {item.reportingPct}%
@@ -951,24 +959,24 @@ export default function ResultsScreen() {
                       },
                     ]}
                   >
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                      <View style={[styles.partyPill, { backgroundColor: leadColor }]}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flex: 1, minWidth: 0 }}>
+                      <View style={[styles.partyPill, { backgroundColor: leadColor, flexShrink: 0 }]}>
                         <ThemedText variant="caption" color="#FFFFFF" fontFamily="bold">
                           {item.leadingParty}
                         </ThemedText>
                       </View>
-                      <View>
-                        <ThemedText variant="caption" color="text" fontFamily="bold">
+                      <View style={{ flex: 1, minWidth: 0 }}>
+                        <ThemedText variant="caption" color="text" fontFamily="bold" numberOfLines={2}>
                           {item.leadingCandidate}
                         </ThemedText>
-                        <ThemedText variant="label" color="textSecondary">
+                        <ThemedText variant="label" color="textSecondary" numberOfLines={1}>
                           Leading with {item.leadingPct}%
                         </ThemedText>
                       </View>
                     </View>
 
-                    <View style={[styles.marginBadge, { backgroundColor: leadColor + '22' }]}>
-                      <ThemedText variant="caption" style={{ color: leadColor }} fontFamily="bold">
+                    <View style={[styles.marginBadge, { backgroundColor: leadColor + '22', flexShrink: 0 }]}>
+                      <ThemedText variant="caption" style={{ color: leadColor }} fontFamily="bold" numberOfLines={1}>
                         +{item.margin}% margin
                       </ThemedText>
                     </View>
@@ -1075,6 +1083,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
+    gap: 8,
   },
   statusChip: {
     flexDirection: 'row',
@@ -1111,11 +1120,20 @@ const styles = StyleSheet.create({
   },
   mainViewBtn: {
     flex: 1,
-    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 7,
+    paddingHorizontal: 6,
     borderRadius: radius.sm,
+    overflow: 'hidden',
+  },
+  tabBtnContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 5,
+    minWidth: 0,
+    flexShrink: 1,
   },
   filterChipRow: {
     flexDirection: 'row',
@@ -1183,6 +1201,7 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     borderRadius: radius.full,
     borderWidth: 1,
+    flexShrink: 0,
   },
   leadBanner: {
     flexDirection: 'row',
@@ -1191,16 +1210,20 @@ const styles = StyleSheet.create({
     padding: spacing.sm,
     borderRadius: radius.md,
     borderWidth: 1,
+    overflow: 'hidden',
+    gap: 8,
   },
   partyPill: {
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: radius.sm,
+    flexShrink: 0,
   },
   marginBadge: {
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: radius.full,
+    flexShrink: 0,
   },
   stackedBarContainer: {
     height: 8,

@@ -131,10 +131,10 @@ export default function PartiesScreen() {
                       {cand.partyHistory.map((h, i) => (
                         <View key={i} style={styles.historyRow}>
                           <Ionicons name="git-commit-outline" size={14} color={colors.primary} />
-                          <ThemedText variant="caption" color="text" fontFamily="medium" style={{ marginLeft: 6, flex: 1 }}>
+                          <ThemedText variant="caption" color="text" fontFamily="medium" numberOfLines={1} style={{ marginLeft: 6, flex: 1, minWidth: 0, paddingRight: spacing.xs }}>
                             {h.electionYear} ({h.partyAcronym}): {h.votes.toLocaleString()} votes ({h.percentage}%)
                           </ThemedText>
-                          <ThemedText variant="label" color="textSecondary">
+                          <ThemedText variant="label" color="textSecondary" numberOfLines={1} style={{ flexShrink: 0 }}>
                             {h.electionName}
                           </ThemedText>
                         </View>
