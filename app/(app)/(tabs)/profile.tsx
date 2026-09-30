@@ -124,7 +124,7 @@ export default function ProfileTabScreen() {
           </View>
           <View style={{ flex: 1, marginLeft: spacing.sm }}>
             <ThemedText variant="body" color="text" fontFamily="bold">
-              {user?.organizationName ?? 'iAquila Situation Room HQ'}
+              {user?.organizationName ?? 'iAQUILA Situation Room HQ'}
             </ThemedText>
             <ThemedText variant="caption" color="textSecondary">
               Mission ID: {user?.organizationId ?? 'org-iaquila'} · Accredited Observer Mission

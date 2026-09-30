@@ -13,7 +13,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 
 const ORG_PRESETS = [
-  { id: 'org-iaquila', code: 'IAQ-HQ', name: 'iAquila Situation Room', tag: 'HQ' },
+  { id: 'org-iaquila', code: 'IAQ-HQ', name: 'iAQUILA Situation Room', tag: 'HQ' },
   { id: 'org-cdd', code: 'CDD-WA', name: 'CDD West Africa', tag: 'CSO' },
   { id: 'org-yiaga', code: 'YIAGA-WTV', name: 'YIAGA Africa Watching The Vote', tag: 'CSO' },
   { id: 'org-inec', code: 'INEC-OBS', name: 'INEC Observer Mission', tag: 'OBSERVER' },
