@@ -286,9 +286,10 @@ export default function ProfileTabScreen() {
 
         <View style={{ gap: spacing.xs }}>
           {[
-            { label: 'Privacy Policy', icon: 'shield-checkmark-outline', url: 'https://iaquila.com.ng/privacy.html' },
-            { label: 'Terms & Conditions', icon: 'document-text-outline', url: 'https://iaquila.com.ng/terms.html' },
-            { label: 'Account & Data Deletion', icon: 'trash-outline', url: 'https://iaquila.com.ng/deletion.html' },
+            { label: 'Help & Support Desk', icon: 'help-circle-outline', url: 'https://app.iaquila.com.ng/support.html' },
+            { label: 'Privacy Policy', icon: 'shield-checkmark-outline', url: 'https://app.iaquila.com.ng/privacy.html' },
+            { label: 'Terms & Conditions', icon: 'document-text-outline', url: 'https://app.iaquila.com.ng/terms.html' },
+            { label: 'Account & Data Deletion', icon: 'trash-outline', url: 'https://app.iaquila.com.ng/deletion.html' },
           ].map((item) => (
             <Card
               key={item.label}
