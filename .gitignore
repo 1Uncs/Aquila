@@ -9,6 +9,11 @@ web-build/
 *.p12
 *.key
 *.mobileprovision
+*.keystore
+credentials.json
+*keystore*.zip
+*keystore-backup/
+*keystore-credentials.md
 *.orig.*
 .env
 .env.local

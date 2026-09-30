@@ -1,6 +1,6 @@
 export const colors = {
   light: {
-    primary: '#0D6338', // Aquila Forest Green
+    primary: '#0D6338', // iAquila Forest Green
     primaryLight: '#15803D',
     primarySubtle: '#E8F5E9',
     primaryDark: '#0A4A2A',
@@ -42,7 +42,7 @@ export const colors = {
     shimmer: '#EFF4F1',
   },
   dark: {
-    primary: '#10B981', // Aquila Emerald
+    primary: '#10B981', // iAquila Emerald
     primaryLight: '#34D399',
     primarySubtle: '#062917',
     primaryDark: '#0D6338',

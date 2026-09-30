@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Aquila",
+    "name": "iAquila",
     "slug": "aquila",
     "owner": "aquila-app",
     "version": "1.0.0",
@@ -16,7 +16,7 @@
       "bundleIdentifier": "com.alabian.aquila",
       "backgroundColor": "#070C09",
       "infoPlist": {
-        "NSLocationWhenInUseUsageDescription": "Aquila requires your location to geotag submitted electoral results and field incident evidence."
+        "NSLocationWhenInUseUsageDescription": "iAquila requires your location to geotag submitted electoral results and field incident evidence."
       }
     },
     "android": {
@@ -26,6 +26,10 @@
       },
       "package": "com.alabian.aquila",
       "softwareKeyboardLayoutMode": "pan",
+      "blockedPermissions": [
+        "android.permission.READ_MEDIA_IMAGES",
+        "android.permission.READ_MEDIA_VIDEO"
+      ],
       "permissions": [
         "ACCESS_FINE_LOCATION",
         "ACCESS_COARSE_LOCATION"
@@ -51,7 +55,8 @@
         "expo-audio",
         {
           "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone.",
-          "enableBackgroundRecording": true
+          "enableBackgroundRecording": false,
+          "enableBackgroundPlayback": false
         }
       ],
       "expo-build-properties",

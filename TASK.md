@@ -48,3 +48,10 @@
     - Android Elevation on Translucent Surfaces: Fixed muddy/black shadow box artifacts on Android by removing `elevation` from translucent containers (`consoleHeader` in `index.tsx`, `logoBadge` in `login.tsx`) via `Platform.select({ ios: shadows.*, android: { elevation: 0 } })`.
     - Horizontal Row Flex Clamping: Audited all screens (`results.tsx`, `result-detail.tsx`, `result-collation.tsx`, `result-search.tsx`, `parties.tsx`, `locations.tsx`, `elections.tsx`, `incidents.tsx`). Injected `minWidth: 0`, `paddingRight: spacing.xs`, and `numberOfLines={1}` on flex text parents, and pinned badges/indicators with `flexShrink: 0` to prevent margin indicators (+14.8%), status chips, and candidate names from breaking past container boundaries.
     - 2-Line Natural Wrapping Upgrade: Replaced single-line blind truncation (`numberOfLines={1}`) with 2-line natural wrapping (`numberOfLines={2}`) across polling unit names, candidate standings, election positions, and location searches (`result-collation.tsx`, `result-detail.tsx`, `results.tsx`, `elections.tsx`, `index.tsx`, `result-search.tsx`) so long names and civic identifiers are fully readable across compact Android viewports without ellipses.
+  * Results Heatmap Redesign & LGA Map Viewport Fix (`results.tsx`):
+    - Streamlined view switchers into a single unified tactical control bar (`States` / `LGAs` and `Lead` / `Heat`).
+    - Embedded live collation telemetry and a slim progress bar directly into the map card header, eliminating redundant banner cards.
+    - Integrated selected territory inspection HUD directly into the map card footer with one-tap drilldowns.
+    - Scoped LGA SVG map viewport by state with an interactive state selector chip bar (`Lagos`, `Kano`, `Rivers`, `FCT`, `Kaduna`, `Oyo`, `Enugu`, `Borno`), preventing multi-state polygon and text collisions.
+    - Added high-contrast dark badge plates (`<Rect>`) behind all SVG text labels for crisp legibility over colored polygons.
+    - Compacted collation breakdown items into sleek leaderboard rows with inline party filter chips.

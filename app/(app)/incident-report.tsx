@@ -114,7 +114,7 @@ export default function ReportIncidentScreen() {
           addMediaUris([uri]);
         }
         if (chunkIndexRef.current < MAX_CHUNKS) {
-          await setAudioModeAsync({ playsInSilentMode: true, allowsRecording: true, allowsBackgroundRecording: true });
+          await setAudioModeAsync({ playsInSilentMode: true, allowsRecording: true, allowsBackgroundRecording: false });
           await audioRecorder.prepareToRecordAsync();
           audioRecorder.record();
         }
@@ -124,7 +124,7 @@ export default function ReportIncidentScreen() {
     })();
   }, [recordingDuration, isRecording, audioRecorder, addMediaUris, deviceCoords?.latitude, deviceCoords?.longitude]);
 
-  const requestPermission = async (type: 'camera' | 'mediaLibrary') => {
+  const requestPermission = async (type: 'camera') => {
     try {
       if (Platform.OS !== 'web') {
         if (type === 'camera') {
@@ -134,13 +134,7 @@ export default function ReportIncidentScreen() {
             return false;
           }
         }
-        if (type === 'mediaLibrary') {
-          const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-          if (status !== 'granted') {
-            Alert.alert('Permission needed', 'Media library permission is required to attach files.');
-            return false;
-          }
-        }
+        // Note: media library (gallery) intentionally unsupported — strict live capture only.
       }
       return true;
     } catch (e) {
@@ -174,16 +168,13 @@ export default function ReportIncidentScreen() {
         return;
       }
       if (Platform.OS === 'android') {
-        try {
-          await AudioModule.requestNotificationPermissionsAsync();
-        } catch {
-          // optional permission, ignore
-        }
+        // Background recording disabled: no notification permission needed.
+        // Recording stops when app backgrounds or screen locks (see cleanup effect).
       }
       await setAudioModeAsync({
         playsInSilentMode: true,
         allowsRecording: true,
-        allowsBackgroundRecording: true,
+        allowsBackgroundRecording: false,
       });
       chunkIndexRef.current = audioChunks.length;
       await audioRecorder.prepareToRecordAsync();
@@ -305,7 +296,7 @@ export default function ReportIncidentScreen() {
     setSubmitting(false);
     Alert.alert(
       'Incident Dispatched',
-      'Incident report transmitted successfully to the Aquila Incident Control Room.',
+      'Incident report transmitted successfully to the iAquila Incident Control Room.',
       [{ text: 'OK', onPress: () => router.back() }]
     );
   };
@@ -478,7 +469,7 @@ export default function ReportIncidentScreen() {
           {FEATURES.ENABLE_STEALTH_RECORDING && (
             <Card style={[{ backgroundColor: colors.warningSubtle, borderColor: colors.warning + '30', borderWidth: 1, marginBottom: spacing.md }]}>
               <ThemedText variant="caption" style={{ color: colors.textSecondary }}>
-                Background audio enabled (app.json enableBackgroundRecording). Keep app foregrounded; audio continues with screen on but dims. Each 2-min chunk is geotagged — review device lock-screen behavior on your target devices before field use.
+                Foreground audio only. Keep app foregrounded with screen on; recording stops if app backgrounds or screen locks. Each 2-min chunk is geotagged — review device lock-screen behavior on your target devices before field use.
               </ThemedText>
             </Card>
           )}

@@ -107,7 +107,7 @@ export default function ProfileTabScreen() {
           </View>
 
           <ThemedText variant="caption" color="#A3B8AC" style={{ marginTop: 2 }}>
-            {user?.email ?? 'agent@aquila.ng'}
+            {user?.email ?? 'agent@iaquila.com.ng'}
           </ThemedText>
         </View>
       </LinearGradient>
@@ -124,10 +124,10 @@ export default function ProfileTabScreen() {
           </View>
           <View style={{ flex: 1, marginLeft: spacing.sm }}>
             <ThemedText variant="body" color="text" fontFamily="bold">
-              {user?.organizationName ?? 'Aquila Situation Room HQ'}
+              {user?.organizationName ?? 'iAquila Situation Room HQ'}
             </ThemedText>
             <ThemedText variant="caption" color="textSecondary">
-              Mission ID: {user?.organizationId ?? 'org-aquila'} · Accredited Observer Mission
+              Mission ID: {user?.organizationId ?? 'org-iaquila'} · Accredited Observer Mission
             </ThemedText>
           </View>
         </View>
@@ -254,21 +254,21 @@ export default function ProfileTabScreen() {
             label="Field Agent"
             variant={user?.role === 'FIELD_AGENT' ? 'primary' : 'outline'}
             size="sm"
-            onPress={() => handleRoleSwitch('FIELD_AGENT', 'agent@aquila.ng')}
+            onPress={() => handleRoleSwitch('FIELD_AGENT', 'agent@iaquila.com.ng')}
             fullWidth
           />
           <Button
             label="PU Agent"
             variant={user?.role === 'POLLING_AGENT' ? 'primary' : 'outline'}
             size="sm"
-            onPress={() => handleRoleSwitch('POLLING_AGENT', 'polling@aquila.ng')}
+            onPress={() => handleRoleSwitch('POLLING_AGENT', 'polling@iaquila.com.ng')}
             fullWidth
           />
           <Button
             label="Election Officer"
             variant={user?.role === 'ELECTION_OFFICER' ? 'primary' : 'outline'}
             size="sm"
-            onPress={() => handleRoleSwitch('ELECTION_OFFICER', 'officer@aquila.ng')}
+            onPress={() => handleRoleSwitch('ELECTION_OFFICER', 'officer@iaquila.com.ng')}
             fullWidth
           />
         </View>

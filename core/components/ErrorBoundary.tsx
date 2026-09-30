@@ -4,6 +4,7 @@ import { ThemedText } from './ThemedText';
 import { spacing, radius } from '@/constants/tokens';
 import Colors from '@/constants/colors';
 import { formatError } from '@/core/utils/formatError';
+import { reportObserveError } from '@/core/utils/observe';
 
 type State = { hasError: boolean; error: Error | null };
 
@@ -16,6 +17,7 @@ export class RootErrorBoundary extends React.Component<{ children: React.ReactNo
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     console.error('[ErrorBoundary]', error, errorInfo);
+    reportObserveError(error);
   }
 
   handleRetry = () => {

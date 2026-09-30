@@ -17,6 +17,12 @@ import { Asset } from 'expo-asset';
 import * as ScreenCapture from 'expo-screen-capture';
 import { fontMap } from '@/constants/fonts';
 import { useColorScheme } from '@/core/hooks/useColorScheme';
+import {
+  ObserveRoot,
+  configureObserve,
+  useObserve,
+  reportObserveError,
+} from '@/core/utils/observe';
 
 SplashScreen.preventAutoHideAsync();
 enableScreens();
@@ -25,7 +31,10 @@ export const unstable_settings = {
   initialRouteName: '(auth)',
 };
 
-export default function RootLayout() {
+// Configure EAS Observe with Expo Router navigation telemetry
+configureObserve();
+
+function RootLayout() {
   const [fontsLoaded, fontError] = useFonts(fontMap);
   const [assetsLoaded, setAssetsLoaded] = useState(false);
   const scheme = useColorScheme() ?? 'light';
@@ -47,11 +56,14 @@ export default function RootLayout() {
     preloadAssets();
   }, []);
 
+  const { markInteractive } = useObserve();
+
   useEffect(() => {
     if ((fontsLoaded || fontError) && assetsLoaded) {
       SplashScreen.hideAsync();
+      markInteractive();
     }
-  }, [fontsLoaded, fontError, assetsLoaded]);
+  }, [fontsLoaded, fontError, assetsLoaded, markInteractive]);
 
   if (!fontsLoaded && !fontError) {
     return null;
@@ -74,12 +86,15 @@ export default function RootLayout() {
   );
 }
 
+export default ObserveRoot.wrap(RootLayout);
+
 function RootLayoutNav() {
   useEffect(() => {
     const handler = (event: { reason: unknown }) => {
       const reason = event.reason;
       const error = reason instanceof Error ? reason : new Error(String(reason));
       console.error('[UnhandledRejection]', error);
+      reportObserveError(error);
     };
     if (typeof globalThis !== 'undefined') {
       if ('addEventListener' in globalThis) {
@@ -90,6 +105,7 @@ function RootLayoutNav() {
         anyGlobal.onerror = (msg: string | Error, _url?: string, _line?: number, _col?: number, err?: Error) => {
           const error = err instanceof Error ? err : msg instanceof Error ? msg : new Error(String(msg));
           console.error('[GlobalError]', error);
+          reportObserveError(error);
         };
       }
     }
