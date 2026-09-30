@@ -357,7 +357,7 @@ const ReturnCard = memo(function ReturnCard({ item, candMap, colors, impact }: R
         </View>
       </View>
 
-      {/* Bottom Turnout bar */}
+      {/* Bottom Accreditation & Ballot summary bar */}
       <View style={styles.itemFooter}>
         <ThemedText variant="caption" color="textSecondary">
           Accredited: {item.totalAccreditedVoters.toLocaleString()} · Ballots: {item.totalVotesCast.toLocaleString()}
