@@ -16,6 +16,7 @@ import Colors from '@/constants/colors';
 import { UserRole } from '@/types';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
+import * as WebBrowser from 'expo-web-browser';
 
 export default function ProfileTabScreen() {
   const { user, login } = useAuthStore();
@@ -274,7 +275,45 @@ export default function ProfileTabScreen() {
         </View>
       </Card>
 
-      {/* 6. Sign Out Button */}
+      {/* 6. Legal & Compliance (App Store & NDPA Compliant) */}
+      <Card style={styles.sectionCard}>
+        <ThemedText variant="title" color="text" fontFamily="bold">
+          Legal & Compliance
+        </ThemedText>
+        <ThemedText variant="caption" color="textSecondary" style={{ marginBottom: spacing.sm }}>
+          Independent observer accreditations, NDPA privacy, and platform policies
+        </ThemedText>
+
+        <View style={{ gap: spacing.xs }}>
+          {[
+            { label: 'Privacy Policy', icon: 'shield-checkmark-outline', url: 'https://iaquila.com.ng/privacy.html' },
+            { label: 'Terms & Conditions', icon: 'document-text-outline', url: 'https://iaquila.com.ng/terms.html' },
+            { label: 'Account & Data Deletion', icon: 'trash-outline', url: 'https://iaquila.com.ng/deletion.html' },
+          ].map((item) => (
+            <Card
+              key={item.label}
+              pressable
+              onPress={() => {
+                Haptics.selectionAsync().catch(() => {});
+                WebBrowser.openBrowserAsync(item.url).catch(() => {});
+              }}
+              style={[styles.moduleLink, { borderColor: colors.border }]}
+            >
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <View style={[styles.moduleIconWrap, { backgroundColor: colors.primary + '14' }]}>
+                  <Ionicons name={item.icon as any} size={18} color={colors.primary} />
+                </View>
+                <ThemedText variant="body" color="text" fontFamily="medium" style={{ flex: 1, marginLeft: spacing.xs }}>
+                  {item.label}
+                </ThemedText>
+                <Ionicons name="open-outline" size={16} color={colors.textMuted} />
+              </View>
+            </Card>
+          ))}
+        </View>
+      </Card>
+
+      {/* 7. Sign Out Button */}
       <Button
         label="Sign Out"
         variant="outline"
